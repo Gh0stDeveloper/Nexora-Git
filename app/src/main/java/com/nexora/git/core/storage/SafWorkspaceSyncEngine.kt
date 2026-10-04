@@ -46,13 +46,19 @@ class SafWorkspaceSyncEngine @Inject constructor(
             throw IOException("Not enough device storage for managed workspace")
         }
 
+        val previousManifest = manifestWriter.read(workspaceId)
+        val previousFiles = previousManifest?.files.orEmpty()
+        val sourcePaths = scan.files
+            .mapTo(linkedSetOf()) { it.relativePath }
+
         val preserveManagedGit =
             File(destination, ".git").exists()
 
-        val knownPaths = linkedSetOf<String>()
         var copiedFiles = 0
         var skippedFiles = 0
+        var deletedFiles = 0
         var copiedBytes = 0L
+        val conflicts = linkedSetOf<String>()
 
         suspend fun copyDirectory(
             directory: DocumentFile,
@@ -76,8 +82,7 @@ class SafWorkspaceSyncEngine @Inject constructor(
                     }
 
                     if (preserveManagedGit &&
-                        (relativePath == ".git" ||
-                            relativePath.startsWith(".git/"))
+                        isGitMetadataPath(relativePath)
                     ) {
                         return@forEach
                     }
@@ -88,7 +93,6 @@ class SafWorkspaceSyncEngine @Inject constructor(
                     )
 
                     if (child.isDirectory) {
-                        knownPaths += relativePath
                         target.mkdirs()
                         copyDirectory(child, relativePath)
                         return@forEach
@@ -96,50 +100,50 @@ class SafWorkspaceSyncEngine @Inject constructor(
 
                     if (!child.isFile) return@forEach
 
-                    knownPaths += relativePath
-
                     val sourceSize = child.length().coerceAtLeast(0L)
                     val sourceModified =
                         child.lastModified().coerceAtLeast(0L)
+                    val previous = previousFiles[relativePath]
 
-                    val unchanged = target.isFile &&
-                        target.length() == sourceSize &&
-                        sourceModified > 0L &&
-                        target.lastModified() == sourceModified
+                    if (target.isFile) {
+                        val managedChanged = hasManagedFileChanged(
+                            target = target,
+                            previous = previous,
+                        )
+                        val sourceChanged = hasSourceFileChanged(
+                            sourceSize = sourceSize,
+                            sourceModified = sourceModified,
+                            previous = previous,
+                        )
 
-                    if (unchanged) {
-                        skippedFiles += 1
-                        return@forEach
-                    }
-
-                    target.parentFile?.mkdirs()
-                    val temp = File(
-                        target.parentFile,
-                        "." + target.name + ".nexora-copy.tmp",
-                    )
-
-                    context.contentResolver
-                        .openInputStream(child.uri)
-                        ?.use { input ->
-                            temp.outputStream().buffered().use { output ->
-                                input.copyTo(output)
-                            }
+                        if (managedChanged && sourceChanged) {
+                            conflicts += relativePath
+                            skippedFiles += 1
+                            return@forEach
                         }
-                        ?: throw IOException(
-                            "Unable to read " + relativePath,
-                        )
 
-                    if (target.exists() && !target.delete()) {
-                        temp.delete()
-                        throw IOException(
-                            "Unable to replace " + relativePath,
-                        )
+                        if (managedChanged && !sourceChanged) {
+                            skippedFiles += 1
+                            return@forEach
+                        }
+
+                        if (!sourceChanged &&
+                            matchesSourceMetadata(
+                                target = target,
+                                sourceSize = sourceSize,
+                                sourceModified = sourceModified,
+                            )
+                        ) {
+                            skippedFiles += 1
+                            return@forEach
+                        }
                     }
 
-                    if (!temp.renameTo(target)) {
-                        temp.copyTo(target, overwrite = true)
-                        temp.delete()
-                    }
+                    copyFile(
+                        source = child,
+                        target = target,
+                        relativePath = relativePath,
+                    )
 
                     if (sourceModified > 0L) {
                         target.setLastModified(sourceModified)
@@ -152,33 +156,51 @@ class SafWorkspaceSyncEngine @Inject constructor(
 
         copyDirectory(source, "")
 
-        var deletedFiles = 0
-        destination.walkBottomUp().forEach { target ->
+        previousFiles.forEach { (relativePath, previous) ->
             coroutineContext.ensureActive()
-            if (target == destination) return@forEach
 
-            val relative = target.relativeTo(destination)
-                .invariantSeparatorsPath
+            if (relativePath in sourcePaths) {
+                return@forEach
+            }
 
             if (preserveManagedGit &&
-                (relative == ".git" || relative.startsWith(".git/"))
+                isGitMetadataPath(relativePath)
             ) {
                 return@forEach
             }
 
-            if (relative.endsWith(".nexora-copy.tmp")) {
-                target.delete()
+            val target = safeTarget(
+                root = destination,
+                relativePath = relativePath,
+            )
+
+            if (!target.exists()) return@forEach
+
+            if (hasManagedFileChanged(target, previous)) {
+                conflicts += relativePath
                 return@forEach
             }
 
-            if (relative !in knownPaths) {
-                if (target.isFile) {
-                    if (target.delete()) {
-                        deletedFiles += 1
-                    }
-                } else if (target.isDirectory) {
-                    target.delete()
-                }
+            if (target.isFile && target.delete()) {
+                deletedFiles += 1
+            }
+        }
+
+        destination.walkBottomUp().forEach { file ->
+            coroutineContext.ensureActive()
+
+            if (file == destination ||
+                !file.isDirectory ||
+                file.list()?.isNotEmpty() == true
+            ) {
+                return@forEach
+            }
+
+            val relative = file.relativeTo(destination)
+                .invariantSeparatorsPath
+
+            if (!isGitMetadataPath(relative)) {
+                file.delete()
             }
         }
 
@@ -194,8 +216,92 @@ class SafWorkspaceSyncEngine @Inject constructor(
             skippedFiles = skippedFiles,
             deletedFiles = deletedFiles,
             copiedBytes = copiedBytes,
+            conflictedPaths = conflicts.toList(),
             completedAtEpochMillis = completedAt,
         )
+    }
+
+    private fun hasManagedFileChanged(
+        target: File,
+        previous: WorkspaceManifestFile?,
+    ): Boolean {
+        if (previous == null) return target.exists()
+        if (!target.isFile) return true
+        if (target.length() != previous.sizeBytes) return true
+
+        return previous.lastModifiedEpochMillis > 0L &&
+            target.lastModified() != previous.lastModifiedEpochMillis
+    }
+
+    private fun hasSourceFileChanged(
+        sourceSize: Long,
+        sourceModified: Long,
+        previous: WorkspaceManifestFile?,
+    ): Boolean {
+        if (previous == null) return true
+        if (sourceSize != previous.sizeBytes) return true
+
+        if (sourceModified <= 0L ||
+            previous.lastModifiedEpochMillis <= 0L
+        ) {
+            return false
+        }
+
+        return sourceModified != previous.lastModifiedEpochMillis
+    }
+
+    private fun matchesSourceMetadata(
+        target: File,
+        sourceSize: Long,
+        sourceModified: Long,
+    ): Boolean =
+        target.isFile &&
+            target.length() == sourceSize &&
+            (
+                sourceModified <= 0L ||
+                    target.lastModified() == sourceModified
+                )
+
+    private fun copyFile(
+        source: DocumentFile,
+        target: File,
+        relativePath: String,
+    ) {
+        target.parentFile?.mkdirs()
+
+        val parent = requireNotNull(target.parentFile)
+        val temp = File(
+            parent,
+            "." + target.name + ".nexora-copy.tmp",
+        )
+
+        try {
+            context.contentResolver
+                .openInputStream(source.uri)
+                ?.use { input ->
+                    temp.outputStream().buffered().use { output ->
+                        input.copyTo(output)
+                    }
+                }
+                ?: throw IOException(
+                    "Unable to read " + relativePath,
+                )
+
+            if (target.exists() && !target.delete()) {
+                throw IOException(
+                    "Unable to replace " + relativePath,
+                )
+            }
+
+            if (!temp.renameTo(target)) {
+                temp.copyTo(target, overwrite = true)
+                temp.delete()
+            }
+        } finally {
+            if (temp.exists()) {
+                temp.delete()
+            }
+        }
     }
 
     private fun safeTarget(
@@ -211,6 +317,10 @@ class SafWorkspaceSyncEngine @Inject constructor(
 
         return target
     }
+
+    private fun isGitMetadataPath(relativePath: String): Boolean =
+        relativePath == ".git" ||
+            relativePath.startsWith(".git/")
 
     private fun isSafeName(name: String): Boolean =
         name.isNotBlank() &&
