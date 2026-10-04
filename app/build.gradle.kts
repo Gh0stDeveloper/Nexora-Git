@@ -53,8 +53,8 @@ android {
         externalNativeBuild {
             cmake {
                 arguments += listOf(
-                    "-DNEXORA_LIBGIT2_VERSION=v1.9.7",
-                    "-DNEXORA_MBEDTLS_VERSION=mbedtls-3.6.7",
+                    "-DNEXORA_LIBGIT2_REF=49e408b3208bc3093757a1c2db938d3590f3f412",
+                    "-DNEXORA_MBEDTLS_REF=068ff080b369adfac81509f9b57b2afabaf82dc5",
                 )
                 cppFlags += listOf(
                     "-std=c++17",
