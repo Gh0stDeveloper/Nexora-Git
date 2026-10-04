@@ -171,14 +171,28 @@ This roadmap is intentionally staged. A phase is not complete if it only contain
 
 ## Phase F — Repository Experience
 
-- repository list
-- repository details
-- create repository
-- import local project
-- clone
-- fork
-- star/watch
-- repository settings allowed by permissions
+**Status: complete and CI validated.**
+
+- [x] account-scoped repository list
+- [x] Room v4 offline repository metadata cache
+- [x] REST pagination across authenticated repositories
+- [x] repository details
+- [x] offline repository-detail snapshot fallback
+- [x] create repository
+- [x] import local project into real Git
+- [x] clone through libgit2 into app-private workspace
+- [x] clone by repository card or validated GitHub HTTPS URL
+- [x] fork repository
+- [x] star / unstar
+- [x] watch / unwatch through GraphQL subscription state
+- [x] capability-aware watch controls
+- [x] permission-aware repository settings
+- [x] direct / managed / remote-clone workspace integration
+- [x] repository list and detail Compose UI
+- [x] actionable API / permission / rate-limit errors
+- [x] repository parser / URL / cache tests
+- [x] repository Compose tests
+- [x] repository experience documentation
 
 ## Phase G — Code Browser
 
