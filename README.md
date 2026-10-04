@@ -82,6 +82,7 @@ See [Git Engine](docs/GIT_ENGINE.md).
 - [Phase B report](docs/PHASE_B_REPORT.md)
 - [GitHub platform layer](docs/PLATFORM_LAYER.md)
 - [Phase C report](docs/PHASE_C_REPORT.md)
+- [Phase D report](docs/PHASE_D_REPORT.md)
 - [Auth Broker](auth-broker/README.md)
 - [Architecture decisions](docs/adr/)
 
@@ -121,9 +122,9 @@ The project must use its own branding and must not imply that it is an official 
 
 ## Status
 
-**Current stage:** Phase C — GitHub Platform Layer complete; Phase D — Real Git Engine is next.
+**Current stage:** Phase D — Real Git Engine complete; Phase E — Android Project Storage is next.
 
-Nexora Git now has an authenticated REST/GraphQL platform layer with centralized API versioning, ETag-aware in-memory caching, pagination, rate-limit tracking, GitHub App permission diagnostics and standardized domain errors. Production sign-in still requires registering the real GitHub App and deploying/configuring the Auth Broker.
+Nexora Git now includes a real local Git engine built on libgit2 through Android NDK/C++ and JNI. The engine supports init, status, staging, commits, branches, checkout, clone, fetch, pull, push, diff, merges and conflicts without Termux or an external Git installation. Production GitHub sign-in still requires registering the real GitHub App and deploying/configuring the Auth Broker.
 
 ---
 

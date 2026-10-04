@@ -1,0 +1,52 @@
+name: Native Git CI
+
+on:
+  push:
+    branches:
+      - main
+      - "phase-*"
+    paths:
+      - "native/git/**"
+      - ".github/workflows/native-git-ci.yml"
+  pull_request:
+    branches:
+      - main
+    paths:
+      - "native/git/**"
+      - ".github/workflows/native-git-ci.yml"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: native-git-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  validate:
+    name: Build and test libgit2 core
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Install native build dependencies
+        shell: bash
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y ninja-build cmake
+
+      - name: Configure
+        shell: bash
+        run: |
+          cmake             -S native/git             -B build/native-git             -G Ninja             -DNEXORA_BUILD_NATIVE_TESTS=ON             -DNEXORA_LIBGIT2_VERSION=v1.9.7             -DNEXORA_MBEDTLS_VERSION=mbedtls-3.6.7             -DCMAKE_BUILD_TYPE=Release
+
+      - name: Build
+        shell: bash
+        run: cmake --build build/native-git --parallel 2
+
+      - name: Test
+        shell: bash
+        run: ctest --test-dir build/native-git --output-on-failure

@@ -111,24 +111,40 @@ This roadmap is intentionally staged. A phase is not complete if it only contain
 
 ## Phase D — Real Git Engine
 
-- libgit2 Android build
-- NDK/CMake
-- JNI bridge
-- GitEngine Kotlin contract
-- init
-- status
-- stage/unstage
-- commit
-- branches
-- checkout
-- clone
-- fetch
-- pull
-- push
-- diff
-- merge
-- conflicts
-- native tests
+**Status: complete and CI validated.**
+
+- [x] libgit2 1.9.7 native build
+- [x] immutable libgit2 commit pin
+- [x] Mbed TLS 3.6.7 LTS HTTPS backend
+- [x] immutable Mbed TLS commit pin
+- [x] Android NDK 27.2.12479018
+- [x] CMake 3.22.1
+- [x] arm64-v8a / armeabi-v7a / x86_64
+- [x] JNI bridge
+- [x] stable Kotlin `GitEngine` contract
+- [x] typed native Git exception boundary
+- [x] GitHub OAuth HTTPS credential provider
+- [x] Kotlin + native GitHub credential host isolation
+- [x] repository init on `main`
+- [x] status
+- [x] stage / unstage
+- [x] commit
+- [x] local/remote branch enumeration
+- [x] create branch
+- [x] safe checkout
+- [x] clone
+- [x] remote URL inspection
+- [x] fetch
+- [x] pull with merge analysis
+- [x] push without implicit force
+- [x] staged / unstaged / full diff
+- [x] fast-forward and normal merge
+- [x] conflict detection and enumeration
+- [x] host-native real repository workflow tests
+- [x] Android JNI/NDK compilation
+- [x] JVM native-payload/security-policy tests
+- [x] release JNI keep rules
+- [x] native-engine documentation
 
 ## Phase E — Android Project Storage
 

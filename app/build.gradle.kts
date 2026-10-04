@@ -41,6 +41,28 @@ android {
         vectorDrawables {
             useSupportLibrary = true
         }
+
+        ndk {
+            abiFilters += setOf(
+                "arm64-v8a",
+                "armeabi-v7a",
+                "x86_64",
+            )
+        }
+
+        externalNativeBuild {
+            cmake {
+                arguments += listOf(
+                    "-DNEXORA_LIBGIT2_REF=49e408b3208bc3093757a1c2db938d3590f3f412",
+                    "-DNEXORA_MBEDTLS_REF=068ff080b369adfac81509f9b57b2afabaf82dc5",
+                )
+                cppFlags += listOf(
+                    "-std=c++17",
+                    "-fexceptions",
+                    "-frtti",
+                )
+            }
+        }
     }
 
     buildTypes {
@@ -62,6 +84,15 @@ android {
     buildFeatures {
         compose = true
         buildConfig = true
+    }
+
+    ndkVersion = "27.2.12479018"
+
+    externalNativeBuild {
+        cmake {
+            path = file("../native/git/CMakeLists.txt")
+            version = "3.22.1"
+        }
     }
 
     compileOptions {
@@ -119,6 +150,7 @@ dependencies {
     implementation(libs.okhttp.logging)
 
     testImplementation(libs.junit4)
+    testImplementation(libs.org.json)
 
     androidTestImplementation(libs.androidx.test.ext.junit)
     androidTestImplementation(libs.androidx.test.espresso.core)
