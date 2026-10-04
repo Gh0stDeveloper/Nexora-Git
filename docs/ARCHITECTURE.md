@@ -293,3 +293,39 @@ The Android build produces native libraries for:
 - arm64-v8a;
 - armeabi-v7a;
 - x86_64.
+
+
+## Android project storage
+
+Phase E bridges Android document storage with the POSIX filesystem expected by libgit2.
+
+```text
+OpenDocumentTree
+      ↓
+persisted SAF grant
+      ↓
+Project scanner
+      ↓
+WorkspaceRegistry / Room
+      ↓
+┌───────────────┬────────────────────────┐
+↓               ↓
+DIRECT          MANAGED
+real path       SAF → app-private mirror
+↓               ↓
+└────────── GitEngine / libgit2 ─────────┘
+```
+
+### Storage safety boundaries
+
+- arbitrary `content://` URIs are never converted through undocumented `_data` path hacks;
+- managed paths are canonicalized and constrained below the workspace root;
+- source filenames containing path separators or traversal names are rejected;
+- removing a direct workspace never deletes the user's directory;
+- managed `.git` metadata is protected from later source syncs;
+- source/managed concurrent changes become explicit sync conflicts;
+- sync metadata lives outside the repository so it cannot appear as an untracked project file.
+
+### Risk scan boundary
+
+The project scanner records path/size/ignore metadata and warnings. It never stores detected secret values in Room or the sync manifest.
