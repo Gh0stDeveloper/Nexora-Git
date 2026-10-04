@@ -48,7 +48,7 @@ object NetworkModule {
     fun provideRetrofit(
         client: OkHttpClient,
     ): Retrofit = Retrofit.Builder()
-        .baseUrl("https://api.github.com/")
+        .baseUrl(GitHubApiConfig.REST_BASE_URL)
         .client(client)
         .build()
 
