@@ -4,7 +4,6 @@ import android.net.Uri
 import com.nexora.git.core.database.AuthAccountDao
 import com.nexora.git.core.database.AuthAccountEntity
 import com.nexora.git.core.settings.SettingsRepository
-import java.security.MessageDigest
 import javax.inject.Inject
 import javax.inject.Singleton
 import kotlinx.coroutines.flow.Flow
@@ -19,6 +18,7 @@ class AuthSessionRepository @Inject constructor(
     private val pkceGenerator: PkceGenerator,
     private val authorizationUrlFactory: GitHubAuthorizationUrlFactory,
     private val callbackParser: OAuthCallbackParser,
+    private val pendingAuthorizationValidator: PendingAuthorizationValidator,
     private val secureAuthStorage: SecureAuthStorage,
     private val authBrokerClient: AuthBrokerClient,
     private val githubIdentityClient: GitHubIdentityClient,
@@ -165,14 +165,13 @@ class AuthSessionRepository @Inject constructor(
         val pending = secureAuthStorage.readPendingAuthorization()
             ?: return AuthResult.Failure(AuthFailure.INVALID_CALLBACK)
 
-        if (System.currentTimeMillis() - pending.createdAtEpochMillis > AUTH_WINDOW_MS) {
+        val validationFailure = pendingAuthorizationValidator.validate(
+            pending = pending,
+            returnedState = callback.state,
+        )
+        if (validationFailure != null) {
             secureAuthStorage.clearPendingAuthorization()
-            return AuthResult.Failure(AuthFailure.AUTHORIZATION_EXPIRED)
-        }
-
-        if (!constantTimeEquals(callback.state, pending.state)) {
-            secureAuthStorage.clearPendingAuthorization()
-            return AuthResult.Failure(AuthFailure.STATE_MISMATCH)
+            return AuthResult.Failure(validationFailure)
         }
 
         secureAuthStorage.clearPendingAuthorization()
@@ -274,16 +273,7 @@ class AuthSessionRepository @Inject constructor(
         }
     }
 
-    private fun constantTimeEquals(
-        left: String,
-        right: String,
-    ): Boolean = MessageDigest.isEqual(
-        left.toByteArray(Charsets.UTF_8),
-        right.toByteArray(Charsets.UTF_8),
-    )
-
     companion object {
-        private const val AUTH_WINDOW_MS = 10 * 60 * 1_000L
         private const val REFRESH_SKEW_MS = 5 * 60 * 1_000L
     }
 }
