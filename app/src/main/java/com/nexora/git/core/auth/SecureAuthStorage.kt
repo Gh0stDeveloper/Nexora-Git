@@ -20,16 +20,14 @@ class SecureAuthStorage @Inject constructor(
             pending.state,
             pending.codeVerifier,
             pending.createdAtEpochMillis.toString(),
-        ).joinToString("
-")
+        ).joinToString(FIELD_SEPARATOR)
 
         putEncrypted(KEY_PENDING_AUTH, serialized)
     }
 
     fun readPendingAuthorization(): PendingAuthorization? {
         val value = getDecrypted(KEY_PENDING_AUTH) ?: return null
-        val parts = value.split('
-')
+        val parts = value.split(FIELD_SEPARATOR)
         if (parts.size != 3) return null
 
         return PendingAuthorization(
@@ -101,5 +99,6 @@ class SecureAuthStorage @Inject constructor(
 
     companion object {
         private const val KEY_PENDING_AUTH = "oauth.pending"
+        private const val FIELD_SEPARATOR = "|"
     }
 }
