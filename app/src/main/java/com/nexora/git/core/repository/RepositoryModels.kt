@@ -48,6 +48,7 @@ data class RepositoryDetails(
     val allowMergeCommit: Boolean,
     val allowSquashMerge: Boolean,
     val allowRebaseMerge: Boolean,
+    val offlineSnapshot: Boolean = false,
 )
 
 enum class RepositorySubscriptionState {
