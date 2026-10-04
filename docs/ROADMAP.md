@@ -4,35 +4,42 @@ This roadmap is intentionally staged. A phase is not complete if it only contain
 
 ## Phase 0 — Product Foundation
 
-### 0.1 Product identity
-- final branding
-- package/application IDs
-- icon direction
-- license review
+**Repository status: complete.** The actual GitHub App registration remains an external account-level configuration item; its repository contract is complete.
 
-### 0.2 Architecture
-- module graph
-- dependency rules
-- domain contracts
-- error model
+### 0.1 Product identity — Complete
+- [x] final product name and positioning
+- [x] recommended package/application ID
+- [x] icon direction and brand rules
+- [x] Apache License 2.0 and NOTICE
 
-### 0.3 GitHub App
-- register application
-- callback configuration
-- baseline permission matrix
+### 0.2 Architecture — Complete
+- [x] module/dependency direction
+- [x] native Android Kotlin/Compose ADR
+- [x] GitHub App OAuth/PKCE ADR
+- [x] libgit2/JNI real Git engine ADR
+- [x] domain/error responsibility boundaries
 
-### 0.4 Security
-- threat model
-- token model
-- logging policy
-- secret policy
+### 0.3 GitHub App — Repository contract complete
+- [x] callback architecture
+- [x] baseline least-privilege permission matrix
+- [x] installation/token rules
+- [x] registration checklist
+- [ ] create the real GitHub App in GitHub account settings
 
-### 0.5 CI foundation
-- Gradle validation
-- lint
-- unit tests
-- native build checks
-- debug APK artifact
+### 0.4 Security — Complete
+- [x] threat model
+- [x] token/credential model
+- [x] logging/secret policy
+- [x] root vulnerability-reporting policy
+- [x] destructive-operation invariants
+
+### 0.5 CI foundation — Complete
+- [x] Foundation CI workflow
+- [x] required-file validation
+- [x] basic committed-secret hygiene check
+- [x] GitHub Actions Dependabot baseline
+- [x] conditional Gradle validation hook for Phase A
+- [x] CI prepared to expand with Android/native builds in later phases
 
 ## Phase A — Android Foundation
 
