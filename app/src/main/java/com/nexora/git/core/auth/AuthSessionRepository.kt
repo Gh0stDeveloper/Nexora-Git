@@ -111,10 +111,24 @@ class AuthSessionRepository @Inject constructor(
     }
 
     suspend fun getActiveAccessToken(): AuthResult<String> {
-        val accountId = settingsRepository.activeAccountId.first()
+        val accountId = getActiveAccountId()
             ?: return AuthResult.Failure(AuthFailure.ACCOUNT_NOT_FOUND)
 
         return getValidAccessToken(accountId)
+    }
+
+    suspend fun getActiveAccountId(): Long? =
+        settingsRepository.activeAccountId.first()
+
+    suspend fun forceRefreshAccessToken(
+        accountId: Long,
+    ): AuthResult<String> = refreshMutex.withLock {
+        val account = authAccountDao.findById(accountId)
+            ?: return@withLock AuthResult.Failure(
+                AuthFailure.ACCOUNT_NOT_FOUND,
+            )
+
+        refreshAccountLocked(account)
     }
 
     suspend fun switchAccount(accountId: Long): AuthResult<AuthAccountSummary> {
