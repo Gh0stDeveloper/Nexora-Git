@@ -77,9 +77,31 @@ std::string oid_to_string(const git_oid* oid) {
 std::string current_branch_name(git_repository* repository) {
     git_reference* head = nullptr;
     const int rc = git_repository_head(&head, repository);
+
     if (rc == GIT_EUNBORNBRANCH || rc == GIT_ENOTFOUND) {
-        return "";
+        git_reference* symbolic_head = nullptr;
+        const int symbolic_rc = git_reference_lookup(
+            &symbolic_head,
+            repository,
+            "HEAD"
+        );
+
+        if (symbolic_rc < 0) {
+            return "";
+        }
+
+        const char* target =
+            git_reference_symbolic_target(symbolic_head);
+        std::string result = target != nullptr ? target : "";
+        git_reference_free(symbolic_head);
+
+        const std::string prefix = "refs/heads/";
+        if (result.rfind(prefix, 0) == 0) {
+            result.erase(0, prefix.size());
+        }
+        return result;
     }
+
     check(rc, "Read HEAD");
 
     const char* shorthand = git_reference_shorthand(head);
