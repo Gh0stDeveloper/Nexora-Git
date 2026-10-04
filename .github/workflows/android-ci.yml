@@ -7,6 +7,7 @@ on:
       - "phase-*"
     paths:
       - "app/**"
+      - "native/**"
       - "gradle/**"
       - "build.gradle.kts"
       - "settings.gradle.kts"
@@ -17,6 +18,7 @@ on:
       - main
     paths:
       - "app/**"
+      - "native/**"
       - "gradle/**"
       - "build.gradle.kts"
       - "settings.gradle.kts"
@@ -54,7 +56,12 @@ jobs:
           SDKMANAGER="$SDK_ROOT/cmdline-tools/latest/bin/sdkmanager"
           test -x "$SDKMANAGER"
           yes | "$SDKMANAGER" --licenses >/dev/null || true
-          "$SDKMANAGER" --channel=3 "platform-tools" "platforms;android-37.0" "build-tools;37.0.0"
+          "$SDKMANAGER" --channel=3 \
+            "platform-tools" \
+            "platforms;android-37.0" \
+            "build-tools;37.0.0" \
+            "ndk;27.2.12479018" \
+            "cmake;3.22.1"
 
       - name: Set up Gradle cache and wrapper validation
         uses: gradle/actions/setup-gradle@v4
