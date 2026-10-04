@@ -789,6 +789,10 @@ void unstage(
     const std::string& repository_path,
     const std::vector<std::string>& paths
 ) {
+    if (paths.empty()) {
+        return;
+    }
+
     git_repository* repository = open_repository(repository_path);
 
     std::vector<char*> raw_paths;
@@ -1041,11 +1045,25 @@ void checkout(
             throw GitError(GIT_ERROR, 0, "Branch has no reference name");
         }
 
-        check(
-            git_repository_set_head(repository, full_name),
-            "Switch HEAD"
+        git_object* target = nullptr;
+        const int peel_rc = git_reference_peel(
+            &target,
+            branch,
+            GIT_OBJECT_COMMIT
         );
-        rc = git_checkout_head(repository, &options);
+        if (peel_rc < 0) {
+            git_reference_free(branch);
+            git_repository_free(repository);
+            throw_git_error(peel_rc, "Resolve branch target");
+        }
+
+        rc = git_checkout_tree(repository, target, &options);
+        git_object_free(target);
+
+        if (rc == 0) {
+            rc = git_repository_set_head(repository, full_name);
+        }
+
         git_reference_free(branch);
         git_repository_free(repository);
         check(rc, "Checkout branch");
