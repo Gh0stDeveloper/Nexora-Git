@@ -7,12 +7,12 @@ plugins {
 
 android {
     namespace = "com.nexora.git"
-    compileSdk = 37
+    compileSdk = 36
 
     defaultConfig {
         applicationId = "com.nexora.git"
         minSdk = 26
-        targetSdk = 37
+        targetSdk = 36
         versionCode = 1
         versionName = "0.1.0-dev"
 
