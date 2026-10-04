@@ -80,9 +80,9 @@ fun RepositoriesScreen(
         )
     }
 
-    if (state.recentProjectName != null) {
+    state.recentProjectName?.let { projectName ->
         ImportRiskDialog(
-            projectName = state.recentProjectName,
+            projectName = projectName,
             risks = state.recentRisks,
             onDismiss = viewModel::dismissRisks,
         )
