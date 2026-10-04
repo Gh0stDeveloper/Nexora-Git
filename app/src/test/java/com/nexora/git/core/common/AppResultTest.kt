@@ -16,9 +16,13 @@ class AppResultTest {
 
     @Test
     fun failure_preservesTypedError() {
-        val result: AppResult<Nothing> = AppResult.Failure(AppError.RateLimited)
+        val expected = AppError.RateLimited(
+            retryAfterSeconds = 60L,
+            secondary = true,
+        )
+        val result: AppResult<Nothing> = AppResult.Failure(expected)
 
         assertTrue(result is AppResult.Failure)
-        assertEquals(AppError.RateLimited, (result as AppResult.Failure).error)
+        assertEquals(expected, (result as AppResult.Failure).error)
     }
 }
