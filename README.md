@@ -123,7 +123,7 @@ The project must use its own branding and must not imply that it is an official 
 
 ## Status
 
-**Current stage:** Phase E — Android Project Storage implementation complete; CI validation is in progress before merge.
+**Current stage:** Phase E — Android Project Storage complete; Phase F — Repository Experience is next.
 
 Nexora Git now includes SAF folder selection, persistent tree permissions, direct and managed workspace strategies, Room-backed workspace records, non-destructive managed synchronization, project scanning, `.gitignore` awareness, secret-risk warnings and GitHub large-file warnings.
 
