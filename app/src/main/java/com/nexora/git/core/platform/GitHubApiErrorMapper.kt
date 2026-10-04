@@ -86,17 +86,15 @@ class GitHubApiErrorMapper @Inject constructor(
 
     private fun extractMessage(body: String?): String? {
         if (body.isNullOrBlank()) return null
-
-        val match = MESSAGE_PATTERN.find(body) ?: return null
-        return match.groupValues[1]
-            .replace("\\"", "\"")
-            .replace("\\n", " ")
-            .replace("\\\\", "\\")
+        return MESSAGE_PATTERN.find(body)
+            ?.groupValues
+            ?.getOrNull(1)
+            ?.takeIf { it.isNotBlank() }
     }
 
     companion object {
         private val MESSAGE_PATTERN = Regex(
-            """["]message["]\s*:\s*["]((?:\\.|[^"\\])*)["]""",
+            """["]message["]\s*:\s*["]([^"]*)["]""",
         )
     }
 }
