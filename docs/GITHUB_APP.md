@@ -26,7 +26,13 @@ Android
 
 ## Callback design
 
-Use an exact production HTTPS callback where possible and return to the Android app through a verified app/deep-link mechanism. Keep development and production callbacks separate. Do not use wildcard callback domains.
+Use an exact production HTTPS broker callback:
+
+```text
+https://AUTH_HOST/oauth/callback
+```
+
+The broker then forwards the short-lived code and state to the fixed native callback `nexoragit://oauth/callback`. Keep development and production callbacks separate and do not use wildcard callback domains.
 
 ## Permission strategy
 
@@ -72,7 +78,7 @@ Future confidential infrastructure may use:
 ```text
 GITHUB_APP_CLIENT_ID
 GITHUB_APP_CLIENT_SECRET
-GITHUB_APP_REDIRECT_URI
+GITHUB_CALLBACK_URL
 ```
 
 Only the client ID is public configuration. Confidential values remain outside source control and outside the APK.
