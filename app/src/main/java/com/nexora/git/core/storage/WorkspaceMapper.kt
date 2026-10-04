@@ -21,5 +21,6 @@ fun WorkspaceEntity.toDomain(): Workspace = Workspace(
     totalBytes = totalBytes,
     secretWarningCount = secretWarningCount,
     largeFileWarningCount = largeFileWarningCount,
+    syncConflictCount = syncConflictCount,
     lastOpenedAtEpochMillis = lastOpenedAtEpochMillis,
 )
