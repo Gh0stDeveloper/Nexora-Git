@@ -89,14 +89,25 @@ This roadmap is intentionally staged. A phase is not complete if it only contain
 
 ## Phase C — GitHub Platform Layer
 
-- REST client
-- GraphQL client
-- API version centralization
-- pagination
-- rate-limit manager
-- cache
-- permissions resolver
-- standardized API errors
+**Status: complete and CI validated.**
+
+- [x] authenticated REST client
+- [x] authenticated GraphQL client
+- [x] automatic token refresh and one-time 401 retry
+- [x] REST API version centralized at `2026-03-10`
+- [x] REST `Link` header pagination
+- [x] GraphQL `pageInfo` model/parser
+- [x] per-resource rate-limit tracking
+- [x] primary/secondary rate-limit error distinction
+- [x] bounded account-scoped in-memory cache
+- [x] REST ETag / `If-None-Match` / 304 handling
+- [x] network-first and cache-first policies
+- [x] mutation cache invalidation
+- [x] GitHub App accepted-permission resolver
+- [x] standardized API/domain errors
+- [x] official GitHub-host URL validation
+- [x] platform unit tests
+- [x] architecture and usage documentation
 
 ## Phase D — Real Git Engine
 
