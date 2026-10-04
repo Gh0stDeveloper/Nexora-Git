@@ -56,10 +56,8 @@ jobs:
           yes | "$SDKMANAGER" --licenses >/dev/null || true
           "$SDKMANAGER" --channel=3 "platform-tools" "platforms;android-37.0" "build-tools;37.0.0"
 
-      - name: Set up Gradle 9.6
+      - name: Set up Gradle cache and wrapper validation
         uses: gradle/actions/setup-gradle@v4
-        with:
-          gradle-version: "9.6.0"
 
       - name: Build, lint and test
         shell: bash
