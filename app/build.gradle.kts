@@ -41,6 +41,28 @@ android {
         vectorDrawables {
             useSupportLibrary = true
         }
+
+        ndk {
+            abiFilters += setOf(
+                "arm64-v8a",
+                "armeabi-v7a",
+                "x86_64",
+            )
+        }
+
+        externalNativeBuild {
+            cmake {
+                arguments += listOf(
+                    "-DNEXORA_LIBGIT2_VERSION=v1.9.7",
+                    "-DNEXORA_MBEDTLS_VERSION=mbedtls-3.6.7",
+                )
+                cppFlags += listOf(
+                    "-std=c++17",
+                    "-fexceptions",
+                    "-frtti",
+                )
+            }
+        }
     }
 
     buildTypes {
@@ -62,6 +84,15 @@ android {
     buildFeatures {
         compose = true
         buildConfig = true
+    }
+
+    ndkVersion = "27.2.12479018"
+
+    externalNativeBuild {
+        cmake {
+            path = file("../native/git/CMakeLists.txt")
+            version = "3.22.1"
+        }
     }
 
     compileOptions {
