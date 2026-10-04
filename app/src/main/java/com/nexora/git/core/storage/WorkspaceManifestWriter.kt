@@ -10,6 +10,7 @@ data class WorkspaceManifestFile(
     val path: String,
     val sizeBytes: Long,
     val lastModifiedEpochMillis: Long,
+    val conflicted: Boolean = false,
 )
 
 data class WorkspaceSyncManifest(
@@ -41,6 +42,8 @@ class WorkspaceManifestWriter @Inject constructor(
                             sizeBytes = item.optLong("size"),
                             lastModifiedEpochMillis =
                                 item.optLong("lastModified"),
+                            conflicted =
+                                item.optBoolean("conflicted", false),
                         ),
                     )
                 }
@@ -57,26 +60,56 @@ class WorkspaceManifestWriter @Inject constructor(
         workspaceId: String,
         scan: ProjectScanResult,
         syncedAtEpochMillis: Long,
+        conflictBaselines: Map<String, WorkspaceManifestFile> =
+            emptyMap(),
     ) {
         val target = workspacePaths.syncManifest(workspaceId)
         target.parentFile?.mkdirs()
 
+        val sourceFiles = scan.files.associateBy {
+            it.relativePath
+        }
+        val allPaths = linkedSetOf<String>().apply {
+            addAll(sourceFiles.keys)
+            addAll(conflictBaselines.keys)
+        }
+
         val files = JSONArray()
-        scan.files.forEach { file ->
+        allPaths.forEach { path ->
+            val conflict = conflictBaselines[path]
+            val source = sourceFiles[path]
+
+            val entry = when {
+                conflict != null -> conflict.copy(
+                    path = path,
+                    conflicted = true,
+                )
+
+                source != null -> WorkspaceManifestFile(
+                    path = path,
+                    sizeBytes = source.sizeBytes,
+                    lastModifiedEpochMillis =
+                        source.lastModifiedEpochMillis,
+                    conflicted = false,
+                )
+
+                else -> return@forEach
+            }
+
             files.put(
                 JSONObject()
-                    .put("path", file.relativePath)
-                    .put("size", file.sizeBytes)
+                    .put("path", entry.path)
+                    .put("size", entry.sizeBytes)
                     .put(
                         "lastModified",
-                        file.lastModifiedEpochMillis,
+                        entry.lastModifiedEpochMillis,
                     )
-                    .put("ignoredByGit", file.ignoredByGit),
+                    .put("conflicted", entry.conflicted),
             )
         }
 
         val json = JSONObject()
-            .put("version", 1)
+            .put("version", 2)
             .put("syncedAt", syncedAtEpochMillis)
             .put("fileCount", scan.fileCount)
             .put("totalBytes", scan.totalBytes)
