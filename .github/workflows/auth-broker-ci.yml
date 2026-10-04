@@ -1,0 +1,62 @@
+name: Auth Broker CI
+
+on:
+  push:
+    branches:
+      - main
+      - "phase-*"
+    paths:
+      - "auth-broker/**"
+      - ".github/workflows/auth-broker-ci.yml"
+  pull_request:
+    branches:
+      - main
+    paths:
+      - "auth-broker/**"
+      - ".github/workflows/auth-broker-ci.yml"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: auth-broker-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  validate:
+    name: Test and build auth broker
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Set up Go
+        uses: actions/setup-go@v6
+        with:
+          go-version: "1.24.x"
+          cache-dependency-path: auth-broker/go.mod
+
+      - name: Verify formatting
+        shell: bash
+        run: |
+          set -euo pipefail
+          files="$(gofmt -l auth-broker)"
+          test -z "$files" || {
+            echo "$files"
+            echo "Go files require gofmt."
+            exit 1
+          }
+
+      - name: Vet
+        working-directory: auth-broker
+        run: go vet ./...
+
+      - name: Test
+        working-directory: auth-broker
+        run: go test ./...
+
+      - name: Build
+        working-directory: auth-broker
+        run: go build ./...
