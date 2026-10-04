@@ -21,10 +21,17 @@ object DatabaseModule {
         context,
         NexoraDatabase::class.java,
         "nexora-git.db",
-    ).build()
+    )
+        .addMigrations(NexoraDatabase.MIGRATION_1_2)
+        .build()
 
     @Provides
     fun provideWorkspaceDao(
         database: NexoraDatabase,
     ): WorkspaceDao = database.workspaceDao()
+
+    @Provides
+    fun provideAuthAccountDao(
+        database: NexoraDatabase,
+    ): AuthAccountDao = database.authAccountDao()
 }

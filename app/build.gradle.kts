@@ -5,6 +5,18 @@ plugins {
     alias(libs.plugins.hilt)
 }
 
+val githubClientId = providers.gradleProperty("nexora.githubClientId")
+    .orElse(providers.environmentVariable("NEXORA_GITHUB_CLIENT_ID"))
+    .getOrElse("")
+
+val authBrokerBaseUrl = providers.gradleProperty("nexora.authBrokerBaseUrl")
+    .orElse(providers.environmentVariable("NEXORA_AUTH_BROKER_BASE_URL"))
+    .getOrElse("")
+
+val githubCallbackUrl = providers.gradleProperty("nexora.githubCallbackUrl")
+    .orElse(providers.environmentVariable("NEXORA_GITHUB_CALLBACK_URL"))
+    .getOrElse("")
+
 android {
     namespace = "com.nexora.git"
     compileSdk {
@@ -19,6 +31,11 @@ android {
         targetSdk = 36
         versionCode = 1
         versionName = "0.1.0-dev"
+
+        buildConfigField("String", "GITHUB_CLIENT_ID", "\"$githubClientId\"")
+        buildConfigField("String", "AUTH_BROKER_BASE_URL", "\"$authBrokerBaseUrl\"")
+        buildConfigField("String", "GITHUB_CALLBACK_URL", "\"$githubCallbackUrl\"")
+        buildConfigField("String", "APP_CALLBACK_URI", "\"nexoragit://oauth/callback\"")
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {
@@ -95,6 +112,7 @@ dependencies {
     ksp(libs.androidx.room.compiler)
 
     implementation(libs.androidx.datastore.preferences)
+    implementation(libs.androidx.browser)
 
     implementation(libs.retrofit.core)
     implementation(libs.okhttp.core)

@@ -78,6 +78,9 @@ See [Git Engine](docs/GIT_ENGINE.md).
 - [Phase 0 report](docs/PHASE_0_REPORT.md)
 - [Android foundation](docs/ANDROID_FOUNDATION.md)
 - [Phase A report](docs/PHASE_A_REPORT.md)
+- [Authentication deployment](docs/AUTH_DEPLOYMENT.md)
+- [Phase B report](docs/PHASE_B_REPORT.md)
+- [Auth Broker](auth-broker/README.md)
 - [Architecture decisions](docs/adr/)
 
 ## Initial scope
@@ -116,9 +119,9 @@ The project must use its own branding and must not imply that it is an official 
 
 ## Status
 
-**Current stage:** Phase A — Android Foundation complete; Phase B — GitHub Authentication is next.
+**Current stage:** Phase B — GitHub Authentication implementation complete; Phase C — GitHub Platform Layer is next.
 
-The repository now contains a compilable native Android application foundation using Kotlin, Jetpack Compose, Navigation, Hilt, Room, DataStore, Retrofit/OkHttp, unit tests, a pinned Gradle Wrapper and Android CI that produces a debug APK artifact.
+Nexora Git now includes GitHub App OAuth + PKCE, official browser authorization, strict callback/state validation, Android Keystore-backed token protection, token refresh/rotation, logout/revocation, multi-account session foundations and a minimal self-hosted confidential Auth Broker. Production sign-in still requires registering the real GitHub App and deploying/configuring the broker.
 
 ---
 

@@ -64,17 +64,28 @@ This roadmap is intentionally staged. A phase is not complete if it only contain
 
 ## Phase B — GitHub Authentication
 
-- GitHub App authorization
-- PKCE generator
-- state validation
-- browser authorization
-- callback handling
-- auth broker contract
-- token exchange
-- Keystore-backed local session
-- refresh/expiry handling
-- logout
-- multiple-account architecture
+**Implementation status: complete and CI validated.**
+
+- [x] GitHub App authorization architecture
+- [x] PKCE S256 generator
+- [x] cryptographically random OAuth state
+- [x] official GitHub authorization through Custom Tabs
+- [x] strict native callback parsing
+- [x] state mismatch and authorization-expiry validation
+- [x] confidential Auth Broker contract
+- [x] authorization-code exchange
+- [x] Android Keystore-backed AES-GCM token protection
+- [x] access-token expiry handling
+- [x] refresh-token rotation
+- [x] authenticated GitHub identity lookup
+- [x] logout with best-effort remote token revocation
+- [x] multiple-account persistence and switching
+- [x] Room v1 → v2 migration for account metadata
+- [x] Android authentication tests
+- [x] Auth Broker tests, vet and build CI
+- [x] deployment runbook
+- [ ] register the production GitHub App (external account-level prerequisite)
+- [ ] deploy the production Auth Broker with its real secret (external deployment prerequisite)
 
 ## Phase C — GitHub Platform Layer
 
