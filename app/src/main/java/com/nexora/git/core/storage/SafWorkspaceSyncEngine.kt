@@ -39,15 +39,18 @@ class SafWorkspaceSyncEngine @Inject constructor(
             "Managed workspace directory is unavailable"
         }
 
-        val available = destination.usableSpace
-        if (available > 0L &&
-            scan.totalBytes + MIN_FREE_SPACE_BYTES > available
-        ) {
-            throw IOException("Not enough device storage for managed workspace")
-        }
-
         val previousManifest = manifestWriter.read(workspaceId)
         val previousFiles = previousManifest?.files.orEmpty()
+
+        val available = destination.usableSpace
+        val requiredSpace = if (previousManifest == null) {
+            scan.totalBytes + MIN_FREE_SPACE_BYTES
+        } else {
+            MIN_FREE_SPACE_BYTES
+        }
+        if (available > 0L && requiredSpace > available) {
+            throw IOException("Not enough device storage for managed workspace")
+        }
         val sourcePaths = scan.files
             .mapTo(linkedSetOf()) { it.relativePath }
 
@@ -59,6 +62,8 @@ class SafWorkspaceSyncEngine @Inject constructor(
         var deletedFiles = 0
         var copiedBytes = 0L
         val conflicts = linkedSetOf<String>()
+        val conflictBaselines =
+            linkedMapOf<String, WorkspaceManifestFile>()
 
         suspend fun copyDirectory(
             directory: DocumentFile,
@@ -106,6 +111,13 @@ class SafWorkspaceSyncEngine @Inject constructor(
                     val previous = previousFiles[relativePath]
 
                     if (target.isFile) {
+                        if (previous?.conflicted == true) {
+                            conflicts += relativePath
+                            conflictBaselines[relativePath] = previous
+                            skippedFiles += 1
+                            return@forEach
+                        }
+
                         val managedChanged = hasManagedFileChanged(
                             target = target,
                             previous = previous,
@@ -118,6 +130,14 @@ class SafWorkspaceSyncEngine @Inject constructor(
 
                         if (managedChanged && sourceChanged) {
                             conflicts += relativePath
+                            conflictBaselines[relativePath] =
+                                previous ?: WorkspaceManifestFile(
+                                    path = relativePath,
+                                    sizeBytes = target.length(),
+                                    lastModifiedEpochMillis =
+                                        target.lastModified(),
+                                    conflicted = true,
+                                )
                             skippedFiles += 1
                             return@forEach
                         }
@@ -176,8 +196,13 @@ class SafWorkspaceSyncEngine @Inject constructor(
 
             if (!target.exists()) return@forEach
 
-            if (hasManagedFileChanged(target, previous)) {
+            if (previous.conflicted ||
+                hasManagedFileChanged(target, previous)
+            ) {
                 conflicts += relativePath
+                conflictBaselines[relativePath] = previous.copy(
+                    conflicted = true,
+                )
                 return@forEach
             }
 
@@ -209,6 +234,7 @@ class SafWorkspaceSyncEngine @Inject constructor(
             workspaceId = workspaceId,
             scan = scan,
             syncedAtEpochMillis = completedAt,
+            conflictBaselines = conflictBaselines,
         )
 
         WorkspaceSyncResult(
