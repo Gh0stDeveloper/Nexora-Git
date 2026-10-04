@@ -83,6 +83,7 @@ See [Git Engine](docs/GIT_ENGINE.md).
 - [GitHub platform layer](docs/PLATFORM_LAYER.md)
 - [Phase C report](docs/PHASE_C_REPORT.md)
 - [Phase D report](docs/PHASE_D_REPORT.md)
+- [Phase E report](docs/PHASE_E_REPORT.md)
 - [Auth Broker](auth-broker/README.md)
 - [Architecture decisions](docs/adr/)
 
@@ -122,9 +123,9 @@ The project must use its own branding and must not imply that it is an official 
 
 ## Status
 
-**Current stage:** Phase D — Real Git Engine complete; Phase E — Android Project Storage is next.
+**Current stage:** Phase E — Android Project Storage implementation complete; CI validation is in progress before merge.
 
-Nexora Git now includes a real local Git engine built on libgit2 through Android NDK/C++ and JNI. The engine supports init, status, staging, commits, branches, checkout, clone, fetch, pull, push, diff, merges and conflicts without Termux or an external Git installation. Production GitHub sign-in still requires registering the real GitHub App and deploying/configuring the Auth Broker.
+Nexora Git now includes SAF folder selection, persistent tree permissions, direct and managed workspace strategies, Room-backed workspace records, non-destructive managed synchronization, project scanning, `.gitignore` awareness, secret-risk warnings and GitHub large-file warnings.
 
 ---
 
