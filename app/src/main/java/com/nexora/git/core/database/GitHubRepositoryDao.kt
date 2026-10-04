@@ -27,6 +27,20 @@ interface GitHubRepositoryDao {
         """
         SELECT * FROM github_repositories
         WHERE accountId = :accountId
+        ORDER BY
+            CASE WHEN updatedAt IS NULL THEN 1 ELSE 0 END,
+            updatedAt DESC,
+            fullName COLLATE NOCASE ASC
+        """,
+    )
+    suspend fun getForAccount(
+        accountId: Long,
+    ): List<GitHubRepositoryEntity>
+
+    @Query(
+        """
+        SELECT * FROM github_repositories
+        WHERE accountId = :accountId
           AND fullName = :fullName
         LIMIT 1
         """,
