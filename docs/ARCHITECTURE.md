@@ -248,3 +248,48 @@ Shared responsibilities:
 - isolate caches by GitHub account.
 
 Feature code should consume `GitHubPlatformClient` rather than building ad-hoc OkHttp calls.
+
+
+## Native Git engine
+
+Phase D provides the real local Git implementation:
+
+```text
+Feature domain
+      ↓
+GitEngine
+      ↓
+Libgit2GitEngine
+      ↓
+NativeGitBridge
+      ↓ JNI
+nexoragit_native
+      ↓
+nexoragit_core
+      ↓
+libgit2 + Mbed TLS
+```
+
+Native source lives under `native/git/`.
+
+The application does not invoke a shell executable and does not depend on Termux or a separately installed Git binary.
+
+### Credential boundary
+
+GitHub OAuth credentials originate in `AuthSessionRepository` and are supplied to libgit2 only for approved `https://github.com` transports.
+
+The remote URL stored by Git remains credential-free.
+
+### Threading
+
+`Libgit2GitEngine` sends native operations to `Dispatchers.IO`; native Git work must never run on the Compose/main thread.
+
+### Native dependency reproducibility
+
+libgit2 and Mbed TLS are pinned to immutable upstream commit SHAs through CMake FetchContent.
+
+The Android build produces native libraries for:
+
+- arm64-v8a;
+- armeabi-v7a;
+- x86_64.
