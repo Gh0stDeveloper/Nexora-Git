@@ -95,7 +95,7 @@ Logging is BASIC in debug and disabled in release, with authentication/cookie he
 
 ## CI
 
-Android CI installs API 37.0 and Gradle 9.6.0, then runs:
+Android CI installs API 37.0, validates the Gradle Wrapper and then runs:
 
 ```text
 :app:assembleDebug
@@ -105,6 +105,15 @@ Android CI installs API 37.0 and Gradle 9.6.0, then runs:
 
 The generated debug APK is uploaded as a short-lived workflow artifact.
 
-## Build wrapper note
+## Gradle Wrapper
 
-CI pins Gradle directly so the repository can be validated without relying on a binary wrapper artifact during this bootstrap phase. A standard Gradle wrapper will be committed as soon as its binary wrapper JAR can be added through the normal source-development workflow.
+The repository includes the standard Gradle 9.6.0 wrapper:
+
+```text
+gradlew
+gradlew.bat
+gradle/wrapper/gradle-wrapper.jar
+gradle/wrapper/gradle-wrapper.properties
+```
+
+The wrapper distribution is pinned to Gradle 9.6.0 and includes the official SHA-256 checksum. CI executes `./gradlew`, so local clones and GitHub Actions use the same Gradle version.
