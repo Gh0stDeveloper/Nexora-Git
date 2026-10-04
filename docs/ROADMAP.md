@@ -148,7 +148,7 @@ This roadmap is intentionally staged. A phase is not complete if it only contain
 
 ## Phase E — Android Project Storage
 
-**Implementation status: complete; final CI validation required before merge.**
+**Status: complete and CI validated.**
 
 - [x] SAF folder picker
 - [x] persisted URI permissions
