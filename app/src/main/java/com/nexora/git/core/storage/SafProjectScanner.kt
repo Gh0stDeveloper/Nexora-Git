@@ -99,14 +99,16 @@ class SafProjectScanner @Inject constructor(
 
                     detectProjectType(relativePath)?.let(projectTypes::add)
 
-                    risks += riskDetector.inspect(
-                        relativePath = relativePath,
-                        sizeBytes = size,
-                        ignoredByGit = ignored,
-                        readText = {
-                            readText(child, MAX_SECRET_READ_BYTES)
-                        },
-                    )
+                    if (!isGitMetadataPath(relativePath)) {
+                        risks += riskDetector.inspect(
+                            relativePath = relativePath,
+                            sizeBytes = size,
+                            ignoredByGit = ignored,
+                            readText = {
+                                readText(child, MAX_SECRET_READ_BYTES)
+                            },
+                        )
+                    }
                 }
             }
 
@@ -171,6 +173,10 @@ class SafProjectScanner @Inject constructor(
             name != ".." &&
             '/' !in name &&
             '\\' !in name
+
+    private fun isGitMetadataPath(relativePath: String): Boolean =
+        relativePath == ".git" ||
+            relativePath.startsWith(".git/")
 
     companion object {
         private const val MAX_GITIGNORE_BYTES = 1024L * 1024L
