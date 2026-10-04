@@ -86,16 +86,22 @@ data class ProjectScanResult(
     val detectedProjectTypes: Set<String>,
 ) {
     val secretWarningCount: Int
-        get() = risks.count {
-            it.type == ProjectRiskType.SECRET &&
-                it.severity != ProjectRiskSeverity.INFO
-        }
+        get() = risks.asSequence()
+            .filter {
+                it.type == ProjectRiskType.SECRET &&
+                    it.severity != ProjectRiskSeverity.INFO
+            }
+            .distinctBy { it.path }
+            .count()
 
     val largeFileWarningCount: Int
-        get() = risks.count {
-            it.type == ProjectRiskType.LARGE_FILE &&
-                it.severity != ProjectRiskSeverity.INFO
-        }
+        get() = risks.asSequence()
+            .filter {
+                it.type == ProjectRiskType.LARGE_FILE &&
+                    it.severity != ProjectRiskSeverity.INFO
+            }
+            .distinctBy { it.path }
+            .count()
 
     val hasBlockingRisks: Boolean
         get() = risks.any { it.severity == ProjectRiskSeverity.BLOCKING }
