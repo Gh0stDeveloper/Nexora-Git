@@ -10,11 +10,9 @@ class GitHubLinkHeaderParserTest {
 
     @Test
     fun parsesGitHubPaginationRelations() {
-        val header = """
-            <https://api.github.com/repositories/1/issues?page=2>; rel="next",
-            <https://api.github.com/repositories/1/issues?page=5>; rel="last"
-        """.trimIndent().replace("
-", "")
+        val header =
+            "<https://api.github.com/repositories/1/issues?page=2>; rel=\"next\", " +
+                "<https://api.github.com/repositories/1/issues?page=5>; rel=\"last\""
 
         val result = parser.parse(header)
 
