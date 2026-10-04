@@ -1,9 +1,9 @@
 package com.nexora.git.core.auth
 
-import android.util.Base64
 import java.nio.charset.StandardCharsets
 import java.security.MessageDigest
 import java.security.SecureRandom
+import java.util.Base64
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -40,8 +40,7 @@ class PkceGenerator @Inject constructor() {
     }
 
     private fun base64Url(bytes: ByteArray): String =
-        Base64.encodeToString(
-            bytes,
-            Base64.URL_SAFE or Base64.NO_PADDING or Base64.NO_WRAP,
-        )
+        Base64.getUrlEncoder()
+            .withoutPadding()
+            .encodeToString(bytes)
 }
