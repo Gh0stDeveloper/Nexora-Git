@@ -58,7 +58,7 @@ class AuthSessionRepository @Inject constructor(
                 codeChallenge = pkce.challenge,
             )
         }.fold(
-            onSuccess = AuthResult<Uri>::Success,
+            onSuccess = { AuthResult.Success(it) },
             onFailure = {
                 AuthResult.Failure(
                     reason = AuthFailure.SECURE_STORAGE_FAILED,
