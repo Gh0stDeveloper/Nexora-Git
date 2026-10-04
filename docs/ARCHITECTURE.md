@@ -166,16 +166,28 @@ Examples:
 
 ## State and caching
 
-Remote data follows a local-first presentation strategy:
+The transport layer and the feature-data layer have different cache responsibilities.
+
+### Phase C transport cache
+
+The shared GitHub platform layer uses a bounded, account-scoped **in-memory** cache.
+
+REST GET requests support ETag revalidation with `If-None-Match` and reuse cached bodies on `304 Not Modified`. Network-first requests may fall back to memory cache on connectivity failure.
+
+This cache is intentionally not written to disk because generic GitHub responses may contain private repository metadata.
+
+### Feature data caches
+
+Feature repositories may introduce Room-backed normalized caches where offline behavior requires them:
 
 ```text
-GitHub
+GitHub Platform Client
   ↓
-Remote data source
+Feature remote data source
   ↓
-Repository
+Feature repository
   ↓
-Room cache
+Optional normalized Room cache
   ↓
 Flow
   ↓
@@ -202,3 +214,37 @@ A shared domain error hierarchy should distinguish:
 - Unknown
 
 The UI should convert low-level errors into actionable user messages instead of exposing raw HTTP codes or native error numbers.
+
+
+## GitHub platform layer
+
+Phase C introduces a reusable authenticated transport layer:
+
+```text
+Feature / repository
+       ↓
+GitHubPlatformClient
+   ┌───┴──────────┐
+   ↓              ↓
+REST client   GraphQL client
+   ↓              ↓
+AuthSessionRepository
+   ↓
+GitHub user access token
+```
+
+Shared responsibilities:
+
+- attach the active GitHub account token;
+- proactively refresh expiring tokens;
+- perform one controlled retry after an HTTP 401;
+- centralize the REST API version;
+- validate official GitHub API URLs;
+- track rate limits by resource;
+- parse REST pagination;
+- expose GraphQL page information;
+- parse GitHub App permission requirements;
+- normalize HTTP/GraphQL errors;
+- isolate caches by GitHub account.
+
+Feature code should consume `GitHubPlatformClient` rather than building ad-hoc OkHttp calls.
