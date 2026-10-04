@@ -45,7 +45,12 @@ class DirectProjectScannerTest {
                     it.relativePath == "build/generated.txt"
                 }.ignoredByGit,
             )
-            assertTrue(result.secretWarningCount >= 1)
+            assertTrue(
+                result.risks.any {
+                    it.type == ProjectRiskType.SECRET &&
+                        it.severity == ProjectRiskSeverity.INFO
+                },
+            )
         } finally {
             root.deleteRecursively()
         }
