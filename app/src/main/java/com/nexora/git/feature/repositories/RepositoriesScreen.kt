@@ -221,7 +221,7 @@ internal fun RepositoriesContent(
                     imageVector = Icons.Outlined.Add,
                     contentDescription = null,
                 )
-                Text(" Create repository")
+                Text("Create repository")
             }
         }
 
@@ -239,7 +239,7 @@ internal fun RepositoriesContent(
                         imageVector = Icons.Outlined.Link,
                         contentDescription = null,
                     )
-                    Text(" Clone URL")
+                    Text("Clone URL")
                 }
 
                 OutlinedButton(
@@ -251,7 +251,7 @@ internal fun RepositoriesContent(
                         imageVector = Icons.Outlined.FolderOpen,
                         contentDescription = null,
                     )
-                    Text(" Folder")
+                    Text("Folder")
                 }
             }
         }
@@ -388,7 +388,7 @@ private fun SectionHeader(
                     imageVector = Icons.Outlined.Refresh,
                     contentDescription = null,
                 )
-                Text(" " + actionLabel)
+                Text(actionLabel)
             }
         }
     }
@@ -484,7 +484,7 @@ private fun RemoteRepositoryCard(
                     imageVector = Icons.Outlined.CloudDownload,
                     contentDescription = null,
                 )
-                Text(" Clone to device")
+                Text("Clone to device")
             }
         }
     }
@@ -610,7 +610,7 @@ private fun WorkspaceCard(
                         imageVector = Icons.Outlined.Source,
                         contentDescription = null,
                     )
-                    Text(" Git")
+                    Text("Git")
                 }
 
                 OutlinedButton(
@@ -627,9 +627,9 @@ private fun WorkspaceCard(
                             workspace.strategy ==
                                 WorkspaceStrategy.REMOTE_CLONE
                         ) {
-                            " Rescan"
+                            "Rescan"
                         } else {
-                            " Sync"
+                            "Sync"
                         },
                     )
                 }
