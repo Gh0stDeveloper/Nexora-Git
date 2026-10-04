@@ -33,6 +33,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import java.util.Locale
 import com.nexora.git.core.storage.ProjectRisk
 import com.nexora.git.core.storage.ProjectRiskSeverity
 import com.nexora.git.core.storage.Workspace
@@ -342,13 +343,13 @@ private fun ImportRiskDialog(
 private fun humanBytes(bytes: Long): String =
     when {
         bytes >= 1024L * 1024L * 1024L ->
-            String.format("%.1f GiB", bytes / (1024.0 * 1024.0 * 1024.0))
+            String.format(Locale.US, "%.1f GiB", bytes / (1024.0 * 1024.0 * 1024.0))
 
         bytes >= 1024L * 1024L ->
-            String.format("%.1f MiB", bytes / (1024.0 * 1024.0))
+            String.format(Locale.US, "%.1f MiB", bytes / (1024.0 * 1024.0))
 
         bytes >= 1024L ->
-            String.format("%.1f KiB", bytes / 1024.0)
+            String.format(Locale.US, "%.1f KiB", bytes / 1024.0)
 
         else -> bytes.toString() + " B"
     }
