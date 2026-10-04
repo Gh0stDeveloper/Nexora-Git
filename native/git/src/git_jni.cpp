@@ -210,6 +210,21 @@ Java_com_nexora_git_core_git_NativeGitBridge_nativeClone(
 }
 
 extern "C" JNIEXPORT jstring JNICALL
+Java_com_nexora_git_core_git_NativeGitBridge_nativeRemoteUrl(
+    JNIEnv* env,
+    jobject,
+    jstring repository_path,
+    jstring remote
+) {
+    return string_call(env, [&]() {
+        return nexora::git::remote_url(
+            from_jstring(env, repository_path),
+            from_jstring(env, remote)
+        );
+    });
+}
+
+extern "C" JNIEXPORT jstring JNICALL
 Java_com_nexora_git_core_git_NativeGitBridge_nativeStatus(
     JNIEnv* env,
     jobject,
