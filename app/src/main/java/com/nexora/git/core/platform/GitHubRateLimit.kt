@@ -12,12 +12,8 @@ data class GitHubRateLimit(
     val exhausted: Boolean
         get() = remaining != null && remaining <= 0L
 
-    fun retryAtEpochMillis(): Long? {
-        val retryFromHeader = retryAfterSeconds?.let {
-            observedAtEpochMillis + (it * 1_000L)
-        }
-        val retryFromReset = resetAtEpochSeconds?.times(1_000L)
-
-        return listOfNotNull(retryFromHeader, retryFromReset).maxOrNull()
-    }
+    fun retryAtEpochMillis(): Long? =
+        retryAfterSeconds
+            ?.let { observedAtEpochMillis + (it * 1_000L) }
+            ?: resetAtEpochSeconds?.times(1_000L)
 }
