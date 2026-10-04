@@ -4,8 +4,8 @@ project(nexoragit_git_engine LANGUAGES C CXX)
 
 include(FetchContent)
 
-set(NEXORA_LIBGIT2_VERSION "v1.9.7" CACHE STRING "Pinned libgit2 tag")
-set(NEXORA_MBEDTLS_VERSION "mbedtls-3.6.7" CACHE STRING "Pinned Mbed TLS tag")
+set(NEXORA_LIBGIT2_REF "49e408b3208bc3093757a1c2db938d3590f3f412" CACHE STRING "Pinned libgit2 commit")
+set(NEXORA_MBEDTLS_REF "068ff080b369adfac81509f9b57b2afabaf82dc5" CACHE STRING "Pinned Mbed TLS commit")
 option(NEXORA_BUILD_NATIVE_TESTS "Build host native Git tests" OFF)
 
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
@@ -25,7 +25,7 @@ set(USE_STATIC_MBEDTLS_LIBRARY ON CACHE BOOL "" FORCE)
 FetchContent_Declare(
     mbedtls
     GIT_REPOSITORY https://github.com/Mbed-TLS/mbedtls.git
-    GIT_TAG ${NEXORA_MBEDTLS_VERSION}
+    GIT_TAG ${NEXORA_MBEDTLS_REF}
     GIT_SHALLOW TRUE
 )
 FetchContent_MakeAvailable(mbedtls)
@@ -50,7 +50,7 @@ set(SONAME OFF CACHE BOOL "" FORCE)
 FetchContent_Declare(
     libgit2
     GIT_REPOSITORY https://github.com/libgit2/libgit2.git
-    GIT_TAG ${NEXORA_LIBGIT2_VERSION}
+    GIT_TAG ${NEXORA_LIBGIT2_REF}
     GIT_SHALLOW TRUE
 )
 FetchContent_MakeAvailable(libgit2)
