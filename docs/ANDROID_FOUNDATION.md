@@ -8,8 +8,9 @@ Current baseline:
 
 - Android Gradle Plugin 9.4.0
 - Gradle 9.6.0 in CI
-- compileSdk 36
+- compileSdk 37.0
 - targetSdk 36
+- Android 17 platform package: `platforms;android-37.0`
 - minSdk 26
 - Java 17
 - AGP built-in Kotlin
@@ -94,7 +95,7 @@ Logging is BASIC in debug and disabled in release, with authentication/cookie he
 
 ## CI
 
-Android CI installs API 36 and Gradle 9.6.0, then runs:
+Android CI installs API 37.0 and Gradle 9.6.0, then runs:
 
 ```text
 :app:assembleDebug
