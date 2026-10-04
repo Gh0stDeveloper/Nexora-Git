@@ -3,22 +3,17 @@ package com.nexora.git.core.auth
 import android.net.Uri
 import javax.inject.Inject
 import javax.inject.Singleton
-import kotlinx.coroutines.channels.BufferOverflow
-import kotlinx.coroutines.flow.MutableSharedFlow
-import kotlinx.coroutines.flow.SharedFlow
-import kotlinx.coroutines.flow.asSharedFlow
+import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.receiveAsFlow
 
 @Singleton
 class AuthCallbackBus @Inject constructor() {
-    private val mutableCallbacks = MutableSharedFlow<Uri>(
-        replay = 0,
-        extraBufferCapacity = 1,
-        onBufferOverflow = BufferOverflow.DROP_OLDEST,
-    )
+    private val callbackChannel = Channel<Uri>(Channel.BUFFERED)
 
-    val callbacks: SharedFlow<Uri> = mutableCallbacks.asSharedFlow()
+    val callbacks: Flow<Uri> = callbackChannel.receiveAsFlow()
 
     fun dispatch(uri: Uri) {
-        mutableCallbacks.tryEmit(uri)
+        callbackChannel.trySend(uri)
     }
 }
