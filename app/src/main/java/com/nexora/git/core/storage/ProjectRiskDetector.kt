@@ -119,6 +119,8 @@ class ProjectRiskDetector @Inject constructor() {
             Regex(""".*\.key$"""),
             Regex(""".*\.jks$"""),
             Regex(""".*\.keystore$"""),
+            Regex(""".*\.p12$"""),
+            Regex(""".*\.pfx$"""),
             Regex("""^id_rsa$"""),
             Regex("""^id_ed25519$"""),
             Regex("""^google-services\.json$"""),
