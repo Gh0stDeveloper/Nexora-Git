@@ -95,6 +95,36 @@ Phase C adds unit coverage for:
 - GraphQL error classification;
 - structured AppResult errors.
 
+## CI validation
+
+Android CI:
+
+```text
+Run: 37216844850
+Head SHA: 11e55d92fd7dd6302ee2ec44bcbacadf5faa2b66
+Conclusion: success
+```
+
+Validated:
+
+- debug APK build;
+- Android instrumentation-test APK compilation;
+- JVM unit tests;
+- Android lint;
+- Gradle Wrapper validation;
+- debug APK artifact upload.
+
+Artifact:
+
+```text
+Name: NexoraGit-debug
+Artifact ID: 11308772599
+Size: 20,488,538 bytes
+SHA-256: 8eb5fb6de4e924705b6b1438ae6462a15fce756c68db367b1d51445e27c95447
+```
+
+Foundation CI also passed for the final code SHA.
+
 ## External dependencies
 
 Phase C does not introduce a new server component.
