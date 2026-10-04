@@ -408,9 +408,9 @@ private fun RepositoryActionCard(
                     )
                     Text(
                         if (viewerState?.starred == true) {
-                            " Unstar"
+                            "Unstar"
                         } else {
-                            " Star"
+                            "Star"
                         },
                     )
                 }
