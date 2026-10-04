@@ -150,6 +150,8 @@ class SafProjectScanner @Inject constructor(
             filename == "project.godot" -> "Godot"
             filename == "package.json" -> "Node.js"
             filename == "cargo.toml" -> "Rust"
+            filename == "go.mod" -> "Go"
+            filename == "pubspec.yaml" -> "Flutter/Dart"
             filename == "pyproject.toml" ||
                 filename == "requirements.txt" -> "Python"
             filename == "pom.xml" -> "Maven"
