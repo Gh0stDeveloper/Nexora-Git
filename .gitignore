@@ -1,0 +1,36 @@
+# Android / Gradle
+.gradle/
+build/
+**/build/
+local.properties
+.idea/
+*.iml
+captures/
+.externalNativeBuild/
+.cxx/
+
+# Signing / credentials
+*.jks
+*.keystore
+*.p12
+*.pfx
+*.pem
+.env
+.env.*
+!*.env.example
+secrets.properties
+
+# Native build outputs
+CMakeFiles/
+CMakeCache.txt
+cmake-build-*/
+
+# OS / editors
+.DS_Store
+Thumbs.db
+.vscode/
+
+# Logs / temporary
+*.log
+*.tmp
+*.swp

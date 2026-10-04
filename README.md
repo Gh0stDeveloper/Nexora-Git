@@ -72,6 +72,11 @@ See [Git Engine](docs/GIT_ENGINE.md).
 - [Security](docs/SECURITY.md)
 - [UI/UX](docs/UI_UX.md)
 - [Roadmap](docs/ROADMAP.md)
+- [Product identity](docs/BRANDING.md)
+- [GitHub App configuration](docs/GITHUB_APP.md)
+- [Threat model](docs/THREAT_MODEL.md)
+- [Phase 0 report](docs/PHASE_0_REPORT.md)
+- [Architecture decisions](docs/adr/)
 
 ## Initial scope
 
@@ -109,9 +114,9 @@ The project must use its own branding and must not imply that it is an official 
 
 ## Status
 
-**Current stage:** Foundation / documentation.
+**Current stage:** Phase 0 repository foundation complete; Phase A is next.
 
-Implementation begins with Phase 0 followed by the Android foundation, authentication platform and local Git engine.
+The repository now has the product identity, architecture decisions, GitHub App contract, threat model, open-source policies and Foundation CI. The remaining Phase 0 external prerequisite is registering the actual GitHub App in GitHub account settings.
 
 ---
 
