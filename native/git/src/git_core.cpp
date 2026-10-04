@@ -649,6 +649,32 @@ std::string clone_repository(
     return result;
 }
 
+std::string remote_url(
+    const std::string& repository_path,
+    const std::string& remote_name
+) {
+    git_repository* repository = open_repository(repository_path);
+    git_remote* remote = nullptr;
+    const std::string name = remote_name.empty() ? "origin" : remote_name;
+
+    const int rc = git_remote_lookup(
+        &remote,
+        repository,
+        name.c_str()
+    );
+    if (rc < 0) {
+        git_repository_free(repository);
+        throw_git_error(rc, "Open remote");
+    }
+
+    const char* url = git_remote_url(remote);
+    const std::string result = url != nullptr ? url : "";
+
+    git_remote_free(remote);
+    git_repository_free(repository);
+    return result;
+}
+
 std::string status(const std::string& repository_path) {
     git_repository* repository = open_repository(repository_path);
 
