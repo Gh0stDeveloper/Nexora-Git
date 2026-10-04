@@ -1,25 +1,31 @@
 package com.nexora.git.core.network
 
-import okhttp3.Interceptor
-import okhttp3.Response
 import javax.inject.Inject
 import javax.inject.Singleton
+import okhttp3.Interceptor
+import okhttp3.Response
 
 @Singleton
 class GitHubHeadersInterceptor @Inject constructor() : Interceptor {
 
     override fun intercept(chain: Interceptor.Chain): Response {
-        val request = chain.request()
-            .newBuilder()
-            .header("Accept", "application/vnd.github+json")
-            .header("X-GitHub-Api-Version", GITHUB_API_VERSION)
-            .header("User-Agent", "Nexora-Git-Android")
-            .build()
+        val original = chain.request()
+        val builder = original.newBuilder()
+            .header("User-Agent", GitHubApiConfig.USER_AGENT)
 
-        return chain.proceed(request)
-    }
+        if (original.header("Accept") == null) {
+            builder.header("Accept", GitHubApiConfig.DEFAULT_ACCEPT)
+        }
 
-    companion object {
-        const val GITHUB_API_VERSION = "2026-03-10"
+        if (original.url.host == "api.github.com" &&
+            original.url.encodedPath != "/graphql"
+        ) {
+            builder.header(
+                "X-GitHub-Api-Version",
+                GitHubApiConfig.REST_API_VERSION,
+            )
+        }
+
+        return chain.proceed(builder.build())
     }
 }
