@@ -22,6 +22,8 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavGraph.Companion.findStartDestination
+import androidx.navigation.NavType
+import androidx.navigation.navArgument
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
@@ -34,6 +36,7 @@ import com.nexora.git.feature.explore.ExploreScreen
 import com.nexora.git.feature.home.HomeScreen
 import com.nexora.git.feature.profile.ProfileScreen
 import com.nexora.git.feature.repositories.RepositoriesScreen
+import com.nexora.git.feature.repositories.RepositoryDetailScreen
 import com.nexora.git.ui.navigation.NexoraDestination
 
 @Composable
@@ -121,29 +124,31 @@ private fun AuthenticatedNexoraGitApp(
         modifier = modifier,
         contentWindowInsets = WindowInsets.navigationBars,
         bottomBar = {
-            NavigationBar {
-                destinations.forEach { destination ->
-                    NavigationBarItem(
-                        selected = currentRoute == destination.route,
-                        onClick = {
-                            navController.navigate(destination.route) {
-                                popUpTo(navController.graph.findStartDestination().id) {
-                                    saveState = true
+            if (destinations.any { it.route == currentRoute }) {
+                NavigationBar {
+                    destinations.forEach { destination ->
+                        NavigationBarItem(
+                            selected = currentRoute == destination.route,
+                            onClick = {
+                                navController.navigate(destination.route) {
+                                    popUpTo(navController.graph.findStartDestination().id) {
+                                        saveState = true
+                                    }
+                                    launchSingleTop = true
+                                    restoreState = true
                                 }
-                                launchSingleTop = true
-                                restoreState = true
-                            }
-                        },
-                        icon = {
-                            Icon(
-                                imageVector = destination.icon,
-                                contentDescription = destination.label,
-                            )
-                        },
-                        label = {
-                            Text(destination.label)
-                        },
-                    )
+                            },
+                            icon = {
+                                Icon(
+                                    imageVector = destination.icon,
+                                    contentDescription = destination.label,
+                                )
+                            },
+                            label = {
+                                Text(destination.label)
+                            },
+                        )
+                    }
                 }
             }
         },
@@ -159,7 +164,33 @@ private fun AuthenticatedNexoraGitApp(
                 ExploreScreen(contentPadding = paddingValues)
             }
             composable(NexoraDestination.REPOSITORIES.route) {
-                RepositoriesScreen(contentPadding = paddingValues)
+                RepositoriesScreen(
+                    contentPadding = paddingValues,
+                    onOpenRepository = { owner, name ->
+                        navController.navigate(
+                            "repository/" + owner + "/" + name,
+                        )
+                    },
+                )
+            }
+
+            composable(
+                route = "repository/{owner}/{name}",
+                arguments = listOf(
+                    navArgument("owner") {
+                        type = NavType.StringType
+                    },
+                    navArgument("name") {
+                        type = NavType.StringType
+                    },
+                ),
+            ) {
+                RepositoryDetailScreen(
+                    contentPadding = paddingValues,
+                    onBack = {
+                        navController.popBackStack()
+                    },
+                )
             }
             composable(NexoraDestination.ACTIVITY.route) {
                 ActivityScreen(contentPadding = paddingValues)
