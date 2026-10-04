@@ -79,6 +79,18 @@ GraphQL responses expose:
 
 Feature modules may introduce typed parsing around the raw data payload without changing the transport boundary.
 
+Mutations must be declared explicitly:
+
+```kotlin
+GitHubGraphQlRequest(
+    query = mutationText,
+    variables = variables,
+    operation = GitHubGraphQlOperation.MUTATION,
+)
+```
+
+Mutation responses are never cached and invalidate both REST and GraphQL caches for the active account.
+
 ## Authentication integration
 
 Both clients obtain the active account from `AuthSessionRepository`.
