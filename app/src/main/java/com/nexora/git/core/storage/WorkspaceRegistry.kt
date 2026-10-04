@@ -71,6 +71,7 @@ class WorkspaceRegistry @Inject constructor(
             totalBytes = scan.totalBytes,
             secretWarningCount = scan.secretWarningCount,
             largeFileWarningCount = scan.largeFileWarningCount,
+            syncConflictCount = existing?.syncConflictCount ?: 0,
             lastOpenedAtEpochMillis = now,
         )
 
@@ -84,9 +85,14 @@ class WorkspaceRegistry @Inject constructor(
             )
 
             val ready = syncing.copy(
-                syncState = WorkspaceSyncState.READY.name,
+                syncState = if (sync.conflictedPaths.isEmpty()) {
+                    WorkspaceSyncState.READY.name
+                } else {
+                    WorkspaceSyncState.CONFLICTS.name
+                },
                 lastSyncedAtEpochMillis =
                     sync.completedAtEpochMillis,
+                syncConflictCount = sync.conflictedPaths.size,
             )
             workspaceDao.upsert(ready)
 
@@ -139,6 +145,7 @@ class WorkspaceRegistry @Inject constructor(
             totalBytes = scan.totalBytes,
             secretWarningCount = scan.secretWarningCount,
             largeFileWarningCount = scan.largeFileWarningCount,
+            syncConflictCount = 0,
             lastOpenedAtEpochMillis = now,
         )
 
