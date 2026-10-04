@@ -24,6 +24,7 @@ class GitHubGraphQlClient @Inject constructor(
     private val authSessionRepository: AuthSessionRepository,
     private val rateLimitManager: GitHubRateLimitManager,
     private val cache: GitHubGraphQlCache,
+    private val cacheCoordinator: GitHubCacheCoordinator,
     private val errorMapper: GitHubApiErrorMapper,
     private val errorClassifier: GitHubGraphQlErrorClassifier,
 ) {
@@ -67,14 +68,22 @@ class GitHubGraphQlClient @Inject constructor(
             )
         }
 
-        val mutation = request.query.trimStart()
-            .startsWith("mutation", ignoreCase = true)
+        val mutation =
+            request.operation == GitHubGraphQlOperation.MUTATION
 
         val cacheKey = cacheKey(
             accountId = accountId,
             request = request,
         )
-        val cached = if (mutation) null else cache.get(cacheKey)
+        val cached = if (
+            mutation ||
+            request.cachePolicy == GitHubCachePolicy.NO_STORE ||
+            request.cachePolicy == GitHubCachePolicy.NETWORK_ONLY
+        ) {
+            null
+        } else {
+            cache.get(cacheKey)
+        }
 
         if (!mutation &&
             request.cachePolicy == GitHubCachePolicy.CACHE_FIRST &&
@@ -163,7 +172,7 @@ class GitHubGraphQlClient @Inject constructor(
                     }
 
                     if (mutation) {
-                        cache.clearForAccount(accountId)
+                        cacheCoordinator.clearForAccount(accountId)
                     } else if (request.cachePolicy != GitHubCachePolicy.NO_STORE) {
                         cache.put(
                             cacheKey,
@@ -256,7 +265,7 @@ class GitHubGraphQlClient @Inject constructor(
             .toSortedMap()
             .entries
             .joinToString("&") { entry ->
-                entry.key + "=" + JSONObject.wrap(entry.value).toString()
+                entry.key + "=" + (JSONObject.wrap(entry.value)?.toString() ?: "null")
             }
 
         val digest = MessageDigest.getInstance("SHA-256")
