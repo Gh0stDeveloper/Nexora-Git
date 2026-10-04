@@ -48,8 +48,8 @@ class GitIgnoreMatcher @Inject constructor() {
         var line = rawLine.trim()
         if (line.isBlank()) return null
 
-        if (line.startsWith("\#")) {
-            line = line.removePrefix("\")
+        if (line.startsWith("""\#""")) {
+            line = line.removePrefix("""\""")
         } else if (line.startsWith("#")) {
             return null
         }
@@ -100,7 +100,7 @@ class GitIgnoreMatcher @Inject constructor() {
 
         if (regex.matches(scopedPath)) return true
 
-        if (rule.directoryOnly) {
+        if (rule.directoryOnly || isDirectory) {
             val segments = scopedPath.split('/')
             return segments.indices.any { index ->
                 regex.matches(
@@ -118,7 +118,8 @@ class GitIgnoreMatcher @Inject constructor() {
     ): String? {
         if (basePath.isBlank()) return path
         if (path == basePath) return ""
-        val prefix = "$basePath/"
+
+        val prefix = basePath + "/"
         return path.takeIf { it.startsWith(prefix) }
             ?.removePrefix(prefix)
     }
@@ -128,11 +129,7 @@ class GitIgnoreMatcher @Inject constructor() {
         anchored: Boolean,
     ): Regex {
         val out = StringBuilder()
-        if (anchored) {
-            out.append("^")
-        } else {
-            out.append("^(?:.*/)?")
-        }
+        out.append(if (anchored) "^" else "^(?:.*/)?")
 
         var index = 0
         while (index < pattern.length) {
@@ -142,6 +139,7 @@ class GitIgnoreMatcher @Inject constructor() {
                     val doubleStar =
                         index + 1 < pattern.length &&
                             pattern[index + 1] == '*'
+
                     if (doubleStar) {
                         out.append(".*")
                         index += 1
@@ -151,15 +149,12 @@ class GitIgnoreMatcher @Inject constructor() {
                 }
 
                 '?' -> out.append("[^/]")
-                '.', '(', ')', '+', '|', '^', '$', '@', '%' ->
-                    out.append("\").append(char)
-                '[' -> out.append("\[")
-                ']' -> out.append("\]")
-                '{' -> out.append("\{")
-                '}' -> out.append("\}")
-                '\' -> out.append("\\")
-                else -> out.append(char)
+                '/' -> out.append("/")
+                else -> out.append(
+                    Regex.escape(char.toString()),
+                )
             }
+
             index += 1
         }
 
@@ -168,6 +163,10 @@ class GitIgnoreMatcher @Inject constructor() {
     }
 
     private fun normalize(path: String): String =
-        path.replace('\', '/')
+        path.replace(FileSeparator, '/')
             .trim('/')
+
+    companion object {
+        private const val FileSeparator: Char = '\\'
+    }
 }
