@@ -10,7 +10,7 @@ import androidx.sqlite.db.SupportSQLiteDatabase
         WorkspaceEntity::class,
         AuthAccountEntity::class,
     ],
-    version = 2,
+    version = 3,
     exportSchema = true,
 )
 abstract class NexoraDatabase : RoomDatabase() {
@@ -34,6 +34,47 @@ abstract class NexoraDatabase : RoomDatabase() {
                         PRIMARY KEY(accountId)
                     )
                     """.trimIndent(),
+                )
+            }
+        }
+
+        val MIGRATION_2_3 = object : Migration(2, 3) {
+            override fun migrate(database: SupportSQLiteDatabase) {
+                database.execSQL(
+                    "ALTER TABLE workspaces ADD COLUMN sourceDisplayName TEXT",
+                )
+                database.execSQL(
+                    "ALTER TABLE workspaces ADD COLUMN sourceAuthority TEXT",
+                )
+                database.execSQL(
+                    "ALTER TABLE workspaces ADD COLUMN sourceWritable INTEGER NOT NULL DEFAULT 0",
+                )
+                database.execSQL(
+                    "ALTER TABLE workspaces ADD COLUMN strategy TEXT NOT NULL DEFAULT 'MANAGED'",
+                )
+                database.execSQL(
+                    "ALTER TABLE workspaces ADD COLUMN syncState TEXT NOT NULL DEFAULT 'READY'",
+                )
+                database.execSQL(
+                    "ALTER TABLE workspaces ADD COLUMN lastSyncedAtEpochMillis INTEGER",
+                )
+                database.execSQL(
+                    "ALTER TABLE workspaces ADD COLUMN lastScanAtEpochMillis INTEGER",
+                )
+                database.execSQL(
+                    "ALTER TABLE workspaces ADD COLUMN fileCount INTEGER NOT NULL DEFAULT 0",
+                )
+                database.execSQL(
+                    "ALTER TABLE workspaces ADD COLUMN totalBytes INTEGER NOT NULL DEFAULT 0",
+                )
+                database.execSQL(
+                    "ALTER TABLE workspaces ADD COLUMN secretWarningCount INTEGER NOT NULL DEFAULT 0",
+                )
+                database.execSQL(
+                    "ALTER TABLE workspaces ADD COLUMN largeFileWarningCount INTEGER NOT NULL DEFAULT 0",
+                )
+                database.execSQL(
+                    "ALTER TABLE workspaces ADD COLUMN syncConflictCount INTEGER NOT NULL DEFAULT 0",
                 )
             }
         }

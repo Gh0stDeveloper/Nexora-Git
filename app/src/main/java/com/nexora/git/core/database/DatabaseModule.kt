@@ -22,7 +22,10 @@ object DatabaseModule {
         NexoraDatabase::class.java,
         "nexora-git.db",
     )
-        .addMigrations(NexoraDatabase.MIGRATION_1_2)
+        .addMigrations(
+            NexoraDatabase.MIGRATION_1_2,
+            NexoraDatabase.MIGRATION_2_3,
+        )
         .build()
 
     @Provides
