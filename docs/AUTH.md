@@ -184,3 +184,105 @@ GitHub passkey:
 ```
 
 If a user signs in with email/password or passkey, that interaction happens on GitHub's official page, not inside a Nexora Git credential form.
+
+
+## Phase B implementation
+
+The repository implements the authentication boundary with these concrete components:
+
+```text
+Android
+├── AuthConfig
+├── PkceGenerator
+├── GitHubAuthorizationUrlFactory
+├── OAuthCallbackParser
+├── KeystoreCipher
+├── SecureAuthStorage
+├── AuthBrokerClient
+├── GitHubIdentityClient
+├── AuthSessionRepository
+├── AuthCallbackBus
+└── AuthViewModel
+
+Auth Broker
+├── /health
+├── /oauth/callback
+├── /v1/oauth/exchange
+├── /v1/oauth/refresh
+└── /v1/oauth/revoke
+```
+
+### Redirect topology
+
+The production GitHub callback points to the broker, not directly to an arbitrary Android URL:
+
+```text
+GitHub
+  → https://AUTH_HOST/oauth/callback
+  → nexoragit://oauth/callback
+  → Android validates state
+  → Android sends code + code_verifier to broker
+  → broker adds the client_secret
+  → GitHub token endpoint
+```
+
+The native deep link can safely carry the short-lived authorization code because PKCE prevents the code from being exchanged without the original verifier retained by Nexora Git.
+
+### Durable identity
+
+Nexora Git stores GitHub's numeric user `id` as the durable account identifier. Login/handle is display metadata and is not used as the primary identity key.
+
+### Local secret model
+
+```text
+Android Keystore
+      ↓ protects AES key
+AES-GCM
+      ↓ encrypts
+SharedPreferences ciphertext only
+      ├── access token
+      ├── refresh token
+      ├── pending OAuth state
+      └── pending PKCE verifier
+
+Room
+      └── non-secret account metadata
+
+DataStore
+      └── active account ID
+```
+
+### Expiration and rotation
+
+When an access token is close to expiry, `AuthSessionRepository` serializes refresh with a mutex, sends the current refresh token to the broker and replaces the complete returned token bundle.
+
+A refresh token that has already expired requires a new user authorization flow.
+
+### Multiple accounts
+
+Each GitHub numeric account ID owns a separate encrypted access/refresh token pair. The Profile surface supports switching accounts, adding another GitHub account and signing out the active account.
+
+### Revocation
+
+Logout performs best-effort remote token revocation through the broker and always clears local encrypted credentials. Remote revocation is intentionally performed by the broker because GitHub's application-token revocation API requires the GitHub App client secret.
+
+### Build configuration
+
+Android public configuration:
+
+```text
+NEXORA_GITHUB_CLIENT_ID
+NEXORA_AUTH_BROKER_BASE_URL
+NEXORA_GITHUB_CALLBACK_URL
+```
+
+Server-only confidential configuration:
+
+```text
+GITHUB_APP_CLIENT_ID
+GITHUB_APP_CLIENT_SECRET
+GITHUB_CALLBACK_URL
+APP_CALLBACK_URI
+```
+
+See `AUTH_DEPLOYMENT.md` and `../auth-broker/README.md`.
