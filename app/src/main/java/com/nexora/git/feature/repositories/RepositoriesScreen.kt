@@ -255,7 +255,8 @@ private fun WorkspaceCard(
             )
 
             if (workspace.secretWarningCount > 0 ||
-                workspace.largeFileWarningCount > 0
+                workspace.largeFileWarningCount > 0 ||
+                workspace.syncConflictCount > 0
             ) {
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
@@ -270,7 +271,9 @@ private fun WorkspaceCard(
                         text = workspace.secretWarningCount.toString() +
                             " secret warnings · " +
                             workspace.largeFileWarningCount.toString() +
-                            " large-file warnings",
+                            " large-file warnings · " +
+                            workspace.syncConflictCount.toString() +
+                            " sync conflicts",
                         color = MaterialTheme.colorScheme.error,
                     )
                 }
