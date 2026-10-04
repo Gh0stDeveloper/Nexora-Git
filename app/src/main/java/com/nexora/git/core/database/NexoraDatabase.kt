@@ -73,6 +73,9 @@ abstract class NexoraDatabase : RoomDatabase() {
                 database.execSQL(
                     "ALTER TABLE workspaces ADD COLUMN largeFileWarningCount INTEGER NOT NULL DEFAULT 0",
                 )
+                database.execSQL(
+                    "ALTER TABLE workspaces ADD COLUMN syncConflictCount INTEGER NOT NULL DEFAULT 0",
+                )
             }
         }
     }
