@@ -211,24 +211,6 @@ class SafWorkspaceSyncEngine @Inject constructor(
             }
         }
 
-        destination.walkBottomUp().forEach { file ->
-            coroutineContext.ensureActive()
-
-            if (file == destination ||
-                !file.isDirectory ||
-                file.list()?.isNotEmpty() == true
-            ) {
-                return@forEach
-            }
-
-            val relative = file.relativeTo(destination)
-                .invariantSeparatorsPath
-
-            if (!isGitMetadataPath(relative)) {
-                file.delete()
-            }
-        }
-
         val completedAt = System.currentTimeMillis()
         manifestWriter.write(
             workspaceId = workspaceId,
