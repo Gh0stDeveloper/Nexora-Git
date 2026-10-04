@@ -148,16 +148,26 @@ This roadmap is intentionally staged. A phase is not complete if it only contain
 
 ## Phase E — Android Project Storage
 
-- SAF folder picker
-- persisted URI permissions
-- workspace registry
-- direct-filesystem strategy
-- managed-workspace strategy
-- sync engine
-- project scanner
-- .gitignore awareness
-- secret-risk warnings
-- large-file warnings
+**Implementation status: complete; final CI validation required before merge.**
+
+- [x] SAF folder picker
+- [x] persisted URI permissions
+- [x] read-only permission fallback
+- [x] Room v3 workspace registry
+- [x] direct-filesystem strategy
+- [x] managed-workspace strategy
+- [x] non-destructive source → managed sync engine
+- [x] sync manifest outside Git working tree
+- [x] sync conflict detection
+- [x] managed `.git` protection
+- [x] project scanner
+- [x] nested `.gitignore` awareness
+- [x] secret/signing-material warnings
+- [x] 50 MiB / 100 MiB large-file policy
+- [x] workspace UI and folder picker
+- [x] manual sync/removal UI
+- [x] storage unit and Compose tests
+- [x] storage architecture documentation
 
 ## Phase F — Repository Experience
 
