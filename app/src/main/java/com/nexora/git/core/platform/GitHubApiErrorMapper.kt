@@ -5,7 +5,6 @@ import java.io.IOException
 import javax.inject.Inject
 import javax.inject.Singleton
 import okhttp3.Headers
-import org.json.JSONObject
 
 @Singleton
 class GitHubApiErrorMapper @Inject constructor(
@@ -21,6 +20,10 @@ class GitHubApiErrorMapper @Inject constructor(
         val remaining = headers["X-RateLimit-Remaining"]?.toLongOrNull()
         val reset = headers["X-RateLimit-Reset"]?.toLongOrNull()
         val retryAfter = headers["Retry-After"]?.toLongOrNull()
+        val secondaryLimit = message
+            ?.contains("secondary rate limit", ignoreCase = true) == true ||
+            message?.contains("abuse detection", ignoreCase = true) == true
+
         val acceptedPermissions = permissionResolver.parseAcceptedPermissions(
             headers["X-Accepted-GitHub-Permissions"],
         )
@@ -29,15 +32,23 @@ class GitHubApiErrorMapper @Inject constructor(
             401 -> AppError.Authentication(message)
 
             403 -> {
-                if (remaining == 0L || retryAfter != null) {
-                    AppError.RateLimited(
+                when {
+                    remaining == 0L -> AppError.RateLimited(
                         resetAtEpochSeconds = reset,
                         retryAfterSeconds = retryAfter,
-                        secondary = retryAfter != null && remaining != 0L,
+                        secondary = false,
                         message = message,
                     )
-                } else {
-                    AppError.PermissionDenied(
+
+                    retryAfter != null || secondaryLimit ->
+                        AppError.RateLimited(
+                            resetAtEpochSeconds = reset,
+                            retryAfterSeconds = retryAfter,
+                            secondary = true,
+                            message = message,
+                        )
+
+                    else -> AppError.PermissionDenied(
                         acceptedPermissions = acceptedPermissions,
                         message = message,
                     )
@@ -46,7 +57,6 @@ class GitHubApiErrorMapper @Inject constructor(
 
             404 -> AppError.NotFound(message)
             409 -> AppError.Conflict(message)
-
             422 -> AppError.Validation(message)
 
             429 -> AppError.RateLimited(
@@ -77,9 +87,16 @@ class GitHubApiErrorMapper @Inject constructor(
     private fun extractMessage(body: String?): String? {
         if (body.isNullOrBlank()) return null
 
-        return runCatching {
-            JSONObject(body).optString("message")
-                .takeIf { it.isNotBlank() }
-        }.getOrNull()
+        val match = MESSAGE_PATTERN.find(body) ?: return null
+        return match.groupValues[1]
+            .replace("\\"", "\"")
+            .replace("\\n", " ")
+            .replace("\\\\", "\\")
+    }
+
+    companion object {
+        private val MESSAGE_PATTERN = Regex(
+            """["]message["]\s*:\s*["]((?:\\.|[^"\\])*)["]""",
+        )
     }
 }
