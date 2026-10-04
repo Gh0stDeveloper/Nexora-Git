@@ -44,6 +44,7 @@ class RepositoriesContentTest {
                                 totalBytes = 2048,
                                 secretWarningCount = 1,
                                 largeFileWarningCount = 0,
+                                syncConflictCount = 0,
                                 lastOpenedAtEpochMillis = 1L,
                             ),
                         ),
@@ -63,7 +64,7 @@ class RepositoriesContentTest {
         composeRule.onNodeWithText("Managed workspace")
             .assertIsDisplayed()
         composeRule.onNodeWithText(
-            "1 secret warnings · 0 large-file warnings",
+            "1 secret warnings · 0 large-file warnings · 0 sync conflicts",
         ).assertIsDisplayed()
     }
 }
