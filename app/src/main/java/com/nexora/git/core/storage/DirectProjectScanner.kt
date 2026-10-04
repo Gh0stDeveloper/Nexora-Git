@@ -72,7 +72,9 @@ class DirectProjectScanner @Inject constructor(
                     }
 
                     if (child.isDirectory) {
-                        walk(child, relativePath, rules)
+                        if (!isGitMetadataPath(relativePath)) {
+                            walk(child, relativePath, rules)
+                        }
                     } else if (child.isFile) {
                         val ignored = gitIgnoreMatcher.isIgnored(
                             relativePath,
