@@ -85,16 +85,18 @@ class DirectProjectScanner @Inject constructor(
                         detectProjectType(relativePath)
                             ?.let(projectTypes::add)
 
-                        risks += riskDetector.inspect(
-                            relativePath = relativePath,
-                            sizeBytes = child.length(),
-                            ignoredByGit = ignored,
-                            readText = {
-                                child.takeIf {
-                                    it.length() <= MAX_SECRET_READ_BYTES
-                                }?.readText()
-                            },
-                        )
+                        if (!isGitMetadataPath(relativePath)) {
+                            risks += riskDetector.inspect(
+                                relativePath = relativePath,
+                                sizeBytes = child.length(),
+                                ignoredByGit = ignored,
+                                readText = {
+                                    child.takeIf {
+                                        it.length() <= MAX_SECRET_READ_BYTES
+                                    }?.readText()
+                                },
+                            )
+                        }
                     }
                 }
             }
@@ -143,6 +145,10 @@ class DirectProjectScanner @Inject constructor(
             else -> null
         }
     }
+
+    private fun isGitMetadataPath(relativePath: String): Boolean =
+        relativePath == ".git" ||
+            relativePath.startsWith(".git/")
 
     companion object {
         private const val MAX_GITIGNORE_BYTES = 1024L * 1024L
