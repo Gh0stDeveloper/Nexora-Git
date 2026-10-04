@@ -123,15 +123,31 @@ std::string repository_json(git_repository* repository) {
     return out.str();
 }
 
+bool is_github_https_url(const char* raw_url) {
+    if (raw_url == nullptr) return false;
+
+    const std::string url(raw_url);
+    const std::string origin = "https://github.com";
+
+    if (url == origin) return true;
+    if (url.rfind(origin + "/", 0) != 0) return false;
+
+    return true;
+}
+
 int credentials_callback(
     git_credential** out,
-    const char*,
+    const char* url,
     const char* username_from_url,
     unsigned int allowed_types,
     void* payload
 ) {
     const auto* credentials = static_cast<const Credentials*>(payload);
     if (credentials == nullptr || credentials->empty()) {
+        return GIT_PASSTHROUGH;
+    }
+
+    if (!is_github_https_url(url)) {
         return GIT_PASSTHROUGH;
     }
 
