@@ -47,6 +47,10 @@ std::string clone_repository(
     const Credentials& credentials
 );
 std::string status(const std::string& repository_path);
+std::string remote_url(
+    const std::string& repository_path,
+    const std::string& remote
+);
 void stage(
     const std::string& repository_path,
     const std::vector<std::string>& paths
