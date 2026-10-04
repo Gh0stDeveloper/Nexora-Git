@@ -25,6 +25,7 @@ object DatabaseModule {
         .addMigrations(
             NexoraDatabase.MIGRATION_1_2,
             NexoraDatabase.MIGRATION_2_3,
+            NexoraDatabase.MIGRATION_3_4,
         )
         .build()
 
@@ -37,4 +38,9 @@ object DatabaseModule {
     fun provideAuthAccountDao(
         database: NexoraDatabase,
     ): AuthAccountDao = database.authAccountDao()
+
+    @Provides
+    fun provideGitHubRepositoryDao(
+        database: NexoraDatabase,
+    ): GitHubRepositoryDao = database.githubRepositoryDao()
 }
