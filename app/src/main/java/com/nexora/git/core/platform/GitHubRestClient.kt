@@ -23,6 +23,7 @@ class GitHubRestClient @Inject constructor(
     private val permissionResolver: GitHubPermissionResolver,
     private val rateLimitManager: GitHubRateLimitManager,
     private val responseCache: GitHubResponseCache,
+    private val cacheCoordinator: GitHubCacheCoordinator,
     private val errorMapper: GitHubApiErrorMapper,
 ) {
 
@@ -75,7 +76,14 @@ class GitHubRestClient @Inject constructor(
             request = request,
             url = url.toString(),
         )
-        val cached = responseCache.get(cacheKey)
+        val cached = if (
+            request.cachePolicy == GitHubCachePolicy.NO_STORE ||
+            request.cachePolicy == GitHubCachePolicy.NETWORK_ONLY
+        ) {
+            null
+        } else {
+            responseCache.get(cacheKey)
+        }
 
         if (request.method == GitHubHttpMethod.GET &&
             request.cachePolicy == GitHubCachePolicy.CACHE_FIRST &&
@@ -186,7 +194,7 @@ class GitHubRestClient @Inject constructor(
                             ),
                         )
                     } else if (request.method != GitHubHttpMethod.GET) {
-                        responseCache.clearForAccount(accountId)
+                        cacheCoordinator.clearForAccount(accountId)
                     }
 
                     AppResult.Success(result)
