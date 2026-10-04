@@ -49,7 +49,7 @@ class ProjectRiskDetector @Inject constructor() {
             }
         }
     }.distinctBy {
-        it.type.toString() + ":" + it.path + ":" + it.message
+        it.type.toString() + ":" + it.path
     }
 
     private fun largeFileRisk(
