@@ -32,7 +32,7 @@ class GitHubRateLimitManagerTest {
     }
 
     @Test
-    fun retryAfterTakesLaterBoundary() {
+    fun retryAfterTakesPriorityOverPrimaryReset() {
         val manager = GitHubRateLimitManager()
         val headers = Headers.Builder()
             .add("X-RateLimit-Remaining", "0")
