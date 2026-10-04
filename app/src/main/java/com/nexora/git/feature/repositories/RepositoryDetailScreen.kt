@@ -251,7 +251,7 @@ internal fun RepositoryDetailContent(
                             imageVector = Icons.Outlined.Settings,
                             contentDescription = null,
                         )
-                        Text(" Repository settings")
+                        Text("Repository settings")
                     }
                 }
             }
@@ -437,9 +437,9 @@ private fun RepositoryActionCard(
                     )
                     Text(
                         if (watching) {
-                            " Unwatch"
+                            "Unwatch"
                         } else {
-                            " Watch"
+                            "Watch"
                         },
                     )
                 }
@@ -458,7 +458,7 @@ private fun RepositoryActionCard(
                         imageVector = Icons.Outlined.ForkRight,
                         contentDescription = null,
                     )
-                    Text(" Fork")
+                    Text("Fork")
                 }
 
                 Button(
@@ -470,7 +470,7 @@ private fun RepositoryActionCard(
                         imageVector = Icons.Outlined.CloudDownload,
                         contentDescription = null,
                     )
-                    Text(" Clone")
+                    Text("Clone")
                 }
             }
 
