@@ -70,7 +70,7 @@ class ProjectRiskDetector @Inject constructor() {
                 ignoredByGit = ignoredByGit,
             )
 
-            sizeBytes >= GITHUB_WARNING_BYTES -> ProjectRisk(
+            sizeBytes > GITHUB_WARNING_BYTES -> ProjectRisk(
                 path = relativePath,
                 type = ProjectRiskType.LARGE_FILE,
                 severity = if (ignoredByGit) {
