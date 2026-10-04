@@ -24,6 +24,7 @@ class DirectProjectScanner @Inject constructor(
             val files = mutableListOf<ProjectScanFile>()
             val risks = mutableListOf<ProjectRisk>()
             val projectTypes = linkedSetOf<String>()
+            val visitedDirectories = linkedSetOf<String>()
             var gitIgnoreFiles = 0
 
             suspend fun walk(
@@ -32,6 +33,11 @@ class DirectProjectScanner @Inject constructor(
                 inheritedRules: List<GitIgnoreRule>,
             ) {
                 coroutineContext.ensureActive()
+
+                val canonicalDirectory = current.canonicalPath
+                if (!visitedDirectories.add(canonicalDirectory)) {
+                    return
+                }
 
                 val children = current.listFiles()
                     ?.sortedBy { it.name.lowercase() }
