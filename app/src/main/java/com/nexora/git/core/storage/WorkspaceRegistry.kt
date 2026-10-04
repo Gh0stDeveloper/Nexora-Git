@@ -27,6 +27,16 @@ class WorkspaceRegistry @Inject constructor(
             entities.map(WorkspaceEntity::toDomain)
         }
 
+    suspend fun findById(
+        workspaceId: String,
+    ): Workspace? =
+        workspaceDao.findById(workspaceId)?.toDomain()
+
+    suspend fun findByRemote(
+        remoteUrl: String,
+    ): Workspace? =
+        workspaceDao.findByRepositoryRemote(remoteUrl)?.toDomain()
+
     suspend fun importSafTree(
         treeUri: Uri,
     ): WorkspaceImportResult {
@@ -158,6 +168,159 @@ class WorkspaceRegistry @Inject constructor(
         )
     }
 
+    suspend fun prepareRemoteClone(
+        name: String,
+        fullName: String,
+        remoteUrl: String,
+        defaultBranch: String,
+        accountId: Long,
+    ): Workspace {
+        workspaceDao.findByRepositoryRemote(remoteUrl)
+            ?.let { existing ->
+                val path = existing.managedWorkspacePath
+                    ?.let(::File)
+
+                if (existing.strategy ==
+                    WorkspaceStrategy.REMOTE_CLONE.name &&
+                    path != null &&
+                    File(path, ".git").isDirectory
+                ) {
+                    workspaceDao.markOpened(
+                        existing.id,
+                        System.currentTimeMillis(),
+                    )
+                    return requireNotNull(
+                        workspaceDao.findById(existing.id),
+                    ).toDomain()
+                }
+
+                if (existing.strategy ==
+                    WorkspaceStrategy.REMOTE_CLONE.name
+                ) {
+                    path?.deleteRecursively()
+                    workspacePaths.metadataRoot(existing.id)
+                        .deleteRecursively()
+                    workspaceDao.deleteById(existing.id)
+                }
+            }
+
+        val workspaceId = UUID.randomUUID().toString()
+        val destination = workspacePaths.workspaceRoot(workspaceId)
+        destination.parentFile?.mkdirs()
+        if (destination.exists()) {
+            check(destination.deleteRecursively()) {
+                "Unable to prepare clone destination"
+            }
+        }
+
+        val now = System.currentTimeMillis()
+        val entity = WorkspaceEntity(
+            id = workspaceId,
+            name = name,
+            sourceTreeUri = null,
+            sourceDisplayName = fullName,
+            sourceAuthority = null,
+            sourceWritable = true,
+            strategy = WorkspaceStrategy.REMOTE_CLONE.name,
+            managedWorkspacePath = destination.canonicalPath,
+            repositoryRemote = remoteUrl,
+            currentBranch = defaultBranch,
+            accountId = accountId.toString(),
+            syncState = WorkspaceSyncState.SYNCING.name,
+            lastSyncedAtEpochMillis = null,
+            lastScanAtEpochMillis = null,
+            fileCount = 0,
+            totalBytes = 0,
+            secretWarningCount = 0,
+            largeFileWarningCount = 0,
+            syncConflictCount = 0,
+            lastOpenedAtEpochMillis = now,
+        )
+
+        workspaceDao.upsert(entity)
+        return entity.toDomain()
+    }
+
+    suspend fun completeRemoteClone(
+        workspaceId: String,
+        currentBranch: String?,
+    ): WorkspaceImportResult {
+        val entity = workspaceDao.findById(workspaceId)
+            ?: error("Clone workspace not found")
+
+        require(
+            entity.strategy == WorkspaceStrategy.REMOTE_CLONE.name,
+        ) {
+            "Workspace is not a remote clone"
+        }
+
+        val directory = entity.managedWorkspacePath
+            ?.let(::File)
+            ?: error("Clone workspace path is missing")
+
+        val scan = directScanner.scan(directory)
+        val now = System.currentTimeMillis()
+        val ready = entity.copy(
+            syncState = WorkspaceSyncState.READY.name,
+            currentBranch = currentBranch
+                ?.takeIf { it.isNotBlank() }
+                ?: entity.currentBranch,
+            lastSyncedAtEpochMillis = now,
+            lastScanAtEpochMillis = now,
+            fileCount = scan.fileCount,
+            totalBytes = scan.totalBytes,
+            secretWarningCount = scan.secretWarningCount,
+            largeFileWarningCount = scan.largeFileWarningCount,
+            syncConflictCount = 0,
+            lastOpenedAtEpochMillis = now,
+        )
+
+        workspaceDao.upsert(ready)
+
+        return WorkspaceImportResult(
+            workspace = ready.toDomain(),
+            scan = scan,
+            sync = null,
+        )
+    }
+
+    suspend fun discardRemoteClone(
+        workspaceId: String,
+    ) = withContext(Dispatchers.IO) {
+        val entity = workspaceDao.findById(workspaceId)
+            ?: return@withContext
+
+        if (entity.strategy != WorkspaceStrategy.REMOTE_CLONE.name) {
+            return@withContext
+        }
+
+        entity.managedWorkspacePath
+            ?.let(::File)
+            ?.deleteRecursively()
+        workspacePaths.metadataRoot(workspaceId)
+            .deleteRecursively()
+        workspaceDao.deleteById(workspaceId)
+    }
+
+    suspend fun bindRepository(
+        workspaceId: String,
+        remoteUrl: String?,
+        currentBranch: String?,
+        accountId: Long?,
+    ): Workspace {
+        val entity = workspaceDao.findById(workspaceId)
+            ?: error("Workspace not found")
+
+        val updated = entity.copy(
+            repositoryRemote = remoteUrl ?: entity.repositoryRemote,
+            currentBranch = currentBranch ?: entity.currentBranch,
+            accountId = accountId?.toString() ?: entity.accountId,
+            lastOpenedAtEpochMillis = System.currentTimeMillis(),
+        )
+        workspaceDao.upsert(updated)
+        return updated.toDomain()
+    }
+
     suspend fun sync(
         workspaceId: String,
     ): WorkspaceImportResult {
@@ -178,6 +341,13 @@ class WorkspaceRegistry @Inject constructor(
                     ?: error("Managed workspace source is missing")
                 importSafTree(treeUri)
             }
+
+            WorkspaceStrategy.REMOTE_CLONE -> {
+                completeRemoteClone(
+                    workspaceId = workspaceId,
+                    currentBranch = entity.currentBranch,
+                )
+            }
         }
     }
 
@@ -194,14 +364,19 @@ class WorkspaceRegistry @Inject constructor(
         val entity = workspaceDao.findById(workspaceId)
             ?: return@withContext
 
-        if (entity.strategy == WorkspaceStrategy.MANAGED.name) {
+        val strategy = WorkspaceStrategy.valueOf(entity.strategy)
+        if (strategy == WorkspaceStrategy.MANAGED ||
+            strategy == WorkspaceStrategy.REMOTE_CLONE
+        ) {
             entity.managedWorkspacePath
                 ?.let(::File)
                 ?.deleteRecursively()
 
             workspacePaths.metadataRoot(workspaceId)
                 .deleteRecursively()
+        }
 
+        if (strategy == WorkspaceStrategy.MANAGED) {
             entity.sourceTreeUri
                 ?.let(Uri::parse)
                 ?.let(permissionManager::release)
