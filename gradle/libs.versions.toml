@@ -11,6 +11,7 @@ hilt = "2.60.1"
 androidxHilt = "1.4.0"
 room = "2.8.5"
 datastore = "1.2.1"
+documentfile = "1.1.0"
 browser = "1.10.0"
 retrofit = "3.0.0"
 okhttp = "5.5.0"
@@ -46,6 +47,7 @@ androidx-room-ktx = { module = "androidx.room:room-ktx", version.ref = "room" }
 androidx-room-compiler = { module = "androidx.room:room-compiler", version.ref = "room" }
 
 androidx-datastore-preferences = { module = "androidx.datastore:datastore-preferences", version.ref = "datastore" }
+androidx-documentfile = { module = "androidx.documentfile:documentfile", version.ref = "documentfile" }
 androidx-browser = { module = "androidx.browser:browser", version.ref = "browser" }
 
 retrofit-core = { module = "com.squareup.retrofit2:retrofit", version.ref = "retrofit" }
