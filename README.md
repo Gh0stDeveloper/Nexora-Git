@@ -76,6 +76,8 @@ See [Git Engine](docs/GIT_ENGINE.md).
 - [GitHub App configuration](docs/GITHUB_APP.md)
 - [Threat model](docs/THREAT_MODEL.md)
 - [Phase 0 report](docs/PHASE_0_REPORT.md)
+- [Android foundation](docs/ANDROID_FOUNDATION.md)
+- [Phase A report](docs/PHASE_A_REPORT.md)
 - [Architecture decisions](docs/adr/)
 
 ## Initial scope
@@ -114,9 +116,9 @@ The project must use its own branding and must not imply that it is an official 
 
 ## Status
 
-**Current stage:** Phase 0 repository foundation complete; Phase A is next.
+**Current stage:** Phase A — Android Foundation complete; Phase B — GitHub Authentication is next.
 
-The repository now has the product identity, architecture decisions, GitHub App contract, threat model, open-source policies and Foundation CI. The remaining Phase 0 external prerequisite is registering the actual GitHub App in GitHub account settings.
+The repository now contains a compilable native Android application foundation using Kotlin, Jetpack Compose, Navigation, Hilt, Room, DataStore, Retrofit/OkHttp, unit tests, a pinned Gradle Wrapper and Android CI that produces a debug APK artifact.
 
 ---
 

@@ -43,16 +43,24 @@ This roadmap is intentionally staged. A phase is not complete if it only contain
 
 ## Phase A — Android Foundation
 
-- Kotlin project
-- Jetpack Compose
-- Material 3 design system
-- navigation
-- Hilt
-- Room
-- DataStore
-- networking
-- common result/error types
-- test modules
+**Status: complete.**
+
+- [x] Kotlin/Android application project
+- [x] Jetpack Compose
+- [x] Material 3 design system baseline
+- [x] edge-to-edge system UI handling
+- [x] Navigation Compose shell
+- [x] Home / Explore / Repositories / Activity / Profile destinations
+- [x] Hilt dependency injection
+- [x] Room database baseline
+- [x] DataStore settings baseline
+- [x] Retrofit + OkHttp GitHub API baseline
+- [x] shared result/error model
+- [x] unit test baseline
+- [x] instrumentation/Compose test baseline
+- [x] Gradle Wrapper committed and pinned
+- [x] Android CI: assembleDebug + unit tests + lint
+- [x] debug APK artifact upload
 
 ## Phase B — GitHub Authentication
 
