@@ -8,6 +8,7 @@ enum class WorkspaceStrategy {
 enum class WorkspaceSyncState {
     READY,
     SYNCING,
+    CONFLICTS,
     ERROR,
 }
 
@@ -30,6 +31,7 @@ data class Workspace(
     val totalBytes: Long,
     val secretWarningCount: Int,
     val largeFileWarningCount: Int,
+    val syncConflictCount: Int,
     val lastOpenedAtEpochMillis: Long,
 )
 
@@ -44,6 +46,7 @@ data class WorkspaceSyncResult(
     val skippedFiles: Int,
     val deletedFiles: Int,
     val copiedBytes: Long,
+    val conflictedPaths: List<String>,
     val completedAtEpochMillis: Long,
 )
 
