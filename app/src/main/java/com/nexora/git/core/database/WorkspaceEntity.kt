@@ -23,5 +23,6 @@ data class WorkspaceEntity(
     val totalBytes: Long,
     val secretWarningCount: Int,
     val largeFileWarningCount: Int,
+    val syncConflictCount: Int,
     val lastOpenedAtEpochMillis: Long,
 )
