@@ -6,6 +6,7 @@ import androidx.lifecycle.viewModelScope
 import com.nexora.git.core.git.GitAuthor
 import com.nexora.git.core.git.GitBranch
 import com.nexora.git.core.git.GitConflict
+import com.nexora.git.core.git.GitConflictResolution
 import com.nexora.git.core.git.GitDivergence
 import com.nexora.git.core.git.GitEngine
 import com.nexora.git.core.git.GitHistoryEntry
@@ -517,6 +518,22 @@ class GitWorkspaceViewModel @Inject constructor(
                 "Pushed " + current + " to " +
                     normalizedRemote + "/" + target + "."
             }
+        }
+    }
+
+    fun resolveConflictSide(
+        path: String,
+        resolution: GitConflictResolution,
+    ) {
+        launchOperation(
+            "Resolved " + path + " using " +
+                resolution.name.lowercase() + ".",
+        ) {
+            gitEngine.resolveConflict(
+                repositoryPath = workspacePath,
+                path = path,
+                resolution = resolution,
+            )
         }
     }
 
