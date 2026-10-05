@@ -196,7 +196,7 @@ This roadmap is intentionally staged. A phase is not complete if it only contain
 
 ## Phase G — Code Browser
 
-**Implementation status: complete; final Android CI validation required before merge.**
+**Status: complete and CI validated.**
 
 - [x] workspace-rooted directory navigation
 - [x] breadcrumbs and empty states
