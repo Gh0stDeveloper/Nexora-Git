@@ -1453,6 +1453,12 @@ private fun PushCard(
     onForceWithLease: () -> Unit,
 ) {
     val divergence = state.divergence
+    val targetUpstream = remote + "/" + pushTarget
+    val leaseAvailable =
+        state.currentUpstream == targetUpstream &&
+            divergence != null &&
+            divergence.upstreamRef == targetUpstream &&
+            divergence.upstreamOid.isNotBlank()
 
     Card(
         modifier = Modifier.fillMaxWidth(),
@@ -1515,8 +1521,7 @@ private fun PushCard(
                 modifier = Modifier.fillMaxWidth(),
                 enabled =
                     !state.operationInProgress &&
-                        divergence != null &&
-                        divergence.upstreamOid.isNotBlank() &&
+                        leaseAvailable &&
                         pushTarget.isNotBlank() &&
                         state.conflicts.isEmpty() &&
                         !state.rebaseInProgress,
