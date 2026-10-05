@@ -89,6 +89,62 @@ class GitJsonParser @Inject constructor() {
     fun conflicts(json: String): List<GitConflict> =
         conflicts(JSONArray(json))
 
+    fun history(json: String): List<GitHistoryEntry> {
+        val array = JSONArray(json)
+        return buildList {
+            for (index in 0 until array.length()) {
+                val item = array.getJSONObject(index)
+                add(
+                    GitHistoryEntry(
+                        oid = item.getString("oid"),
+                        shortOid = item.getString("shortOid"),
+                        summary = item.optString("summary"),
+                        message = item.optString("message"),
+                        authorName = item.optString("authorName"),
+                        authorEmail = item.optString("authorEmail"),
+                        timestampSeconds =
+                            item.optLong("timestampSeconds"),
+                        timezoneOffsetMinutes =
+                            item.optInt("timezoneOffsetMinutes"),
+                        parentCount = item.optInt("parentCount"),
+                    ),
+                )
+            }
+        }
+    }
+
+    fun blame(json: String): List<GitBlameHunk> {
+        val array = JSONArray(json)
+        return buildList {
+            for (index in 0 until array.length()) {
+                val item = array.getJSONObject(index)
+                add(
+                    GitBlameHunk(
+                        startLine = item.getLong("startLine"),
+                        lineCount = item.getLong("lineCount"),
+                        finalCommitOid =
+                            item.getString("finalCommitOid"),
+                        originalCommitOid =
+                            item.getString("originalCommitOid"),
+                        originalStartLine =
+                            item.getLong("originalStartLine"),
+                        originalPath =
+                            item.optString("originalPath"),
+                        authorName =
+                            item.optString("authorName"),
+                        authorEmail =
+                            item.optString("authorEmail"),
+                        timestampSeconds =
+                            item.optLong("timestampSeconds"),
+                        timezoneOffsetMinutes =
+                            item.optInt("timezoneOffsetMinutes"),
+                        boundary = item.optBoolean("boundary"),
+                    ),
+                )
+            }
+        }
+    }
+
     private fun statusEntries(
         array: JSONArray,
     ): List<GitStatusEntry> = buildList {
