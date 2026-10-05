@@ -217,15 +217,29 @@ This roadmap is intentionally staged. A phase is not complete if it only contain
 
 ## Phase H — Mobile Editor
 
-- editor core
-- line numbers
-- syntax highlighting
-- search/replace
-- undo/redo
-- indentation settings
-- save
-- diff
-- commit flow
+**Implementation status: complete; final CI validation required before merge.**
+
+- [x] editable text and Markdown files
+- [x] 512 KiB mobile editor safety limit
+- [x] line numbers
+- [x] editable syntax highlighting
+- [x] literal search
+- [x] match-case option
+- [x] replace current / replace all
+- [x] bounded undo / redo
+- [x] tabs / 2 spaces / 4 spaces
+- [x] persisted indentation preference
+- [x] atomic save
+- [x] external modification detection
+- [x] unsaved local diff
+- [x] path-scoped libgit2 diff
+- [x] save-before-commit
+- [x] existing staged-file warning
+- [x] real libgit2 commit flow
+- [x] GitHub-familiar editor visual language
+- [x] distinct Nexora violet application icon
+- [x] editor unit / native / Compose tests
+- [x] mobile editor documentation
 
 ## Phase I — Complete Daily Git Workflow
 
