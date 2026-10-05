@@ -1,6 +1,42 @@
 package com.nexora.git.feature.git
 
 object GitWorkflowPolicy {
+    fun normalizeRemoteName(value: String): String {
+        val remote = value.trim()
+        require(isSafeRemoteName(remote)) {
+            "Invalid Git remote name."
+        }
+        return remote
+    }
+
+    fun normalizeGitHubRemoteUrl(value: String): String {
+        val url = value.trim()
+        require(url.startsWith("https://github.com/")) {
+            "Remote URL must use https://github.com/."
+        }
+        require(
+            !url.contains('@') &&
+                !url.contains('?') &&
+                !url.contains('#') &&
+                url.removePrefix("https://github.com/")
+                    .count { it == '/' } >= 1
+        ) {
+            "Remote URL is not a safe GitHub repository URL."
+        }
+        return url
+    }
+
+    fun isSafeRemoteName(value: String): Boolean {
+        val remote = value.trim()
+        if (remote.isBlank() || remote.length > 80) return false
+        return remote.all {
+            it.isLetterOrDigit() ||
+                it == '-' ||
+                it == '_' ||
+                it == '.'
+        }
+    }
+
     fun normalizeBranchName(value: String): String {
         val branch = value.trim()
         require(isSafeBranchName(branch)) {
