@@ -39,7 +39,7 @@ Date: 2026-10-04
 - workspace confinement;
 - .git blocking inherited from Phase G;
 - AtomicFile writes;
-- external-modification detection before save;
+- timestamp + expected-content external-modification detection before save;
 - no binary/image editor;
 - no oversized-file editor.
 
