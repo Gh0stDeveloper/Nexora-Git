@@ -768,6 +768,239 @@ void remote_workflow(
     );
 }
 
+
+void rebase_recovery_workflow(
+    const fs::path& seed,
+    const fs::path& remote,
+    const fs::path& local_clone,
+    const fs::path& peer_clone
+) {
+    fs::create_directories(seed);
+    nexora::git::init_repository(seed.string());
+
+    write_file(
+        seed / "rebase-conflict.txt",
+        "base\n"
+    );
+    write_file(
+        seed / "abort-conflict.txt",
+        "abort-base\n"
+    );
+    nexora::git::stage(
+        seed.string(),
+        {"rebase-conflict.txt", "abort-conflict.txt"}
+    );
+    nexora::git::commit(
+        seed.string(),
+        "Rebase recovery base",
+        kAuthor
+    );
+
+    create_bare_remote(remote);
+    add_remote(seed, "origin", remote);
+    nexora::git::push(
+        seed.string(),
+        "origin",
+        "refs/heads/main:refs/heads/main",
+        {}
+    );
+
+    nexora::git::clone_repository(
+        remote.string(),
+        local_clone.string(),
+        {}
+    );
+    nexora::git::clone_repository(
+        remote.string(),
+        peer_clone.string(),
+        {}
+    );
+
+    nexora::git::set_upstream(
+        local_clone.string(),
+        "main",
+        "origin/main"
+    );
+    nexora::git::set_upstream(
+        peer_clone.string(),
+        "main",
+        "origin/main"
+    );
+
+    write_file(
+        local_clone / "rebase-conflict.txt",
+        "local version\n"
+    );
+    nexora::git::stage(
+        local_clone.string(),
+        {"rebase-conflict.txt"}
+    );
+    nexora::git::commit(
+        local_clone.string(),
+        "Local rebase conflict",
+        kAuthor
+    );
+
+    write_file(
+        peer_clone / "rebase-conflict.txt",
+        "remote version\n"
+    );
+    nexora::git::stage(
+        peer_clone.string(),
+        {"rebase-conflict.txt"}
+    );
+    nexora::git::commit(
+        peer_clone.string(),
+        "Remote rebase conflict",
+        kAuthor
+    );
+    nexora::git::push(
+        peer_clone.string(),
+        "origin",
+        "",
+        {}
+    );
+
+    const std::string conflict_result =
+        nexora::git::pull_with_strategy(
+            local_clone.string(),
+            "origin",
+            "rebase",
+            kAuthor,
+            {}
+        );
+    require(
+        conflict_result.find("\"state\":\"conflicts\"") !=
+            std::string::npos,
+        "Rebase conflict was not surfaced"
+    );
+    require(
+        nexora::git::repository_state(local_clone.string()) ==
+            "rebase",
+        "Repository did not retain rebase state"
+    );
+
+    write_file(
+        local_clone / "rebase-conflict.txt",
+        "resolved local and remote\n"
+    );
+    nexora::git::stage(
+        local_clone.string(),
+        {"rebase-conflict.txt"}
+    );
+
+    const std::string continued =
+        nexora::git::continue_rebase(
+            local_clone.string(),
+            kAuthor
+        );
+    require(
+        continued.find("\"state\":\"rebased\"") !=
+            std::string::npos,
+        "Continue rebase did not finish after resolution"
+    );
+    require(
+        nexora::git::repository_state(local_clone.string()) ==
+            "none",
+        "Repository remained in rebase state after continue"
+    );
+
+    nexora::git::push(
+        local_clone.string(),
+        "origin",
+        "",
+        {}
+    );
+    nexora::git::pull(
+        peer_clone.string(),
+        "origin",
+        kAuthor,
+        {}
+    );
+
+    write_file(
+        local_clone / "abort-conflict.txt",
+        "local abort version\n"
+    );
+    nexora::git::stage(
+        local_clone.string(),
+        {"abort-conflict.txt"}
+    );
+    const std::string local_abort_commit =
+        nexora::git::commit(
+            local_clone.string(),
+            "Local abort conflict",
+            kAuthor
+        );
+    const std::string local_abort_oid =
+        json_string(local_abort_commit, "oid");
+    require(
+        !local_abort_oid.empty(),
+        "Local abort commit OID missing"
+    );
+
+    write_file(
+        peer_clone / "abort-conflict.txt",
+        "remote abort version\n"
+    );
+    nexora::git::stage(
+        peer_clone.string(),
+        {"abort-conflict.txt"}
+    );
+    nexora::git::commit(
+        peer_clone.string(),
+        "Remote abort conflict",
+        kAuthor
+    );
+    nexora::git::push(
+        peer_clone.string(),
+        "origin",
+        "",
+        {}
+    );
+
+    const std::string abort_conflict =
+        nexora::git::pull_with_strategy(
+            local_clone.string(),
+            "origin",
+            "rebase",
+            kAuthor,
+            {}
+        );
+    require(
+        abort_conflict.find("\"state\":\"conflicts\"") !=
+            std::string::npos,
+        "Abort scenario did not enter rebase conflict"
+    );
+    require(
+        nexora::git::repository_state(local_clone.string()) ==
+            "rebase",
+        "Abort scenario did not retain rebase state"
+    );
+
+    nexora::git::abort_rebase(local_clone.string());
+
+    require(
+        nexora::git::repository_state(local_clone.string()) ==
+            "none",
+        "Abort rebase did not clear repository state"
+    );
+
+    const std::string after_abort_history =
+        nexora::git::history(
+            local_clone.string(),
+            "",
+            5
+        );
+    require(
+        after_abort_history.find(local_abort_oid.substr(0, 7)) !=
+            std::string::npos ||
+        after_abort_history.find("Local abort conflict") !=
+            std::string::npos,
+        "Abort rebase did not restore the original local commit"
+    );
+}
+
 }  // namespace
 
 int main() {
@@ -777,6 +1010,10 @@ int main() {
     const fs::path remote = root / "remote.git";
     const fs::path clone_a = root / "clone-a";
     const fs::path clone_b = root / "clone-b";
+    const fs::path rebase_seed = root / "rebase-seed";
+    const fs::path rebase_remote = root / "rebase-remote.git";
+    const fs::path rebase_local = root / "rebase-local";
+    const fs::path rebase_peer = root / "rebase-peer";
 
     try {
         fs::create_directories(seed);
@@ -799,6 +1036,12 @@ int main() {
             remote,
             clone_a,
             clone_b
+        );
+        rebase_recovery_workflow(
+            rebase_seed,
+            rebase_remote,
+            rebase_local,
+            rebase_peer
         );
 
         fs::remove_all(root);
