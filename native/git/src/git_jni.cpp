@@ -224,6 +224,69 @@ Java_com_nexora_git_core_git_NativeGitBridge_nativeRemoteUrl(
     });
 }
 
+
+extern "C" JNIEXPORT jstring JNICALL
+Java_com_nexora_git_core_git_NativeGitBridge_nativeRemotes(
+    JNIEnv* env,
+    jobject,
+    jstring repository_path
+) {
+    return string_call(env, [&]() {
+        return nexora::git::remotes(
+            from_jstring(env, repository_path)
+        );
+    });
+}
+
+extern "C" JNIEXPORT void JNICALL
+Java_com_nexora_git_core_git_NativeGitBridge_nativeAddRemote(
+    JNIEnv* env,
+    jobject,
+    jstring repository_path,
+    jstring name,
+    jstring url
+) {
+    void_call(env, [&]() {
+        nexora::git::add_remote(
+            from_jstring(env, repository_path),
+            from_jstring(env, name),
+            from_jstring(env, url)
+        );
+    });
+}
+
+extern "C" JNIEXPORT void JNICALL
+Java_com_nexora_git_core_git_NativeGitBridge_nativeRenameRemote(
+    JNIEnv* env,
+    jobject,
+    jstring repository_path,
+    jstring old_name,
+    jstring new_name
+) {
+    void_call(env, [&]() {
+        nexora::git::rename_remote(
+            from_jstring(env, repository_path),
+            from_jstring(env, old_name),
+            from_jstring(env, new_name)
+        );
+    });
+}
+
+extern "C" JNIEXPORT void JNICALL
+Java_com_nexora_git_core_git_NativeGitBridge_nativeRemoveRemote(
+    JNIEnv* env,
+    jobject,
+    jstring repository_path,
+    jstring name
+) {
+    void_call(env, [&]() {
+        nexora::git::remove_remote(
+            from_jstring(env, repository_path),
+            from_jstring(env, name)
+        );
+    });
+}
+
 extern "C" JNIEXPORT jstring JNICALL
 Java_com_nexora_git_core_git_NativeGitBridge_nativeStatus(
     JNIEnv* env,
@@ -298,6 +361,54 @@ Java_com_nexora_git_core_git_NativeGitBridge_nativeBranches(
     });
 }
 
+
+extern "C" JNIEXPORT void JNICALL
+Java_com_nexora_git_core_git_NativeGitBridge_nativeSetUpstream(
+    JNIEnv* env,
+    jobject,
+    jstring repository_path,
+    jstring branch,
+    jstring upstream
+) {
+    void_call(env, [&]() {
+        nexora::git::set_upstream(
+            from_jstring(env, repository_path),
+            from_jstring(env, branch),
+            from_jstring(env, upstream)
+        );
+    });
+}
+
+extern "C" JNIEXPORT jstring JNICALL
+Java_com_nexora_git_core_git_NativeGitBridge_nativeDivergence(
+    JNIEnv* env,
+    jobject,
+    jstring repository_path,
+    jstring local_ref,
+    jstring upstream_ref
+) {
+    return string_call(env, [&]() {
+        return nexora::git::divergence(
+            from_jstring(env, repository_path),
+            from_jstring(env, local_ref),
+            from_jstring(env, upstream_ref)
+        );
+    });
+}
+
+extern "C" JNIEXPORT jstring JNICALL
+Java_com_nexora_git_core_git_NativeGitBridge_nativeRepositoryState(
+    JNIEnv* env,
+    jobject,
+    jstring repository_path
+) {
+    return string_call(env, [&]() {
+        return nexora::git::repository_state(
+            from_jstring(env, repository_path)
+        );
+    });
+}
+
 extern "C" JNIEXPORT void JNICALL
 Java_com_nexora_git_core_git_NativeGitBridge_nativeCreateBranch(
     JNIEnv* env,
@@ -354,17 +465,48 @@ Java_com_nexora_git_core_git_NativeGitBridge_nativePull(
     jobject,
     jstring repository_path,
     jstring remote,
+    jstring strategy,
     jstring author_name,
     jstring author_email,
     jstring username,
     jstring password
 ) {
     return string_call(env, [&]() {
-        return nexora::git::pull(
+        return nexora::git::pull_with_strategy(
             from_jstring(env, repository_path),
             from_jstring(env, remote),
+            from_jstring(env, strategy),
             author(env, author_name, author_email),
             credentials(env, username, password)
+        );
+    });
+}
+
+extern "C" JNIEXPORT jstring JNICALL
+Java_com_nexora_git_core_git_NativeGitBridge_nativeContinueRebase(
+    JNIEnv* env,
+    jobject,
+    jstring repository_path,
+    jstring author_name,
+    jstring author_email
+) {
+    return string_call(env, [&]() {
+        return nexora::git::continue_rebase(
+            from_jstring(env, repository_path),
+            author(env, author_name, author_email)
+        );
+    });
+}
+
+extern "C" JNIEXPORT void JNICALL
+Java_com_nexora_git_core_git_NativeGitBridge_nativeAbortRebase(
+    JNIEnv* env,
+    jobject,
+    jstring repository_path
+) {
+    void_call(env, [&]() {
+        nexora::git::abort_rebase(
+            from_jstring(env, repository_path)
         );
     });
 }
@@ -384,6 +526,29 @@ Java_com_nexora_git_core_git_NativeGitBridge_nativePush(
             from_jstring(env, repository_path),
             from_jstring(env, remote),
             from_jstring(env, refspec),
+            credentials(env, username, password)
+        );
+    });
+}
+
+
+extern "C" JNIEXPORT jstring JNICALL
+Java_com_nexora_git_core_git_NativeGitBridge_nativePushForceWithLease(
+    JNIEnv* env,
+    jobject,
+    jstring repository_path,
+    jstring remote,
+    jstring refspec,
+    jstring expected_remote_oid,
+    jstring username,
+    jstring password
+) {
+    return string_call(env, [&]() {
+        return nexora::git::push_force_with_lease(
+            from_jstring(env, repository_path),
+            from_jstring(env, remote),
+            from_jstring(env, refspec),
+            from_jstring(env, expected_remote_oid),
             credentials(env, username, password)
         );
     });
