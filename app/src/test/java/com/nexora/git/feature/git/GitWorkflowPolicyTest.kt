@@ -35,6 +35,38 @@ class GitWorkflowPolicyTest {
     }
 
     @Test
+    fun remotePolicy_rejectsCredentialsAndNonGithubHosts() {
+        assertEquals(
+            "origin",
+            GitWorkflowPolicy.normalizeRemoteName(" origin "),
+        )
+        assertEquals(
+            "https://github.com/example/project.git",
+            GitWorkflowPolicy.normalizeGitHubRemoteUrl(
+                " https://github.com/example/project.git ",
+            ),
+        )
+
+        assertFalse(
+            runCatching {
+                GitWorkflowPolicy.normalizeGitHubRemoteUrl(
+                    "https://token@github.com/example/project.git",
+                )
+            }.isSuccess,
+        )
+        assertFalse(
+            runCatching {
+                GitWorkflowPolicy.normalizeGitHubRemoteUrl(
+                    "http://github.com/example/project.git",
+                )
+            }.isSuccess,
+        )
+        assertFalse(
+            GitWorkflowPolicy.isSafeRemoteName("bad remote"),
+        )
+    }
+
+    @Test
     fun conflictMarkers_requireAllStandardMarkers() {
         assertTrue(
             GitWorkflowPolicy.hasConflictMarkers(
