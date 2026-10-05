@@ -63,6 +63,7 @@ object GitWorkflowPolicy {
         val branch = value.trim()
         if (branch.isBlank()) return false
         if (branch.startsWith("-") ||
+            branch.startsWith("+") ||
             branch.startsWith(".") ||
             branch.endsWith(".") ||
             branch.endsWith("/") ||
