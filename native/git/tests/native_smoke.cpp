@@ -218,11 +218,29 @@ void basic_local_workflow(const fs::path& repository) {
 
     write_file(
         repository / "literal[1].txt",
-        "bracket path\n"
+        "bracket base\n"
     );
     write_file(
         repository / "literal1.txt",
-        "plain path\n"
+        "plain base\n"
+    );
+    nexora::git::stage(
+        repository.string(),
+        {"literal[1].txt", "literal1.txt"}
+    );
+    nexora::git::commit(
+        repository.string(),
+        "Add literal path fixtures",
+        kAuthor
+    );
+
+    append_file(
+        repository / "literal[1].txt",
+        "bracket change\n"
+    );
+    append_file(
+        repository / "literal1.txt",
+        "plain change\n"
     );
 
     const std::string literal_patch =
@@ -240,6 +258,15 @@ void basic_local_workflow(const fs::path& repository) {
         literal_patch.find("literal1.txt") ==
             std::string::npos,
         "Literal path diff treated path as wildcard"
+    );
+
+    write_file(
+        repository / "literal[1].txt",
+        "bracket base\n"
+    );
+    write_file(
+        repository / "literal1.txt",
+        "plain base\n"
     );
 
     nexora::git::stage(
