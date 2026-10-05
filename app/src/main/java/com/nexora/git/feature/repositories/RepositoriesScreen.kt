@@ -16,6 +16,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Add
 import androidx.compose.material.icons.outlined.CallSplit
 import androidx.compose.material.icons.outlined.CloudDownload
+import androidx.compose.material.icons.outlined.Code
 import androidx.compose.material.icons.outlined.Delete
 import androidx.compose.material.icons.outlined.FolderOpen
 import androidx.compose.material.icons.outlined.Link
@@ -61,6 +62,7 @@ import java.util.Locale
 fun RepositoriesScreen(
     contentPadding: PaddingValues,
     onOpenRepository: (String, String) -> Unit,
+    onBrowseWorkspace: (String) -> Unit,
     viewModel: RepositoriesViewModel = hiltViewModel(),
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
@@ -93,6 +95,7 @@ fun RepositoriesScreen(
             folderPicker.launch(null)
         },
         onOpenRepository = onOpenRepository,
+        onBrowseWorkspace = onBrowseWorkspace,
         onCloneRepository = viewModel::cloneRepository,
         onInitializeGit = viewModel::initializeWorkspaceGit,
         onSync = viewModel::sync,
@@ -177,6 +180,7 @@ internal fun RepositoriesContent(
     onCloneUrl: () -> Unit,
     onOpenFolder: () -> Unit,
     onOpenRepository: (String, String) -> Unit,
+    onBrowseWorkspace: (String) -> Unit,
     onCloneRepository: (RepositorySummary) -> Unit,
     onInitializeGit: (String) -> Unit,
     onSync: (String) -> Unit,
@@ -347,6 +351,9 @@ internal fun RepositoriesContent(
             WorkspaceCard(
                 workspace = workspace,
                 enabled = !state.operationInProgress,
+                onBrowse = {
+                    onBrowseWorkspace(workspace.id)
+                },
                 onInitializeGit = {
                     onInitializeGit(workspace.id)
                 },
@@ -514,6 +521,7 @@ private fun RepositoryMetric(
 private fun WorkspaceCard(
     workspace: Workspace,
     enabled: Boolean,
+    onBrowse: () -> Unit,
     onInitializeGit: () -> Unit,
     onSync: () -> Unit,
     onDelete: () -> Unit,
@@ -594,6 +602,18 @@ private fun WorkspaceCard(
                         color = MaterialTheme.colorScheme.error,
                     )
                 }
+            }
+
+            OutlinedButton(
+                modifier = Modifier.fillMaxWidth(),
+                enabled = enabled,
+                onClick = onBrowse,
+            ) {
+                Icon(
+                    imageVector = Icons.Outlined.Code,
+                    contentDescription = null,
+                )
+                Text("Browse code")
             }
 
             Row(
