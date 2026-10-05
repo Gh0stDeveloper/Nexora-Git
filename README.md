@@ -129,7 +129,7 @@ The project must use its own branding and must not imply that it is an official 
 
 ## Status
 
-**Current stage:** Phase H — Mobile Editor implementation complete; final CI validation is required before merge.
+**Current stage:** Phase H — Mobile Editor complete and CI validated; Phase I — Complete Daily Git Workflow is next.
 
 Nexora Git now extends its offline code browser with a GitHub-familiar mobile editor: line numbers, editable syntax highlighting, search/replace, undo/redo, persisted indentation, atomic saves, file-scoped libgit2 diffs and a real commit flow.
 
