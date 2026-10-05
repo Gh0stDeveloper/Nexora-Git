@@ -34,6 +34,21 @@ class GitJsonParser @Inject constructor() {
         )
     }
 
+    fun remotes(json: String): List<GitRemote> {
+        val array = JSONArray(json)
+        return buildList {
+            for (index in 0 until array.length()) {
+                val item = array.getJSONObject(index)
+                add(
+                    GitRemote(
+                        name = item.getString("name"),
+                        url = item.optString("url"),
+                    ),
+                )
+            }
+        }
+    }
+
     fun branches(json: String): List<GitBranch> {
         val array = JSONArray(json)
         return buildList {
@@ -51,6 +66,27 @@ class GitJsonParser @Inject constructor() {
         }
     }
 
+    fun divergence(json: String): GitDivergence {
+        val root = JSONObject(json)
+        return GitDivergence(
+            localRef = root.getString("localRef"),
+            upstreamRef = root.getString("upstreamRef"),
+            localOid = root.getString("localOid"),
+            upstreamOid = root.getString("upstreamOid"),
+            ahead = root.optLong("ahead"),
+            behind = root.optLong("behind"),
+        )
+    }
+
+    fun repositoryState(value: String):
+        GitRepositoryOperationState =
+        when (value) {
+            "none" -> GitRepositoryOperationState.NONE
+            "merge" -> GitRepositoryOperationState.MERGE
+            "rebase" -> GitRepositoryOperationState.REBASE
+            else -> GitRepositoryOperationState.OTHER
+        }
+
     fun diff(json: String): GitDiff {
         val root = JSONObject(json)
         return GitDiff(
@@ -67,6 +103,7 @@ class GitJsonParser @Inject constructor() {
             "up_to_date" -> GitMergeState.UP_TO_DATE
             "fast_forward" -> GitMergeState.FAST_FORWARD
             "merged" -> GitMergeState.MERGED
+            "rebased" -> GitMergeState.REBASED
             "conflicts" -> GitMergeState.CONFLICTS
             else -> error("Unknown native merge state")
         }
@@ -83,6 +120,7 @@ class GitJsonParser @Inject constructor() {
         return GitPushResult(
             remote = root.getString("remote"),
             refspec = root.getString("refspec"),
+            forceWithLease = root.optBoolean("forceWithLease"),
         )
     }
 
