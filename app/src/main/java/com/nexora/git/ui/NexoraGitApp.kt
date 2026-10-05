@@ -38,6 +38,8 @@ import com.nexora.git.feature.editor.MobileEditorScreen
 import com.nexora.git.feature.home.HomeScreen
 import com.nexora.git.feature.files.CodeBrowserScreen
 import com.nexora.git.feature.git.GitWorkspaceScreen
+import com.nexora.git.feature.issues.IssueDetailScreen
+import com.nexora.git.feature.issues.IssuesScreen
 import com.nexora.git.feature.profile.ProfileScreen
 import com.nexora.git.feature.repositories.RepositoriesScreen
 import com.nexora.git.feature.repositories.RepositoryDetailScreen
@@ -279,6 +281,66 @@ private fun AuthenticatedNexoraGitApp(
             ) {
                 RepositoryDetailScreen(
                     contentPadding = paddingValues,
+                    onBack = {
+                        navController.popBackStack()
+                    },
+                    onOpenIssues = { owner, name ->
+                        navController.navigate(
+                            "issues/" + owner + "/" + name,
+                        )
+                    },
+                )
+            }
+
+            composable(
+                route = "issues/{owner}/{name}",
+                arguments = listOf(
+                    navArgument("owner") {
+                        type = NavType.StringType
+                    },
+                    navArgument("name") {
+                        type = NavType.StringType
+                    },
+                ),
+            ) { entry ->
+                val owner = entry.arguments
+                    ?.getString("owner")
+                    .orEmpty()
+                val name = entry.arguments
+                    ?.getString("name")
+                    .orEmpty()
+
+                IssuesScreen(
+                    contentPadding = paddingValues,
+                    onBack = {
+                        navController.popBackStack()
+                    },
+                    onOpenIssue = { number ->
+                        navController.navigate(
+                            "issue/" + owner + "/" +
+                                name + "/" + number,
+                        )
+                    },
+                )
+            }
+
+            composable(
+                route = "issue/{owner}/{name}/{number}",
+                arguments = listOf(
+                    navArgument("owner") {
+                        type = NavType.StringType
+                    },
+                    navArgument("name") {
+                        type = NavType.StringType
+                    },
+                    navArgument("number") {
+                        type = NavType.IntType
+                    },
+                ),
+            ) {
+                IssueDetailScreen(
+                    contentPadding = paddingValues,
+                    activeLogin = activeAccount.login,
                     onBack = {
                         navController.popBackStack()
                     },
