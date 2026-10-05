@@ -120,6 +120,10 @@ std::string pull_with_strategy(
     const Author& author,
     const Credentials& credentials
 );
+std::string continue_merge(
+    const std::string& repository_path,
+    const Author& author
+);
 std::string continue_rebase(
     const std::string& repository_path,
     const Author& author
