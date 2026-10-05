@@ -1321,7 +1321,8 @@ std::string push(
 
 std::string diff(
     const std::string& repository_path,
-    const std::string& mode
+    const std::string& mode,
+    const std::string& relative_path
 ) {
     git_repository* repository = open_repository(repository_path);
     git_diff* result = nullptr;
@@ -1331,6 +1332,15 @@ std::string diff(
         GIT_DIFF_INCLUDE_UNTRACKED |
         GIT_DIFF_RECURSE_UNTRACKED_DIRS |
         GIT_DIFF_INCLUDE_TYPECHANGE;
+
+    char* path_raw = nullptr;
+    git_strarray pathspec{};
+    if (!relative_path.empty()) {
+        path_raw = const_cast<char*>(relative_path.c_str());
+        pathspec.strings = &path_raw;
+        pathspec.count = 1;
+        options.pathspec = pathspec;
+    }
 
     git_tree* tree = nullptr;
     git_index* index = nullptr;
