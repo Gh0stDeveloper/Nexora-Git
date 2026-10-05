@@ -1,9 +1,10 @@
 package com.nexora.git.core.editor
 
 import kotlin.math.max
+import javax.inject.Inject
 import kotlin.math.min
 
-class EditorTextOperations {
+class EditorTextOperations @Inject constructor() {
 
     fun findAll(
         text: String,
