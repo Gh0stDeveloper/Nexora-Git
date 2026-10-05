@@ -54,6 +54,7 @@ class EditorFileStore @Inject constructor(
         workspaceId: String,
         relativePath: String,
         text: String,
+        expectedText: String,
         expectedLastModifiedEpochMillis: Long,
     ): SavedEditorFile = withContext(Dispatchers.IO) {
         val workspace = workspaceRegistry.findById(workspaceId)
@@ -75,8 +76,10 @@ class EditorFileStore @Inject constructor(
         val currentModified = file.lastModified()
             .coerceAtLeast(0L)
 
+        val currentText = file.readText(Charsets.UTF_8)
         require(
-            currentModified == expectedLastModifiedEpochMillis,
+            currentModified == expectedLastModifiedEpochMillis &&
+                currentText == expectedText,
         ) {
             "The file changed outside Nexora Git. Reload it before saving."
         }
