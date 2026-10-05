@@ -4,6 +4,7 @@
 
 #include <algorithm>
 #include <cctype>
+#include <fstream>
 #include <mutex>
 #include <sstream>
 #include <string>
@@ -1809,6 +1810,231 @@ std::string pull_with_strategy(
     git_annotated_commit_free(target);
     git_repository_free(repository);
     return result;
+}
+
+std::string continue_merge(
+    const std::string& repository_path,
+    const Author& author
+) {
+    git_repository* repository = open_repository(repository_path);
+
+    if (git_repository_state(repository) !=
+        GIT_REPOSITORY_STATE_MERGE) {
+        git_repository_free(repository);
+        throw GitError(
+            GIT_EINVALID,
+            0,
+            "No merge is in progress"
+        );
+    }
+
+    if (repository_has_conflicts(repository)) {
+        const std::string payload = conflicts_json(repository);
+        git_repository_free(repository);
+        return merge_result_json(
+            "conflicts",
+            "",
+            payload
+        );
+    }
+
+    const char* git_dir = git_repository_path(repository);
+    if (git_dir == nullptr) {
+        git_repository_free(repository);
+        throw GitError(
+            GIT_ERROR,
+            0,
+            "Repository metadata path is unavailable"
+        );
+    }
+
+    std::ifstream merge_head_file(
+        std::string(git_dir) + "MERGE_HEAD"
+    );
+    std::string merge_head_oid;
+    std::getline(merge_head_file, merge_head_oid);
+
+    git_oid incoming_oid{};
+    if (merge_head_oid.empty() ||
+        git_oid_fromstr(
+            &incoming_oid,
+            merge_head_oid.c_str()
+        ) < 0) {
+        git_repository_free(repository);
+        throw GitError(
+            GIT_EINVALID,
+            0,
+            "MERGE_HEAD is missing or invalid"
+        );
+    }
+
+    git_reference* head_reference = nullptr;
+    const int head_rc = git_repository_head(
+        &head_reference,
+        repository
+    );
+    if (head_rc < 0) {
+        git_repository_free(repository);
+        throw_git_error(
+            head_rc,
+            "Read local merge parent"
+        );
+    }
+
+    git_commit* local_commit = nullptr;
+    const int local_rc = git_reference_peel(
+        reinterpret_cast<git_object**>(&local_commit),
+        head_reference,
+        GIT_OBJECT_COMMIT
+    );
+    git_reference_free(head_reference);
+    if (local_rc < 0) {
+        git_repository_free(repository);
+        throw_git_error(
+            local_rc,
+            "Resolve local merge parent"
+        );
+    }
+
+    git_commit* incoming_commit = nullptr;
+    const int incoming_rc = git_commit_lookup(
+        &incoming_commit,
+        repository,
+        &incoming_oid
+    );
+    if (incoming_rc < 0) {
+        git_commit_free(local_commit);
+        git_repository_free(repository);
+        throw_git_error(
+            incoming_rc,
+            "Resolve incoming merge parent"
+        );
+    }
+
+    git_index* index = nullptr;
+    const int index_rc = git_repository_index(
+        &index,
+        repository
+    );
+    if (index_rc < 0) {
+        git_commit_free(incoming_commit);
+        git_commit_free(local_commit);
+        git_repository_free(repository);
+        throw_git_error(
+            index_rc,
+            "Open resolved merge index"
+        );
+    }
+
+    git_oid tree_oid{};
+    const int tree_write_rc = git_index_write_tree(
+        &tree_oid,
+        index
+    );
+    if (tree_write_rc < 0) {
+        git_index_free(index);
+        git_commit_free(incoming_commit);
+        git_commit_free(local_commit);
+        git_repository_free(repository);
+        throw_git_error(
+            tree_write_rc,
+            "Write resolved merge tree"
+        );
+    }
+
+    const int index_write_rc = git_index_write(index);
+    if (index_write_rc < 0) {
+        git_index_free(index);
+        git_commit_free(incoming_commit);
+        git_commit_free(local_commit);
+        git_repository_free(repository);
+        throw_git_error(
+            index_write_rc,
+            "Write resolved merge index"
+        );
+    }
+
+    git_tree* tree = nullptr;
+    const int tree_rc = git_tree_lookup(
+        &tree,
+        repository,
+        &tree_oid
+    );
+    if (tree_rc < 0) {
+        git_index_free(index);
+        git_commit_free(incoming_commit);
+        git_commit_free(local_commit);
+        git_repository_free(repository);
+        throw_git_error(
+            tree_rc,
+            "Open resolved merge tree"
+        );
+    }
+
+    git_buf merge_message = GIT_BUF_INIT;
+    std::string message = "Merge conflict resolution";
+    if (git_repository_message(
+            &merge_message,
+            repository
+        ) == 0 &&
+        merge_message.ptr != nullptr &&
+        merge_message.size > 0) {
+        message.assign(
+            merge_message.ptr,
+            merge_message.size
+        );
+        while (!message.empty() &&
+               (message.back() == '\n' ||
+                message.back() == '\r')) {
+            message.pop_back();
+        }
+    }
+
+    git_signature* signature = make_signature(author);
+    const git_commit* parents[] = {
+        local_commit,
+        incoming_commit,
+    };
+    git_oid commit_oid{};
+
+    const int commit_rc = git_commit_create(
+        &commit_oid,
+        repository,
+        "HEAD",
+        signature,
+        signature,
+        nullptr,
+        message.c_str(),
+        tree,
+        2,
+        parents
+    );
+
+    git_signature_free(signature);
+    git_buf_dispose(&merge_message);
+    git_tree_free(tree);
+    git_index_free(index);
+    git_commit_free(incoming_commit);
+    git_commit_free(local_commit);
+
+    if (commit_rc < 0) {
+        git_repository_free(repository);
+        throw_git_error(
+            commit_rc,
+            "Create resolved merge commit"
+        );
+    }
+
+    const int cleanup_rc =
+        git_repository_state_cleanup(repository);
+    git_repository_free(repository);
+    check(cleanup_rc, "Clean merge state");
+
+    return merge_result_json(
+        "merged",
+        oid_to_string(&commit_oid),
+        "[]"
+    );
 }
 
 std::string continue_rebase(
