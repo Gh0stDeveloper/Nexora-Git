@@ -237,6 +237,44 @@ void basic_local_workflow(const fs::path& repository) {
         nexora::git::conflicts(repository.string()) == "[]",
         "Unexpected conflicts in local workflow"
     );
+
+    const std::string readme_history =
+        nexora::git::history(
+            repository.string(),
+            "README.md",
+            20
+        );
+    require(
+        readme_history.find("Prepare remote workflow") !=
+            std::string::npos,
+        "File history did not include README update"
+    );
+    require(
+        readme_history.find("Initial commit") !=
+            std::string::npos,
+        "File history did not include initial README commit"
+    );
+    require(
+        readme_history.find("Feature commit") ==
+            std::string::npos,
+        "File history included an unrelated commit"
+    );
+
+    const std::string readme_blame =
+        nexora::git::blame(
+            repository.string(),
+            "README.md"
+        );
+    require(
+        readme_blame.find("\"authorName\":\"Nexora Test\"") !=
+            std::string::npos,
+        "Blame did not expose commit author"
+    );
+    require(
+        readme_blame.find("\"originalPath\":\"README.md\"") !=
+            std::string::npos,
+        "Blame did not expose README path"
+    );
 }
 
 void remote_workflow(
