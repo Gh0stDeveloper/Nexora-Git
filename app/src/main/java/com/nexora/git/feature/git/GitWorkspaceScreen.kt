@@ -373,6 +373,21 @@ fun GitWorkspaceScreen(
                         }
                     }
 
+                    if (state.mergeInProgress) {
+                        item {
+                            MergeInProgressCard(
+                                conflictCount = state.conflicts.size,
+                                busy = state.operationInProgress,
+                                onContinue = {
+                                    viewModel.continueMerge(
+                                        authorName = authorName,
+                                        authorEmail = authorEmail,
+                                    )
+                                },
+                            )
+                        }
+                    }
+
                     if (state.conflicts.isNotEmpty()) {
                         item {
                             SectionTitle(
@@ -465,7 +480,9 @@ fun GitWorkspaceScreen(
                         }
                     }
 
-                    if (!state.rebaseInProgress) {
+                    if (!state.rebaseInProgress &&
+                        !state.mergeInProgress
+                    ) {
                         item {
                             CommitCard(
                                 message = commitMessage,
@@ -763,6 +780,14 @@ internal fun RepositorySummaryCard(
                     style = MaterialTheme.typography.titleSmall,
                 )
             }
+
+            if (state.mergeInProgress) {
+                Text(
+                    text = "Merge in progress",
+                    color = MaterialTheme.colorScheme.error,
+                    style = MaterialTheme.typography.titleSmall,
+                )
+            }
         }
     }
 }
@@ -845,6 +870,42 @@ private fun RebaseInProgressCard(
                 ) {
                     Text("Abort")
                 }
+            }
+        }
+    }
+}
+
+@Composable
+private fun MergeInProgressCard(
+    conflictCount: Int,
+    busy: Boolean,
+    onContinue: () -> Unit,
+) {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+    ) {
+        Column(
+            modifier = Modifier.padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(10.dp),
+        ) {
+            Text(
+                text = "Merge in progress",
+                style = MaterialTheme.typography.titleMedium,
+            )
+            Text(
+                text = if (conflictCount > 0) {
+                    "Resolve and stage every conflicted file. Continue merge will create the final two-parent merge commit."
+                } else {
+                    "All conflicts are resolved and staged. Complete the merge commit."
+                },
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+            Button(
+                modifier = Modifier.fillMaxWidth(),
+                enabled = !busy && conflictCount == 0,
+                onClick = onContinue,
+            ) {
+                Text("Continue merge")
             }
         }
     }
