@@ -684,7 +684,7 @@ fun GitWorkspaceScreen(
 }
 
 @Composable
-private fun RepositorySummaryCard(
+internal fun RepositorySummaryCard(
     state: GitWorkspaceUiState,
 ) {
     Card(
@@ -1356,7 +1356,7 @@ private fun RemoteCard(
 }
 
 @Composable
-private fun PullCard(
+internal fun PullCard(
     remote: String,
     strategy: GitPullStrategy,
     busy: Boolean,
@@ -1444,7 +1444,7 @@ private fun PullStrategyChip(
 }
 
 @Composable
-private fun PushCard(
+internal fun PushCard(
     state: GitWorkspaceUiState,
     remote: String,
     pushTarget: String,
