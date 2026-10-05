@@ -54,6 +54,7 @@ import java.util.Locale
 fun RepositoryDetailScreen(
     contentPadding: PaddingValues,
     onBack: () -> Unit,
+    onOpenIssues: (String, String) -> Unit,
     viewModel: RepositoryDetailViewModel = hiltViewModel(),
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
@@ -73,6 +74,7 @@ fun RepositoryDetailScreen(
         onOpenSettings = {
             showSettings = true
         },
+        onOpenIssues = onOpenIssues,
     )
 
     val details = state.details
@@ -136,6 +138,7 @@ internal fun RepositoryDetailContent(
     onFork: () -> Unit,
     onClone: () -> Unit,
     onOpenSettings: () -> Unit,
+    onOpenIssues: (String, String) -> Unit,
 ) {
     LazyColumn(
         modifier = Modifier
@@ -235,6 +238,25 @@ internal fun RepositoryDetailContent(
 
             item {
                 RepositoryStatsCard(details)
+            }
+
+            if (details.hasIssues) {
+                item {
+                    Button(
+                        modifier = Modifier.fillMaxWidth(),
+                        enabled =
+                            !state.operationInProgress &&
+                                !details.offlineSnapshot,
+                        onClick = {
+                            onOpenIssues(
+                                details.summary.ownerLogin,
+                                details.summary.name,
+                            )
+                        },
+                    ) {
+                        Text("Issues")
+                    }
+                }
             }
 
             if (details.summary.permissions.canManageSettings) {
