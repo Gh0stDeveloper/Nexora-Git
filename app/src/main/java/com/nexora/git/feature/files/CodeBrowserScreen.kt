@@ -23,6 +23,7 @@ import androidx.compose.material.icons.outlined.ArrowBack
 import androidx.compose.material.icons.outlined.Code
 import androidx.compose.material.icons.outlined.Description
 import androidx.compose.material.icons.outlined.Download
+import androidx.compose.material.icons.outlined.Edit
 import androidx.compose.material.icons.outlined.Folder
 import androidx.compose.material.icons.outlined.History
 import androidx.compose.material.icons.outlined.Image
@@ -59,6 +60,7 @@ import kotlinx.coroutines.flow.collectLatest
 fun CodeBrowserScreen(
     contentPadding: PaddingValues,
     onBack: () -> Unit,
+    onEdit: (String) -> Unit,
     viewModel: CodeBrowserViewModel = hiltViewModel(),
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
@@ -100,6 +102,7 @@ fun CodeBrowserScreen(
         onOpenDirectory = viewModel::openDirectory,
         onSelectTab = viewModel::selectTab,
         onShare = viewModel::shareSelected,
+        onEdit = onEdit,
         onDownload = {
             state.selectedFile?.let { file ->
                 exportLauncher.launch(file.name)
@@ -152,6 +155,7 @@ internal fun CodeBrowserContent(
     onOpenDirectory: (String) -> Unit,
     onSelectTab: (CodeBrowserTab) -> Unit,
     onShare: () -> Unit,
+    onEdit: (String) -> Unit,
     onDownload: () -> Unit,
 ) {
     Column(
@@ -194,6 +198,7 @@ internal fun CodeBrowserContent(
                 file = file,
                 onSelectTab = onSelectTab,
                 onShare = onShare,
+                onEdit = onEdit,
                 onDownload = onDownload,
             )
         }
@@ -449,6 +454,7 @@ private fun FileBrowser(
     file: BrowserFile,
     onSelectTab: (CodeBrowserTab) -> Unit,
     onShare: () -> Unit,
+    onEdit: (String) -> Unit,
     onDownload: () -> Unit,
 ) {
     Column(
@@ -457,6 +463,9 @@ private fun FileBrowser(
         FileMetadataBar(
             file = file,
             onShare = onShare,
+            onEdit = {
+                onEdit(file.relativePath)
+            },
             onDownload = onDownload,
         )
 
@@ -549,6 +558,7 @@ private fun FileBrowser(
 private fun FileMetadataBar(
     file: BrowserFile,
     onShare: () -> Unit,
+    onEdit: () -> Unit,
     onDownload: () -> Unit,
 ) {
     Row(
@@ -583,6 +593,19 @@ private fun FileMetadataBar(
                 style = MaterialTheme.typography.labelMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
+        }
+
+        if (
+            (file.kind == BrowserFileKind.TEXT ||
+                file.kind == BrowserFileKind.MARKDOWN) &&
+            !file.truncated
+        ) {
+            IconButton(onClick = onEdit) {
+                Icon(
+                    imageVector = Icons.Outlined.Edit,
+                    contentDescription = "Edit file",
+                )
+            }
         }
 
         IconButton(onClick = onShare) {
