@@ -477,7 +477,12 @@ class GitWorkspaceViewModel @Inject constructor(
             if (!forceWithLease) {
                 val upstream =
                     normalizedRemote + "/" + target
+
                 runCatching {
+                    gitEngine.fetch(
+                        repositoryPath = workspacePath,
+                        remote = normalizedRemote,
+                    )
                     gitEngine.setUpstream(
                         repositoryPath = workspacePath,
                         branch = current,
