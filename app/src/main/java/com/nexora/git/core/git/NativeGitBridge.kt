@@ -189,6 +189,12 @@ class NativeGitBridge @Inject constructor(
         repositoryPath: String,
     ): String
 
+    external fun nativeResolveConflict(
+        repositoryPath: String,
+        path: String,
+        resolution: String,
+    )
+
     external fun nativeHistory(
         repositoryPath: String,
         relativePath: String,
