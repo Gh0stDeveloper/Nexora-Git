@@ -483,6 +483,22 @@ Java_com_nexora_git_core_git_NativeGitBridge_nativePull(
 }
 
 extern "C" JNIEXPORT jstring JNICALL
+Java_com_nexora_git_core_git_NativeGitBridge_nativeContinueMerge(
+    JNIEnv* env,
+    jobject,
+    jstring repository_path,
+    jstring author_name,
+    jstring author_email
+) {
+    return string_call(env, [&]() {
+        return nexora::git::continue_merge(
+            from_jstring(env, repository_path),
+            author(env, author_name, author_email)
+        );
+    });
+}
+
+extern "C" JNIEXPORT jstring JNICALL
 Java_com_nexora_git_core_git_NativeGitBridge_nativeContinueRebase(
     JNIEnv* env,
     jobject,
