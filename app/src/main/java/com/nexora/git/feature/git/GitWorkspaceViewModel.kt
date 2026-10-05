@@ -68,6 +68,9 @@ data class GitWorkspaceUiState(
 
     val rebaseInProgress: Boolean
         get() = repositoryState == GitRepositoryOperationState.REBASE
+
+    val mergeInProgress: Boolean
+        get() = repositoryState == GitRepositoryOperationState.MERGE
 }
 
 @HiltViewModel
@@ -180,9 +183,11 @@ class GitWorkspaceViewModel @Inject constructor(
             return
         }
 
-        if (state.value.conflicts.isNotEmpty()) {
+        if (state.value.repositoryState !=
+            GitRepositoryOperationState.NONE
+        ) {
             showError(
-                "Resolve all merge or rebase conflicts before committing.",
+                "Finish the current merge or rebase before creating a normal commit.",
             )
             return
         }
@@ -366,6 +371,20 @@ class GitWorkspaceViewModel @Inject constructor(
                     author = author,
                     strategy = strategy,
                 ),
+            )
+        }
+    }
+
+    fun continueMerge(
+        authorName: String,
+        authorEmail: String,
+    ) {
+        val author = authorOrNull(authorName, authorEmail) ?: return
+
+        launchMergeOperation("Continue merge") {
+            gitEngine.continueMerge(
+                repositoryPath = workspacePath,
+                author = author,
             )
         }
     }
