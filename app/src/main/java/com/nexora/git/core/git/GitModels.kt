@@ -99,3 +99,30 @@ data class GitTransportCredentials(
     val username: String,
     val password: String,
 )
+
+
+data class GitHistoryEntry(
+    val oid: String,
+    val shortOid: String,
+    val summary: String,
+    val message: String,
+    val authorName: String,
+    val authorEmail: String,
+    val timestampSeconds: Long,
+    val timezoneOffsetMinutes: Int,
+    val parentCount: Int,
+)
+
+data class GitBlameHunk(
+    val startLine: Long,
+    val lineCount: Long,
+    val finalCommitOid: String,
+    val originalCommitOid: String,
+    val originalStartLine: Long,
+    val originalPath: String,
+    val authorName: String,
+    val authorEmail: String,
+    val timestampSeconds: Long,
+    val timezoneOffsetMinutes: Int,
+    val boundary: Boolean,
+)
