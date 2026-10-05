@@ -12,6 +12,7 @@ import kotlinx.coroutines.withContext
 @Singleton
 class CodeBrowserFileSystem @Inject constructor(
     private val workspaceRegistry: WorkspaceRegistry,
+    private val pathPolicy: WorkspacePathPolicy,
 ) {
 
     suspend fun list(
@@ -19,7 +20,7 @@ class CodeBrowserFileSystem @Inject constructor(
         relativePath: String = "",
     ): BrowserDirectory = withContext(Dispatchers.IO) {
         val root = workspaceRoot(workspaceId)
-        val directory = safeResolve(
+        val directory = pathPolicy.resolve(
             root = root,
             relativePath = relativePath,
         )
@@ -39,13 +40,14 @@ class CodeBrowserFileSystem @Inject constructor(
                     file.canonicalFile
                 }.getOrNull() ?: return@mapNotNull null
 
-                if (!isWithinRoot(root, canonical)) {
+                if (!pathPolicy.isWithin(root, canonical)) {
                     return@mapNotNull null
                 }
 
-                val childRelative = canonical
-                    .relativeTo(root)
-                    .invariantSeparatorsPath
+                val childRelative = pathPolicy.relativePath(
+                    root = root,
+                    candidate = canonical,
+                )
 
                 BrowserEntry(
                     name = file.name,
@@ -87,7 +89,7 @@ class CodeBrowserFileSystem @Inject constructor(
         relativePath: String,
     ): BrowserFile = withContext(Dispatchers.IO) {
         val root = workspaceRoot(workspaceId)
-        val file = safeResolve(
+        val file = pathPolicy.resolve(
             root = root,
             relativePath = relativePath,
         )
@@ -165,7 +167,7 @@ class CodeBrowserFileSystem @Inject constructor(
         relativePath: String,
     ): File = withContext(Dispatchers.IO) {
         val root = workspaceRoot(workspaceId)
-        val file = safeResolve(root, relativePath)
+        val file = pathPolicy.resolve(root, relativePath)
 
         require(file.isFile) {
             "File is unavailable"
@@ -190,46 +192,10 @@ class CodeBrowserFileSystem @Inject constructor(
         return root
     }
 
-    private fun safeResolve(
-        root: File,
-        relativePath: String,
-    ): File {
-        val normalized = normalizeRelative(relativePath)
-
-        require(
-            normalized != ".git" &&
-                !normalized.startsWith(".git/"),
-        ) {
-            "Git metadata is not browsable"
-        }
-
-        val candidate = if (normalized.isBlank()) {
-            root
-        } else {
-            File(root, normalized).canonicalFile
-        }
-
-        require(
-            candidate == root || isWithinRoot(root, candidate),
-        ) {
-            "Path is outside the workspace"
-        }
-
-        return candidate
-    }
-
     private fun normalizeRelative(path: String): String =
         path.replace('\\', '/')
             .trim()
             .trim('/')
-
-    private fun isWithinRoot(
-        root: File,
-        candidate: File,
-    ): Boolean =
-        candidate.canonicalPath.startsWith(
-            root.canonicalPath + File.separator,
-        )
 
     private fun isGitMetadataPath(
         root: File,
