@@ -4,6 +4,8 @@ import android.content.Context
 import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.longPreferencesKey
+import androidx.datastore.preferences.core.stringPreferencesKey
+import com.nexora.git.core.editor.EditorIndentStyle
 import androidx.datastore.preferences.preferencesDataStore
 import dagger.hilt.android.qualifiers.ApplicationContext
 import javax.inject.Inject
@@ -22,6 +24,7 @@ class SettingsRepository @Inject constructor(
     private object Keys {
         val onboardingCompleted = booleanPreferencesKey("onboarding_completed")
         val activeAccountId = longPreferencesKey("active_account_id")
+        val editorIndentStyle = stringPreferencesKey("editor_indent_style")
     }
 
     val onboardingCompleted: Flow<Boolean> =
@@ -34,9 +37,26 @@ class SettingsRepository @Inject constructor(
             preferences[Keys.activeAccountId]
         }
 
+    val editorIndentStyle: Flow<EditorIndentStyle> =
+        context.nexoraSettingsDataStore.data.map { preferences ->
+            preferences[Keys.editorIndentStyle]
+                ?.let { stored ->
+                    runCatching {
+                        EditorIndentStyle.valueOf(stored)
+                    }.getOrNull()
+                }
+                ?: EditorIndentStyle.SPACES_4
+        }
+
     suspend fun setOnboardingCompleted(completed: Boolean) {
         context.nexoraSettingsDataStore.edit { preferences ->
             preferences[Keys.onboardingCompleted] = completed
+        }
+    }
+
+    suspend fun setEditorIndentStyle(style: EditorIndentStyle) {
+        context.nexoraSettingsDataStore.edit { preferences ->
+            preferences[Keys.editorIndentStyle] = style.name
         }
     }
 
