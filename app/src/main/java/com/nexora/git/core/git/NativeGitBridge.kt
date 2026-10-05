@@ -112,6 +112,7 @@ class NativeGitBridge @Inject constructor(
     external fun nativeDiff(
         repositoryPath: String,
         mode: String,
+        relativePath: String,
     ): String
 
     external fun nativeMerge(
