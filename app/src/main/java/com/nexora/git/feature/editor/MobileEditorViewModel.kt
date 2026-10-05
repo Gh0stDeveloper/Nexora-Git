@@ -346,7 +346,7 @@ class MobileEditorViewModel @Inject constructor(
                 return@launch
             }
 
-            if (current.dirty && !saveInternal()) {
+            if (current.dirty && !saveInternal(showSuccess = false)) {
                 return@launch
             }
 
@@ -542,7 +542,9 @@ class MobileEditorViewModel @Inject constructor(
         }
     }
 
-    private suspend fun saveInternal(): Boolean {
+    private suspend fun saveInternal(
+        showSuccess: Boolean = true,
+    ): Boolean {
         val current = state.value
         val file = current.file ?: return false
 
@@ -559,6 +561,7 @@ class MobileEditorViewModel @Inject constructor(
                 workspaceId = workspaceId,
                 relativePath = file.relativePath,
                 text = current.value.text,
+                expectedText = lastSavedText,
                 expectedLastModifiedEpochMillis =
                     expectedLastModified,
             )
@@ -579,7 +582,11 @@ class MobileEditorViewModel @Inject constructor(
                             text = lastSavedText,
                             lineCount = lineCount(lastSavedText),
                         ),
-                        successMessage = "Saved.",
+                        successMessage = if (showSuccess) {
+                            "Saved."
+                        } else {
+                            null
+                        },
                     )
                 }
                 true
