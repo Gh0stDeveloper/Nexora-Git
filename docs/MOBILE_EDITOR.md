@@ -69,9 +69,9 @@ Larger files remain viewable through Phase G when supported, but must not be edi
 
 `EditorFileStore` uses Android `AtomicFile`.
 
-Before writing, it verifies that the file's `lastModified` value still matches the value captured when the editor loaded or last saved.
+Before writing, it verifies both the file's `lastModified` value and the complete expected UTF-8 contents captured when the editor loaded or last saved.
 
-If another process changed the file, Nexora Git refuses to overwrite it and asks the user to reload.
+If another process changed the file, even if metadata is ambiguous, Nexora Git refuses to overwrite it and asks the user to reload.
 
 The write path:
 
