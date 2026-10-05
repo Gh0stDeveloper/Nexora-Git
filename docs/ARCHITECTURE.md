@@ -379,3 +379,48 @@ Repository UI uses the permissions returned by GitHub to gate administration con
 - clone credentials continue to cross into libgit2 only through the Phase D credential callback boundary.
 
 The feature layer does not embed tokens in clone URLs or persist them in Room.
+
+
+## Code browser
+
+Phase G adds a read-only local browsing layer over registered workspaces.
+
+```text
+Workspace card
+     ↓
+CodeBrowserScreen / ViewModel
+     ↓
+CodeBrowserFileSystem
+     ↓
+WorkspacePathPolicy
+     ↓
+DIRECT / MANAGED / REMOTE_CLONE filesystem
+
+History / Blame
+     ↓
+GitEngine
+     ↓
+JNI
+     ↓
+libgit2
+```
+
+### Filesystem trust boundary
+
+Navigation inputs are always workspace-relative. Canonical-path checks prevent `..` traversal and symlink escapes, while `.git` is explicitly hidden and blocked from browsing/share.
+
+The browser does not mutate project files.
+
+### Rendering boundary
+
+Text rendering is bounded to 2 MiB per selected file. Binary content is not coerced into text. Image previews use sampled bitmap decoding. Markdown rendering does not execute embedded HTML or scripts.
+
+Syntax highlighting in Phase G is intentionally lexical and lightweight; Tree-sitter remains a Phase Q concern.
+
+### Git metadata
+
+History and blame are computed locally through libgit2, not through GitHub APIs. This keeps these views available offline and aligned with the exact checked-out repository state.
+
+### Android file actions
+
+Sharing copies one selected file into a narrowly scoped cache directory exposed by FileProvider. Saving a copy uses Android's document destination flow. Neither operation requires broad filesystem permission.
