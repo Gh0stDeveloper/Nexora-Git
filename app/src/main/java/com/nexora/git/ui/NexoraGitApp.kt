@@ -189,17 +189,17 @@ private fun AuthenticatedNexoraGitApp(
                         type = NavType.StringType
                     },
                 ),
-            ) {
+            ) { codeEntry ->
+                val workspaceId = codeEntry.arguments
+                    ?.getString("workspaceId")
+                    .orEmpty()
+
                 CodeBrowserScreen(
                     contentPadding = paddingValues,
                     onBack = {
                         navController.popBackStack()
                     },
                     onEdit = { relativePath ->
-                        val workspaceId =
-                            backStackEntry?.arguments
-                                ?.getString("workspaceId")
-                                .orEmpty()
                         navController.navigate(
                             "editor/" +
                                 workspaceId +
