@@ -97,6 +97,11 @@ interface GitEngine {
         request: GitPullRequest,
     ): GitMergeResult
 
+    suspend fun continueMerge(
+        repositoryPath: String,
+        author: GitAuthor,
+    ): GitMergeResult
+
     suspend fun continueRebase(
         repositoryPath: String,
         author: GitAuthor,
