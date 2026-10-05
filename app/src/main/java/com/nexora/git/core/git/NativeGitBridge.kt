@@ -139,6 +139,12 @@ class NativeGitBridge @Inject constructor(
         password: String,
     ): String
 
+    external fun nativeContinueMerge(
+        repositoryPath: String,
+        authorName: String,
+        authorEmail: String,
+    ): String
+
     external fun nativeContinueRebase(
         repositoryPath: String,
         authorName: String,
