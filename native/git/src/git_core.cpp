@@ -580,17 +580,32 @@ git_reference* resolve_pull_upstream(
     git_reference* upstream = nullptr;
     int rc = git_branch_upstream(&upstream, head);
 
-    if (rc == GIT_ENOTFOUND) {
-        const char* branch_name = git_reference_shorthand(head);
-        const std::string tracking =
-            "refs/remotes/" + remote + "/" +
-            (branch_name != nullptr ? branch_name : "");
-        rc = git_reference_lookup(
-            &upstream,
-            repository,
-            tracking.c_str()
-        );
+    if (rc == 0) {
+        const char* shorthand =
+            git_reference_shorthand(upstream);
+        const std::string configured =
+            shorthand != nullptr ? shorthand : "";
+
+        if (configured.rfind(remote + "/", 0) == 0) {
+            return upstream;
+        }
+
+        git_reference_free(upstream);
+        upstream = nullptr;
+    } else if (rc != GIT_ENOTFOUND) {
+        throw_git_error(rc, "Resolve configured upstream");
     }
+
+    const char* branch_name = git_reference_shorthand(head);
+    const std::string tracking =
+        "refs/remotes/" + remote + "/" +
+        (branch_name != nullptr ? branch_name : "");
+
+    rc = git_reference_lookup(
+        &upstream,
+        repository,
+        tracking.c_str()
+    );
 
     if (rc < 0) {
         throw_git_error(rc, "Resolve pull upstream");
