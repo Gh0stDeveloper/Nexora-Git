@@ -155,6 +155,11 @@ std::string merge(
     const Author& author
 );
 std::string conflicts(const std::string& repository_path);
+void resolve_conflict(
+    const std::string& repository_path,
+    const std::string& path,
+    const std::string& resolution
+);
 std::string history(
     const std::string& repository_path,
     const std::string& relative_path,
