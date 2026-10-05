@@ -41,6 +41,16 @@ class Libgit2GitEngine @Inject constructor(
         )
     }
 
+    override suspend fun remoteUrl(
+        repositoryPath: String,
+        remote: String,
+    ): String? = native {
+        bridge.nativeRemoteUrl(
+            repositoryPath = repositoryPath,
+            remote = remote,
+        ).takeIf { it.isNotBlank() }
+    }
+
     override suspend fun status(
         repositoryPath: String,
     ): GitStatus = native {
