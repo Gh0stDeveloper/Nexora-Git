@@ -772,13 +772,14 @@ void remote_workflow(
         "Repository did not retain merge state"
     );
 
-    write_file(
-        clone_b / "conflict.txt",
-        "resolved merge content\n"
-    );
-    nexora::git::stage(
+    nexora::git::resolve_conflict(
         clone_b.string(),
-        {"conflict.txt"}
+        "conflict.txt",
+        "ours"
+    );
+    require(
+        nexora::git::conflicts(clone_b.string()) == "[]",
+        "Use ours did not clear the merge conflict"
     );
 
     const std::string continued_merge =
