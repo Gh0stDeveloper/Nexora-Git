@@ -188,11 +188,32 @@ void basic_local_workflow(const fs::path& repository) {
 
     append_file(repository / "README.md", "modified\n");
 
+    write_file(
+        repository / "unrelated.txt",
+        "not part of readme diff\n"
+    );
+
     const std::string patch =
         nexora::git::diff(repository.string(), "unstaged");
     require(
         patch.find("modified") != std::string::npos,
         "Working tree diff did not contain modification"
+    );
+
+    const std::string readme_patch =
+        nexora::git::diff(
+            repository.string(),
+            "unstaged",
+            "README.md"
+        );
+    require(
+        readme_patch.find("modified") != std::string::npos,
+        "Path-scoped diff did not contain README change"
+    );
+    require(
+        readme_patch.find("unrelated.txt") ==
+            std::string::npos,
+        "Path-scoped diff leaked unrelated file"
     );
 
     nexora::git::stage(
