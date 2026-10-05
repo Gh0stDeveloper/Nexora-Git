@@ -766,6 +766,52 @@ void remote_workflow(
         conflicts.find("conflict.txt") != std::string::npos,
         "Conflict list did not contain conflict.txt"
     );
+    require(
+        nexora::git::repository_state(clone_b.string()) ==
+            "merge",
+        "Repository did not retain merge state"
+    );
+
+    write_file(
+        clone_b / "conflict.txt",
+        "resolved merge content\n"
+    );
+    nexora::git::stage(
+        clone_b.string(),
+        {"conflict.txt"}
+    );
+
+    const std::string continued_merge =
+        nexora::git::continue_merge(
+            clone_b.string(),
+            kAuthor
+        );
+    require(
+        continued_merge.find("\"state\":\"merged\"") !=
+            std::string::npos,
+        "Continue merge did not create merge commit"
+    );
+    require(
+        nexora::git::repository_state(clone_b.string()) ==
+            "none",
+        "Continue merge did not clear merge state"
+    );
+    require(
+        nexora::git::conflicts(clone_b.string()) == "[]",
+        "Conflicts remained after continue merge"
+    );
+
+    const std::string merge_history =
+        nexora::git::history(
+            clone_b.string(),
+            "",
+            1
+        );
+    require(
+        merge_history.find("\"parentCount\":2") !=
+            std::string::npos,
+        "Resolved merge commit did not preserve two parents"
+    );
 }
 
 
