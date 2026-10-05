@@ -125,6 +125,17 @@ class NativeGitBridge @Inject constructor(
         repositoryPath: String,
     ): String
 
+    external fun nativeHistory(
+        repositoryPath: String,
+        relativePath: String,
+        limit: Int,
+    ): String
+
+    external fun nativeBlame(
+        repositoryPath: String,
+        relativePath: String,
+    ): String
+
     companion object {
         private const val ANDROID_CA_DIRECTORY =
             "/system/etc/security/cacerts"
