@@ -256,6 +256,19 @@ class Libgit2GitEngine @Inject constructor(
         )
     }
 
+    override suspend fun continueMerge(
+        repositoryPath: String,
+        author: GitAuthor,
+    ): GitMergeResult = native {
+        parser.mergeResult(
+            bridge.nativeContinueMerge(
+                repositoryPath = repositoryPath,
+                authorName = author.name,
+                authorEmail = author.email,
+            ),
+        )
+    }
+
     override suspend fun continueRebase(
         repositoryPath: String,
         author: GitAuthor,
