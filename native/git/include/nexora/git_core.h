@@ -51,6 +51,21 @@ std::string remote_url(
     const std::string& repository_path,
     const std::string& remote
 );
+std::string remotes(const std::string& repository_path);
+void add_remote(
+    const std::string& repository_path,
+    const std::string& name,
+    const std::string& url
+);
+void rename_remote(
+    const std::string& repository_path,
+    const std::string& old_name,
+    const std::string& new_name
+);
+void remove_remote(
+    const std::string& repository_path,
+    const std::string& name
+);
 void stage(
     const std::string& repository_path,
     const std::vector<std::string>& paths
@@ -65,6 +80,19 @@ std::string commit(
     const Author& author
 );
 std::string branches(const std::string& repository_path);
+void set_upstream(
+    const std::string& repository_path,
+    const std::string& branch,
+    const std::string& upstream
+);
+std::string divergence(
+    const std::string& repository_path,
+    const std::string& local_ref,
+    const std::string& upstream_ref
+);
+std::string repository_state(
+    const std::string& repository_path
+);
 void create_branch(
     const std::string& repository_path,
     const std::string& name,
@@ -85,10 +113,31 @@ std::string pull(
     const Author& author,
     const Credentials& credentials
 );
+std::string pull_with_strategy(
+    const std::string& repository_path,
+    const std::string& remote,
+    const std::string& strategy,
+    const Author& author,
+    const Credentials& credentials
+);
+std::string continue_rebase(
+    const std::string& repository_path,
+    const Author& author
+);
+void abort_rebase(
+    const std::string& repository_path
+);
 std::string push(
     const std::string& repository_path,
     const std::string& remote,
     const std::string& refspec,
+    const Credentials& credentials
+);
+std::string push_force_with_lease(
+    const std::string& repository_path,
+    const std::string& remote,
+    const std::string& refspec,
+    const std::string& expected_remote_oid,
     const Credentials& credentials
 );
 std::string diff(
