@@ -62,6 +62,7 @@ interface GitEngine {
     suspend fun diff(
         repositoryPath: String,
         mode: GitDiffMode = GitDiffMode.ALL,
+        relativePath: String? = null,
     ): GitDiff
 
     suspend fun merge(
