@@ -683,12 +683,12 @@ private fun ManageIssueDialog(
 ) {
     var selectedLabels by rememberSaveable(issue.summary.id) {
         mutableStateOf(
-            issue.summary.labels.map { it.name }.toSet(),
+            issue.summary.labels.map { it.name },
         )
     }
     var selectedAssignees by rememberSaveable(issue.summary.id) {
         mutableStateOf(
-            issue.summary.assignees.map { it.login }.toSet(),
+            issue.summary.assignees.map { it.login },
         )
     }
     var milestone by rememberSaveable(issue.summary.id) {
@@ -876,7 +876,7 @@ private fun commentReactionSummary(
             " · rocket " + rocket
     }
 
-private fun Set<String>.toggle(value: String): Set<String> =
-    toMutableSet().apply {
+private fun List<String>.toggle(value: String): List<String> =
+    toMutableList().apply {
         if (!add(value)) remove(value)
     }
