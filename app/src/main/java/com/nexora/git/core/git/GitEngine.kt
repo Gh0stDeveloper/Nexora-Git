@@ -11,6 +11,11 @@ interface GitEngine {
         request: GitCloneRequest,
     ): GitRepository
 
+    suspend fun remoteUrl(
+        repositoryPath: String,
+        remote: String = "origin",
+    ): String?
+
     suspend fun status(
         repositoryPath: String,
     ): GitStatus
