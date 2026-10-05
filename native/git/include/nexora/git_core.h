@@ -93,7 +93,8 @@ std::string push(
 );
 std::string diff(
     const std::string& repository_path,
-    const std::string& mode
+    const std::string& mode,
+    const std::string& relative_path = ""
 );
 std::string merge(
     const std::string& repository_path,
