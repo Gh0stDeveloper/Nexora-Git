@@ -88,6 +88,7 @@ class RepositoriesContentTest {
                     onCloneUrl = {},
                     onOpenFolder = {},
                     onOpenRepository = { _, _ -> },
+                    onBrowseWorkspace = {},
                     onCloneRepository = {},
                     onInitializeGit = {},
                     onSync = {},
@@ -107,6 +108,8 @@ class RepositoriesContentTest {
         composeRule.onNodeWithText("Managed Android workspace")
             .assertIsDisplayed()
         composeRule.onNodeWithText("Branch: main")
+            .assertIsDisplayed()
+        composeRule.onNodeWithText("Browse code")
             .assertIsDisplayed()
     }
 }
