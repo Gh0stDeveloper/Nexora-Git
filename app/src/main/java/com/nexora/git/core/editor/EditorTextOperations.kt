@@ -116,7 +116,7 @@ class EditorTextOperations {
 
         val firstLineStart = text.lastIndexOf(
             '\n',
-            startIndex = (start - 1).coerceAtLeast(0),
+            startIndex = start - 1,
         ).let { index ->
             if (index < 0) 0 else index + 1
         }
