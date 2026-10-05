@@ -36,13 +36,18 @@ Do not:
 
 - use the GitHub logo or Octocat as the Nexora Git application icon;
 - imply that Nexora Git is an official GitHub application;
-- copy GitHub Mobile's interface pixel-for-pixel;
+- reproduce GitHub Mobile pixel-for-pixel or use official GitHub brand assets as Nexora identity;
 - name releases in a way that suggests official GitHub ownership.
 
 Acceptable wording includes "GitHub client for Android", "Works with GitHub", "GitHub integration" and "Sign in with GitHub".
 
 ## Visual direction
 
+Nexora Git deliberately uses a GitHub-familiar product language so GitHub developers can navigate it immediately, while preserving independent Nexora branding.
+
+- GitHub-familiar neutral light/dark surface hierarchy;
+- compact bordered controls and repository cards;
+- familiar code/repository navigation patterns;
 - compact information density;
 - strong hierarchy;
 - clean repository/file surfaces;
@@ -55,4 +60,4 @@ Acceptable wording includes "GitHub client for Android", "Works with GitHub", "G
 
 ## Icon direction
 
-Use an original abstract source-control symbol with subtle Nexora/N geometry. Do not use an Octocat silhouette. The final asset should support adaptive and monochrome Android icons.
+Use an original abstract source-control symbol with subtle Nexora/N geometry. Do not use an Octocat silhouette. The current Phase H direction uses a violet Nexora background with the white source-control symbol so the launcher identity is immediately distinct from GitHub. The final asset should support adaptive and monochrome Android icons.
