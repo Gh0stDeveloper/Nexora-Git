@@ -360,6 +360,20 @@ class Libgit2GitEngine @Inject constructor(
         )
     }
 
+    override suspend fun resolveConflict(
+        repositoryPath: String,
+        path: String,
+        resolution: GitConflictResolution,
+    ) {
+        native {
+            bridge.nativeResolveConflict(
+                repositoryPath = repositoryPath,
+                path = path,
+                resolution = resolution.wireValue,
+            )
+        }
+    }
+
     override suspend fun history(
         repositoryPath: String,
         relativePath: String?,
