@@ -127,9 +127,9 @@ The project must use its own branding and must not imply that it is an official 
 
 ## Status
 
-**Current stage:** Phase G — Code Browser implementation complete; final Android CI validation is in progress before merge.
+**Current stage:** Phase G — Code Browser complete; Phase H — Mobile Editor is next.
 
-Nexora Git now adds an offline-capable workspace code browser with safe directory navigation, text/binary detection, lightweight syntax highlighting, Markdown and image preview, real libgit2 history/blame, and constrained Android share/save-copy operations.
+Nexora Git now includes an offline-capable workspace code browser with safe directory navigation, text/binary detection, lightweight syntax highlighting, Markdown and image preview, real libgit2 history/blame, and constrained Android share/save-copy operations.
 
 ---
 
