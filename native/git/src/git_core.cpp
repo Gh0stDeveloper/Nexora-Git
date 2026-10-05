@@ -4,6 +4,7 @@
 
 #include <algorithm>
 #include <cctype>
+#include <cstdio>
 #include <fstream>
 #include <mutex>
 #include <sstream>
@@ -2495,6 +2496,158 @@ std::string conflicts(const std::string& repository_path) {
     const std::string result = conflicts_json(repository);
     git_repository_free(repository);
     return result;
+}
+
+void resolve_conflict(
+    const std::string& repository_path,
+    const std::string& path,
+    const std::string& resolution
+) {
+    if (path.empty()) {
+        throw GitError(
+            GIT_EINVALID,
+            0,
+            "Conflict path is required"
+        );
+    }
+    if (resolution != "ours" &&
+        resolution != "theirs") {
+        throw GitError(
+            GIT_EINVALID,
+            0,
+            "Conflict resolution must be ours or theirs"
+        );
+    }
+
+    git_repository* repository = open_repository(repository_path);
+    git_index* index = nullptr;
+    const int index_rc = git_repository_index(
+        &index,
+        repository
+    );
+    if (index_rc < 0) {
+        git_repository_free(repository);
+        throw_git_error(index_rc, "Open conflict index");
+    }
+
+    const git_index_entry* ancestor = nullptr;
+    const git_index_entry* ours = nullptr;
+    const git_index_entry* theirs = nullptr;
+    const int conflict_rc = git_index_conflict_get(
+        &ancestor,
+        &ours,
+        &theirs,
+        index,
+        path.c_str()
+    );
+    if (conflict_rc < 0) {
+        git_index_free(index);
+        git_repository_free(repository);
+        throw_git_error(conflict_rc, "Read conflict entry");
+    }
+
+    const git_index_entry* selected =
+        resolution == "ours" ? ours : theirs;
+
+    git_index_entry resolved{};
+    bool keep_path = selected != nullptr;
+    if (keep_path) {
+        resolved = *selected;
+        resolved.path = path.c_str();
+        GIT_INDEX_ENTRY_STAGE_SET(&resolved, 0);
+    }
+
+    const int remove_conflict_rc =
+        git_index_conflict_remove(
+            index,
+            path.c_str()
+        );
+    if (remove_conflict_rc < 0) {
+        git_index_free(index);
+        git_repository_free(repository);
+        throw_git_error(
+            remove_conflict_rc,
+            "Remove conflict entries"
+        );
+    }
+
+    if (keep_path) {
+        const int add_rc = git_index_add(
+            index,
+            &resolved
+        );
+        if (add_rc < 0) {
+            git_index_free(index);
+            git_repository_free(repository);
+            throw_git_error(
+                add_rc,
+                "Stage selected conflict side"
+            );
+        }
+    } else {
+        const int remove_rc = git_index_remove_bypath(
+            index,
+            path.c_str()
+        );
+        if (remove_rc < 0 &&
+            remove_rc != GIT_ENOTFOUND) {
+            git_index_free(index);
+            git_repository_free(repository);
+            throw_git_error(
+                remove_rc,
+                "Stage conflict deletion"
+            );
+        }
+    }
+
+    const int write_rc = git_index_write(index);
+    if (write_rc < 0) {
+        git_index_free(index);
+        git_repository_free(repository);
+        throw_git_error(
+            write_rc,
+            "Write resolved conflict index"
+        );
+    }
+
+    if (keep_path) {
+        char* path_raw =
+            const_cast<char*>(path.c_str());
+        git_strarray pathspec{};
+        pathspec.strings = &path_raw;
+        pathspec.count = 1;
+
+        git_checkout_options options =
+            GIT_CHECKOUT_OPTIONS_INIT;
+        options.checkout_strategy =
+            GIT_CHECKOUT_FORCE;
+        options.paths = pathspec;
+
+        const int checkout_rc = git_checkout_index(
+            repository,
+            index,
+            &options
+        );
+        if (checkout_rc < 0) {
+            git_index_free(index);
+            git_repository_free(repository);
+            throw_git_error(
+                checkout_rc,
+                "Checkout selected conflict side"
+            );
+        }
+    } else {
+        const char* workdir =
+            git_repository_workdir(repository);
+        if (workdir != nullptr) {
+            const std::string full_path =
+                std::string(workdir) + path;
+            std::remove(full_path.c_str());
+        }
+    }
+
+    git_index_free(index);
+    git_repository_free(repository);
 }
 
 std::string history(
