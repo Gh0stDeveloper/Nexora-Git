@@ -37,6 +37,7 @@ import com.nexora.git.feature.explore.ExploreScreen
 import com.nexora.git.feature.editor.MobileEditorScreen
 import com.nexora.git.feature.home.HomeScreen
 import com.nexora.git.feature.files.CodeBrowserScreen
+import com.nexora.git.feature.git.GitWorkspaceScreen
 import com.nexora.git.feature.profile.ProfileScreen
 import com.nexora.git.feature.repositories.RepositoriesScreen
 import com.nexora.git.feature.repositories.RepositoryDetailScreen
@@ -177,6 +178,40 @@ private fun AuthenticatedNexoraGitApp(
                     onBrowseWorkspace = { workspaceId ->
                         navController.navigate(
                             "code/" + workspaceId,
+                        )
+                    },
+                    onOpenGitWorkspace = { workspaceId ->
+                        navController.navigate(
+                            "git/" + workspaceId,
+                        )
+                    },
+                )
+            }
+
+            composable(
+                route = "git/{workspaceId}",
+                arguments = listOf(
+                    navArgument("workspaceId") {
+                        type = NavType.StringType
+                    },
+                ),
+            ) { gitEntry ->
+                val workspaceId = gitEntry.arguments
+                    ?.getString("workspaceId")
+                    .orEmpty()
+
+                GitWorkspaceScreen(
+                    contentPadding = paddingValues,
+                    activeAccount = activeAccount,
+                    onBack = {
+                        navController.popBackStack()
+                    },
+                    onEditFile = { relativePath ->
+                        navController.navigate(
+                            "editor/" +
+                                workspaceId +
+                                "?path=" +
+                                Uri.encode(relativePath),
                         )
                     },
                 )
