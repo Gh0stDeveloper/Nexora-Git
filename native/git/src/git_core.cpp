@@ -1542,8 +1542,7 @@ std::string history(
             git_diff_options options = GIT_DIFF_OPTIONS_INIT;
             options.pathspec = pathspec;
             options.flags =
-                GIT_DIFF_INCLUDE_TYPECHANGE |
-                GIT_DIFF_INCLUDE_UNMODIFIED;
+                GIT_DIFF_INCLUDE_TYPECHANGE;
 
             const size_t parent_count =
                 git_commit_parentcount(commit);
