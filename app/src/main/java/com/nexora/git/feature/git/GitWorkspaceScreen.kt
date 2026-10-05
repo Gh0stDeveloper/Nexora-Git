@@ -12,6 +12,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.Add
 import androidx.compose.material.icons.outlined.ArrowBack
 import androidx.compose.material.icons.outlined.CallMerge
 import androidx.compose.material.icons.outlined.CallSplit
@@ -19,7 +20,10 @@ import androidx.compose.material.icons.outlined.CloudDownload
 import androidx.compose.material.icons.outlined.CloudUpload
 import androidx.compose.material.icons.outlined.Code
 import androidx.compose.material.icons.outlined.Commit
+import androidx.compose.material.icons.outlined.Delete
+import androidx.compose.material.icons.outlined.Edit
 import androidx.compose.material.icons.outlined.History
+import androidx.compose.material.icons.outlined.Link
 import androidx.compose.material.icons.outlined.Refresh
 import androidx.compose.material.icons.outlined.Source
 import androidx.compose.material3.AlertDialog
@@ -51,6 +55,8 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.nexora.git.core.auth.AuthAccountSummary
 import com.nexora.git.core.git.GitBranch
 import com.nexora.git.core.git.GitHistoryEntry
+import com.nexora.git.core.git.GitPullStrategy
+import com.nexora.git.core.git.GitRemote
 import com.nexora.git.core.git.GitStatusEntry
 
 private enum class GitWorkspaceTab(
@@ -71,6 +77,7 @@ fun GitWorkspaceScreen(
     viewModel: GitWorkspaceViewModel = hiltViewModel(),
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
+
     var selectedTab by rememberSaveable {
         mutableStateOf(GitWorkspaceTab.CHANGES)
     }
@@ -80,8 +87,27 @@ fun GitWorkspaceScreen(
     var newBranch by rememberSaveable {
         mutableStateOf("")
     }
+    var selectedRemote by rememberSaveable {
+        mutableStateOf("")
+    }
     var pushTarget by rememberSaveable {
         mutableStateOf("")
+    }
+    var pullStrategy by rememberSaveable {
+        mutableStateOf(GitPullStrategy.MERGE)
+    }
+
+    var showAddRemote by rememberSaveable {
+        mutableStateOf(false)
+    }
+    var renameRemote by remember {
+        mutableStateOf<GitRemote?>(null)
+    }
+    var removeRemote by remember {
+        mutableStateOf<GitRemote?>(null)
+    }
+    var showLeaseConfirmation by rememberSaveable {
+        mutableStateOf(false)
     }
 
     val authorName = remember(activeAccount.accountId) {
@@ -93,6 +119,16 @@ fun GitWorkspaceScreen(
         activeAccount.accountId.toString() +
             "+" + activeAccount.login +
             "@users.noreply.github.com"
+    }
+
+    LaunchedEffect(state.remotes) {
+        if (state.remotes.none { it.name == selectedRemote }) {
+            selectedRemote =
+                state.remotes.firstOrNull { it.name == "origin" }
+                    ?.name
+                    ?: state.remotes.firstOrNull()?.name
+                    .orEmpty()
+        }
     }
 
     LaunchedEffect(state.branch) {
@@ -109,8 +145,12 @@ fun GitWorkspaceScreen(
                     Text("OK")
                 }
             },
-            title = { Text("Git operation") },
-            text = { Text(message) },
+            title = {
+                Text("Git operation")
+            },
+            text = {
+                Text(message)
+            },
         )
     }
 
@@ -122,8 +162,96 @@ fun GitWorkspaceScreen(
                     Text("Done")
                 }
             },
-            title = { Text("Nexora Git") },
-            text = { Text(message) },
+            title = {
+                Text("Nexora Git")
+            },
+            text = {
+                Text(message)
+            },
+        )
+    }
+
+    if (showAddRemote) {
+        AddRemoteDialog(
+            onDismiss = {
+                showAddRemote = false
+            },
+            onAdd = { name, url ->
+                showAddRemote = false
+                viewModel.addRemote(name, url)
+            },
+        )
+    }
+
+    renameRemote?.let { remote ->
+        RenameRemoteDialog(
+            remote = remote,
+            onDismiss = {
+                renameRemote = null
+            },
+            onRename = { newName ->
+                renameRemote = null
+                viewModel.renameRemote(
+                    oldName = remote.name,
+                    newName = newName,
+                )
+            },
+        )
+    }
+
+    removeRemote?.let { remote ->
+        AlertDialog(
+            onDismissRequest = {
+                removeRemote = null
+            },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        removeRemote = null
+                        viewModel.removeRemote(remote.name)
+                    },
+                ) {
+                    Text("Remove")
+                }
+            },
+            dismissButton = {
+                TextButton(
+                    onClick = {
+                        removeRemote = null
+                    },
+                ) {
+                    Text("Cancel")
+                }
+            },
+            title = {
+                Text("Remove remote?")
+            },
+            text = {
+                Text(
+                    "This removes the local Git remote configuration for " +
+                        remote.name +
+                        ". It does not delete the GitHub repository.",
+                )
+            },
+        )
+    }
+
+    if (showLeaseConfirmation) {
+        ForceWithLeaseDialog(
+            remote = selectedRemote,
+            branch = pushTarget,
+            expectedOid = state.divergence?.upstreamOid.orEmpty(),
+            onDismiss = {
+                showLeaseConfirmation = false
+            },
+            onConfirm = {
+                showLeaseConfirmation = false
+                viewModel.push(
+                    remote = selectedRemote,
+                    targetBranch = pushTarget,
+                    forceWithLease = true,
+                )
+            },
         )
     }
 
@@ -150,6 +278,7 @@ fun GitWorkspaceScreen(
                         contentDescription = "Back",
                     )
                 }
+
                 Column(
                     modifier = Modifier.weight(1f),
                 ) {
@@ -167,6 +296,7 @@ fun GitWorkspaceScreen(
                         style = MaterialTheme.typography.bodyMedium,
                     )
                 }
+
                 IconButton(
                     enabled =
                         !state.operationInProgress &&
@@ -225,6 +355,22 @@ fun GitWorkspaceScreen(
                             onStageAll = viewModel::stageAll,
                             onUnstageAll = viewModel::unstageAll,
                         )
+                    }
+
+                    if (state.rebaseInProgress) {
+                        item {
+                            RebaseInProgressCard(
+                                conflictCount = state.conflicts.size,
+                                busy = state.operationInProgress,
+                                onContinue = {
+                                    viewModel.continueRebase(
+                                        authorName = authorName,
+                                        authorEmail = authorEmail,
+                                    )
+                                },
+                                onAbort = viewModel::abortRebase,
+                            )
+                        }
                     }
 
                     if (state.conflicts.isNotEmpty()) {
@@ -319,23 +465,28 @@ fun GitWorkspaceScreen(
                         }
                     }
 
-                    item {
-                        CommitCard(
-                            message = commitMessage,
-                            busy = state.operationInProgress,
-                            stagedCount = state.stagedEntries.size,
-                            onMessageChange = {
-                                commitMessage = it
-                            },
-                            onCommit = {
-                                viewModel.commit(
-                                    message = commitMessage,
-                                    authorName = authorName,
-                                    authorEmail = authorEmail,
-                                )
-                                commitMessage = ""
-                            },
-                        )
+                    if (!state.rebaseInProgress) {
+                        item {
+                            CommitCard(
+                                message = commitMessage,
+                                busy = state.operationInProgress,
+                                stagedCount =
+                                    state.stagedEntries.size,
+                                conflictCount =
+                                    state.conflicts.size,
+                                onMessageChange = {
+                                    commitMessage = it
+                                },
+                                onCommit = {
+                                    viewModel.commit(
+                                        message = commitMessage,
+                                        authorName = authorName,
+                                        authorEmail = authorEmail,
+                                    )
+                                    commitMessage = ""
+                                },
+                            )
+                        }
                     }
                 }
 
@@ -346,6 +497,7 @@ fun GitWorkspaceScreen(
                                 state.history.size + ")",
                         )
                     }
+
                     if (state.history.isEmpty()) {
                         item {
                             EmptyGitCard("No commits yet.")
@@ -376,11 +528,22 @@ fun GitWorkspaceScreen(
                     }
 
                     item {
+                        UpstreamCard(
+                            currentBranch = state.branch,
+                            upstream = state.currentUpstream,
+                            remoteBranches = state.remoteBranches,
+                            busy = state.operationInProgress,
+                            onSetUpstream = viewModel::setUpstream,
+                        )
+                    }
+
+                    item {
                         SectionTitle(
                             "Local branches (" +
                                 state.localBranches.size + ")",
                         )
                     }
+
                     items(
                         items = state.localBranches,
                         key = { "local-" + it.name },
@@ -408,6 +571,7 @@ fun GitWorkspaceScreen(
                                     state.remoteBranches.size + ")",
                             )
                         }
+
                         items(
                             items = state.remoteBranches,
                             key = { "remote-" + it.name },
@@ -415,9 +579,7 @@ fun GitWorkspaceScreen(
                             BranchCard(
                                 branch = branch,
                                 busy = state.operationInProgress,
-                                onCheckout = {
-                                    viewModel.checkout(branch.name)
-                                },
+                                onCheckout = {},
                                 onMerge = {
                                     viewModel.merge(
                                         ref = branch.name,
@@ -432,23 +594,88 @@ fun GitWorkspaceScreen(
 
                 GitWorkspaceTab.SYNC -> {
                     item {
-                        SyncCard(
-                            state = state,
-                            pushTarget = pushTarget,
-                            onPushTargetChange = {
-                                pushTarget = it
-                            },
-                            onFetch = viewModel::fetch,
-                            onPull = {
-                                viewModel.pullMerge(
-                                    authorName = authorName,
-                                    authorEmail = authorEmail,
-                                )
-                            },
-                            onPush = {
-                                viewModel.push(pushTarget)
+                        RemotesHeader(
+                            onAdd = {
+                                showAddRemote = true
                             },
                         )
+                    }
+
+                    if (state.remotes.isEmpty()) {
+                        item {
+                            EmptyGitCard(
+                                "No remotes configured. Add a GitHub remote to fetch, pull or push.",
+                            )
+                        }
+                    } else {
+                        items(
+                            items = state.remotes,
+                            key = { "remote-config-" + it.name },
+                        ) { remote ->
+                            RemoteCard(
+                                remote = remote,
+                                selected =
+                                    selectedRemote == remote.name,
+                                busy = state.operationInProgress,
+                                onSelect = {
+                                    selectedRemote = remote.name
+                                },
+                                onFetch = {
+                                    viewModel.fetch(remote.name)
+                                },
+                                onRename = {
+                                    renameRemote = remote
+                                },
+                                onRemove = {
+                                    removeRemote = remote
+                                },
+                            )
+                        }
+                    }
+
+                    if (selectedRemote.isNotBlank()) {
+                        item {
+                            PullCard(
+                                remote = selectedRemote,
+                                strategy = pullStrategy,
+                                busy = state.operationInProgress,
+                                conflictCount = state.conflicts.size,
+                                rebaseInProgress =
+                                    state.rebaseInProgress,
+                                onStrategyChange = {
+                                    pullStrategy = it
+                                },
+                                onPull = {
+                                    viewModel.pull(
+                                        remote = selectedRemote,
+                                        strategy = pullStrategy,
+                                        authorName = authorName,
+                                        authorEmail = authorEmail,
+                                    )
+                                },
+                            )
+                        }
+
+                        item {
+                            PushCard(
+                                state = state,
+                                remote = selectedRemote,
+                                pushTarget = pushTarget,
+                                onPushTargetChange = {
+                                    pushTarget = it
+                                },
+                                onPush = {
+                                    viewModel.push(
+                                        remote = selectedRemote,
+                                        targetBranch = pushTarget,
+                                        forceWithLease = false,
+                                    )
+                                },
+                                onForceWithLease = {
+                                    showLeaseConfirmation = true
+                                },
+                            )
+                        }
                     }
                 }
             }
@@ -465,7 +692,7 @@ private fun RepositorySummaryCard(
     ) {
         Column(
             modifier = Modifier.padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(6.dp),
+            verticalArrangement = Arrangement.spacedBy(7.dp),
         ) {
             Row(
                 verticalAlignment = Alignment.CenterVertically,
@@ -482,13 +709,39 @@ private fun RepositorySummaryCard(
                     style = MaterialTheme.typography.titleMedium,
                 )
             }
-            Text(
-                text = state.remoteUrl.ifBlank {
-                    "No origin remote configured"
-                },
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                style = MaterialTheme.typography.bodySmall,
-            )
+
+            if (state.currentUpstream.isNotBlank()) {
+                Text(
+                    text = "Upstream: " + state.currentUpstream,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    style = MaterialTheme.typography.bodyMedium,
+                )
+            } else {
+                Text(
+                    text = "No upstream configured",
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    style = MaterialTheme.typography.bodyMedium,
+                )
+            }
+
+            state.divergence?.let { divergence ->
+                Text(
+                    text = divergence.ahead.toString() +
+                        " ahead · " +
+                        divergence.behind.toString() +
+                        " behind",
+                    color = if (
+                        divergence.ahead > 0 &&
+                        divergence.behind > 0
+                    ) {
+                        MaterialTheme.colorScheme.error
+                    } else {
+                        MaterialTheme.colorScheme.primary
+                    },
+                    style = MaterialTheme.typography.titleSmall,
+                )
+            }
+
             Text(
                 text = state.stagedEntries.size.toString() +
                     " staged · " +
@@ -502,6 +755,14 @@ private fun RepositorySummaryCard(
                     MaterialTheme.colorScheme.error
                 },
             )
+
+            if (state.rebaseInProgress) {
+                Text(
+                    text = "Rebase in progress",
+                    color = MaterialTheme.colorScheme.error,
+                    style = MaterialTheme.typography.titleSmall,
+                )
+            }
         }
     }
 }
@@ -527,6 +788,7 @@ private fun ChangesActions(
         ) {
             Text("Stage all")
         }
+
         OutlinedButton(
             modifier = Modifier.weight(1f),
             enabled =
@@ -535,6 +797,55 @@ private fun ChangesActions(
             onClick = onUnstageAll,
         ) {
             Text("Unstage all")
+        }
+    }
+}
+
+@Composable
+private fun RebaseInProgressCard(
+    conflictCount: Int,
+    busy: Boolean,
+    onContinue: () -> Unit,
+    onAbort: () -> Unit,
+) {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+    ) {
+        Column(
+            modifier = Modifier.padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(10.dp),
+        ) {
+            Text(
+                text = "Rebase in progress",
+                style = MaterialTheme.typography.titleMedium,
+            )
+            Text(
+                text = if (conflictCount > 0) {
+                    "Resolve and stage every conflicted file, then continue the rebase."
+                } else {
+                    "The current rebase operation is ready to continue."
+                },
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(10.dp),
+            ) {
+                Button(
+                    modifier = Modifier.weight(1f),
+                    enabled = !busy && conflictCount == 0,
+                    onClick = onContinue,
+                ) {
+                    Text("Continue")
+                }
+                OutlinedButton(
+                    modifier = Modifier.weight(1f),
+                    enabled = !busy,
+                    onClick = onAbort,
+                ) {
+                    Text("Abort")
+                }
+            }
         }
     }
 }
@@ -632,7 +943,7 @@ private fun ConflictCard(
                 color = MaterialTheme.colorScheme.error,
             )
             Text(
-                "Edit the conflict markers, save the file, then mark it resolved. Nexora Git refuses to stage a file while standard conflict markers remain.",
+                text = "Edit the conflict markers, save the file, then mark it resolved. Nexora Git refuses to stage a file while standard conflict markers remain.",
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
             Row(
@@ -664,6 +975,7 @@ private fun CommitCard(
     message: String,
     busy: Boolean,
     stagedCount: Int,
+    conflictCount: Int,
     onMessageChange: (String) -> Unit,
     onCommit: () -> Unit,
 ) {
@@ -701,6 +1013,7 @@ private fun CommitCard(
                 modifier = Modifier.fillMaxWidth(),
                 enabled =
                     !busy &&
+                        conflictCount == 0 &&
                         stagedCount > 0 &&
                         message.isNotBlank(),
                 onClick = onCommit,
@@ -798,6 +1111,71 @@ private fun BranchCreateCard(
 }
 
 @Composable
+private fun UpstreamCard(
+    currentBranch: String,
+    upstream: String,
+    remoteBranches: List<GitBranch>,
+    busy: Boolean,
+    onSetUpstream: (String?) -> Unit,
+) {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+    ) {
+        Column(
+            modifier = Modifier.padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(10.dp),
+        ) {
+            Text(
+                text = "Upstream tracking",
+                style = MaterialTheme.typography.titleMedium,
+            )
+            Text(
+                text = if (upstream.isBlank()) {
+                    currentBranch + " is not tracking a remote branch."
+                } else {
+                    currentBranch + " tracks " + upstream + "."
+                },
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+
+            if (remoteBranches.isNotEmpty()) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .horizontalScroll(rememberScrollState()),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                ) {
+                    remoteBranches.forEach { branch ->
+                        FilterChip(
+                            selected = upstream == branch.name,
+                            enabled = !busy,
+                            onClick = {
+                                onSetUpstream(branch.name)
+                            },
+                            label = {
+                                Text(branch.name)
+                            },
+                        )
+                    }
+                }
+            }
+
+            if (upstream.isNotBlank()) {
+                OutlinedButton(
+                    modifier = Modifier.fillMaxWidth(),
+                    enabled = !busy,
+                    onClick = {
+                        onSetUpstream(null)
+                    },
+                ) {
+                    Text("Unset upstream")
+                }
+            }
+        }
+    }
+}
+
+@Composable
 private fun BranchCard(
     branch: GitBranch,
     busy: Boolean,
@@ -823,11 +1201,12 @@ private fun BranchCard(
                 )
                 if (branch.head) {
                     Text(
-                        "Current",
+                        text = "Current",
                         color = MaterialTheme.colorScheme.primary,
                     )
                 }
             }
+
             if (branch.upstream.isNotBlank()) {
                 Text(
                     text = "Upstream: " + branch.upstream,
@@ -835,6 +1214,7 @@ private fun BranchCard(
                     style = MaterialTheme.typography.bodySmall,
                 )
             }
+
             Row(
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
             ) {
@@ -846,6 +1226,7 @@ private fun BranchCard(
                         Text("Switch")
                     }
                 }
+
                 if (!branch.head) {
                     TextButton(
                         enabled = !busy,
@@ -864,71 +1245,227 @@ private fun BranchCard(
 }
 
 @Composable
-private fun SyncCard(
-    state: GitWorkspaceUiState,
-    pushTarget: String,
-    onPushTargetChange: (String) -> Unit,
+private fun RemotesHeader(
+    onAdd: () -> Unit,
+) {
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.SpaceBetween,
+    ) {
+        SectionTitle("Remotes")
+        TextButton(onClick = onAdd) {
+            Icon(
+                imageVector = Icons.Outlined.Add,
+                contentDescription = null,
+            )
+            Text("Add")
+        }
+    }
+}
+
+@Composable
+private fun RemoteCard(
+    remote: GitRemote,
+    selected: Boolean,
+    busy: Boolean,
+    onSelect: () -> Unit,
     onFetch: () -> Unit,
+    onRename: () -> Unit,
+    onRemove: () -> Unit,
+) {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+    ) {
+        Column(
+            modifier = Modifier.padding(14.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp),
+        ) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween,
+            ) {
+                Column(
+                    modifier = Modifier.weight(1f),
+                ) {
+                    Text(
+                        text = remote.name,
+                        style = MaterialTheme.typography.titleMedium,
+                    )
+                    Text(
+                        text = remote.url,
+                        fontFamily = FontFamily.Monospace,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        style = MaterialTheme.typography.bodySmall,
+                    )
+                }
+
+                FilterChip(
+                    selected = selected,
+                    enabled = !busy,
+                    onClick = onSelect,
+                    label = {
+                        Text(
+                            if (selected) {
+                                "Active"
+                            } else {
+                                "Use"
+                            },
+                        )
+                    },
+                )
+            }
+
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(4.dp),
+            ) {
+                TextButton(
+                    enabled = !busy,
+                    onClick = onFetch,
+                ) {
+                    Icon(
+                        imageVector = Icons.Outlined.CloudDownload,
+                        contentDescription = null,
+                    )
+                    Text("Fetch")
+                }
+                TextButton(
+                    enabled = !busy,
+                    onClick = onRename,
+                ) {
+                    Icon(
+                        imageVector = Icons.Outlined.Edit,
+                        contentDescription = null,
+                    )
+                    Text("Rename")
+                }
+                TextButton(
+                    enabled = !busy,
+                    onClick = onRemove,
+                ) {
+                    Icon(
+                        imageVector = Icons.Outlined.Delete,
+                        contentDescription = null,
+                    )
+                    Text("Remove")
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun PullCard(
+    remote: String,
+    strategy: GitPullStrategy,
+    busy: Boolean,
+    conflictCount: Int,
+    rebaseInProgress: Boolean,
+    onStrategyChange: (GitPullStrategy) -> Unit,
     onPull: () -> Unit,
-    onPush: () -> Unit,
 ) {
     Card(
         modifier = Modifier.fillMaxWidth(),
     ) {
         Column(
             modifier = Modifier.padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(12.dp),
+            verticalArrangement = Arrangement.spacedBy(10.dp),
         ) {
             Text(
-                text = "Origin",
+                text = "Pull from " + remote,
                 style = MaterialTheme.typography.titleMedium,
             )
             Text(
-                text = state.remoteUrl.ifBlank {
-                    "No origin remote configured."
-                },
+                text = "Choose how local commits are integrated with fetched commits.",
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
-                fontFamily = FontFamily.Monospace,
-                style = MaterialTheme.typography.bodySmall,
             )
 
-            HorizontalDivider()
-
-            OutlinedButton(
-                modifier = Modifier.fillMaxWidth(),
-                enabled =
-                    !state.operationInProgress &&
-                        state.remoteUrl.isNotBlank(),
-                onClick = onFetch,
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .horizontalScroll(rememberScrollState()),
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
             ) {
-                Icon(
-                    imageVector = Icons.Outlined.CloudDownload,
-                    contentDescription = null,
+                PullStrategyChip(
+                    value = GitPullStrategy.MERGE,
+                    selected = strategy,
+                    label = "Merge",
+                    onSelect = onStrategyChange,
                 )
-                Text("Fetch origin")
+                PullStrategyChip(
+                    value = GitPullStrategy.FAST_FORWARD_ONLY,
+                    selected = strategy,
+                    label = "FF only",
+                    onSelect = onStrategyChange,
+                )
+                PullStrategyChip(
+                    value = GitPullStrategy.REBASE,
+                    selected = strategy,
+                    label = "Rebase",
+                    onSelect = onStrategyChange,
+                )
             }
 
-            OutlinedButton(
+            Button(
                 modifier = Modifier.fillMaxWidth(),
                 enabled =
-                    !state.operationInProgress &&
-                        state.remoteUrl.isNotBlank() &&
-                        state.conflicts.isEmpty(),
+                    !busy &&
+                        conflictCount == 0 &&
+                        !rebaseInProgress,
                 onClick = onPull,
             ) {
                 Icon(
                     imageVector = Icons.Outlined.CloudDownload,
                     contentDescription = null,
                 )
-                Text("Pull with merge")
+                Text("Pull")
             }
+        }
+    }
+}
 
-            HorizontalDivider()
+@Composable
+private fun PullStrategyChip(
+    value: GitPullStrategy,
+    selected: GitPullStrategy,
+    label: String,
+    onSelect: (GitPullStrategy) -> Unit,
+) {
+    FilterChip(
+        selected = value == selected,
+        onClick = {
+            onSelect(value)
+        },
+        label = {
+            Text(label)
+        },
+    )
+}
 
+@Composable
+private fun PushCard(
+    state: GitWorkspaceUiState,
+    remote: String,
+    pushTarget: String,
+    onPushTargetChange: (String) -> Unit,
+    onPush: () -> Unit,
+    onForceWithLease: () -> Unit,
+) {
+    val divergence = state.divergence
+
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+    ) {
+        Column(
+            modifier = Modifier.padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(10.dp),
+        ) {
             Text(
-                "Push current branch",
-                style = MaterialTheme.typography.titleSmall,
+                text = "Push to " + remote,
+                style = MaterialTheme.typography.titleMedium,
             )
+
             OutlinedTextField(
                 modifier = Modifier.fillMaxWidth(),
                 value = pushTarget,
@@ -938,20 +1475,21 @@ private fun SyncCard(
                     Text("Remote branch")
                 },
             )
+
             Text(
-                "Push is explicit and never uses force. The source branch is " +
-                    state.branch.ifBlank { "not available" } + ".",
+                text = "Normal push never forces history. After a successful push, Nexora Git configures the selected destination as the current branch upstream.",
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 style = MaterialTheme.typography.bodySmall,
             )
+
             Button(
                 modifier = Modifier.fillMaxWidth(),
                 enabled =
                     !state.operationInProgress &&
-                        state.remoteUrl.isNotBlank() &&
                         state.branch.isNotBlank() &&
                         pushTarget.isNotBlank() &&
-                        state.conflicts.isEmpty(),
+                        state.conflicts.isEmpty() &&
+                        !state.rebaseInProgress,
                 onClick = onPush,
             ) {
                 Icon(
@@ -960,8 +1498,222 @@ private fun SyncCard(
                 )
                 Text("Push")
             }
+
+            HorizontalDivider()
+
+            Text(
+                text = "History rewrite",
+                style = MaterialTheme.typography.titleSmall,
+            )
+            Text(
+                text = "Force with lease is only available when a remote-tracking OID is known. The native layer verifies that exact remote OID before permitting the forced branch update.",
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                style = MaterialTheme.typography.bodySmall,
+            )
+
+            OutlinedButton(
+                modifier = Modifier.fillMaxWidth(),
+                enabled =
+                    !state.operationInProgress &&
+                        divergence != null &&
+                        divergence.upstreamOid.isNotBlank() &&
+                        pushTarget.isNotBlank() &&
+                        state.conflicts.isEmpty() &&
+                        !state.rebaseInProgress,
+                onClick = onForceWithLease,
+            ) {
+                Text("Force with lease")
+            }
         }
     }
+}
+
+@Composable
+private fun AddRemoteDialog(
+    onDismiss: () -> Unit,
+    onAdd: (String, String) -> Unit,
+) {
+    var name by rememberSaveable {
+        mutableStateOf("")
+    }
+    var url by rememberSaveable {
+        mutableStateOf("")
+    }
+
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        confirmButton = {
+            TextButton(
+                enabled =
+                    name.isNotBlank() &&
+                        url.isNotBlank(),
+                onClick = {
+                    onAdd(name, url)
+                },
+            ) {
+                Text("Add")
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) {
+                Text("Cancel")
+            }
+        },
+        title = {
+            Text("Add Git remote")
+        },
+        text = {
+            Column(
+                verticalArrangement = Arrangement.spacedBy(10.dp),
+            ) {
+                OutlinedTextField(
+                    modifier = Modifier.fillMaxWidth(),
+                    value = name,
+                    singleLine = true,
+                    onValueChange = {
+                        name = it
+                    },
+                    label = {
+                        Text("Remote name")
+                    },
+                )
+                OutlinedTextField(
+                    modifier = Modifier.fillMaxWidth(),
+                    value = url,
+                    singleLine = true,
+                    onValueChange = {
+                        url = it
+                    },
+                    leadingIcon = {
+                        Icon(
+                            imageVector = Icons.Outlined.Link,
+                            contentDescription = null,
+                        )
+                    },
+                    label = {
+                        Text("GitHub HTTPS URL")
+                    },
+                )
+                Text(
+                    text = "For credential isolation, remotes added from the Android UI must use https://github.com/.",
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    style = MaterialTheme.typography.bodySmall,
+                )
+            }
+        },
+    )
+}
+
+@Composable
+private fun RenameRemoteDialog(
+    remote: GitRemote,
+    onDismiss: () -> Unit,
+    onRename: (String) -> Unit,
+) {
+    var name by rememberSaveable(remote.name) {
+        mutableStateOf(remote.name)
+    }
+
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        confirmButton = {
+            TextButton(
+                enabled =
+                    name.isNotBlank() &&
+                        name != remote.name,
+                onClick = {
+                    onRename(name)
+                },
+            ) {
+                Text("Rename")
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) {
+                Text("Cancel")
+            }
+        },
+        title = {
+            Text("Rename remote")
+        },
+        text = {
+            OutlinedTextField(
+                modifier = Modifier.fillMaxWidth(),
+                value = name,
+                singleLine = true,
+                onValueChange = {
+                    name = it
+                },
+                label = {
+                    Text("Remote name")
+                },
+            )
+        },
+    )
+}
+
+@Composable
+private fun ForceWithLeaseDialog(
+    remote: String,
+    branch: String,
+    expectedOid: String,
+    onDismiss: () -> Unit,
+    onConfirm: () -> Unit,
+) {
+    var confirmation by rememberSaveable(branch) {
+        mutableStateOf("")
+    }
+
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        confirmButton = {
+            TextButton(
+                enabled =
+                    branch.isNotBlank() &&
+                        confirmation == branch &&
+                        expectedOid.isNotBlank(),
+                onClick = onConfirm,
+            ) {
+                Text("Force with lease")
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) {
+                Text("Cancel")
+            }
+        },
+        title = {
+            Text("Rewrite remote branch?")
+        },
+        text = {
+            Column(
+                verticalArrangement = Arrangement.spacedBy(10.dp),
+            ) {
+                Text(
+                    text = "This may rewrite " +
+                        remote + "/" + branch +
+                        ". It will proceed only if the remote still points to the exact OID verified by your local tracking ref.",
+                )
+                Text(
+                    text = "Expected remote: " +
+                        expectedOid.take(12),
+                    fontFamily = FontFamily.Monospace,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+                OutlinedTextField(
+                    modifier = Modifier.fillMaxWidth(),
+                    value = confirmation,
+                    singleLine = true,
+                    onValueChange = {
+                        confirmation = it
+                    },
+                    label = {
+                        Text("Type " + branch + " to confirm")
+                    },
+                )
+            }
+        },
+    )
 }
 
 @Composable
@@ -994,6 +1746,7 @@ private fun changeLabel(
         if (entry.untracked) add("untracked")
         if (entry.workingTree) add("working tree")
     }
+
     return labels.ifEmpty {
         listOf("changed")
     }.joinToString(" · ")
