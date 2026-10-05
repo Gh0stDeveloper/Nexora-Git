@@ -6,31 +6,40 @@ import androidx.lifecycle.viewModelScope
 import com.nexora.git.core.git.GitAuthor
 import com.nexora.git.core.git.GitBranch
 import com.nexora.git.core.git.GitConflict
+import com.nexora.git.core.git.GitDivergence
 import com.nexora.git.core.git.GitEngine
 import com.nexora.git.core.git.GitHistoryEntry
 import com.nexora.git.core.git.GitMergeResult
 import com.nexora.git.core.git.GitPullRequest
+import com.nexora.git.core.git.GitPullStrategy
 import com.nexora.git.core.git.GitPushRequest
+import com.nexora.git.core.git.GitRemote
+import com.nexora.git.core.git.GitRepositoryOperationState
 import com.nexora.git.core.git.GitStatusEntry
 import com.nexora.git.core.storage.WorkspaceRegistry
 import dagger.hilt.android.lifecycle.HiltViewModel
 import java.io.File
 import javax.inject.Inject
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 data class GitWorkspaceUiState(
     val workspaceName: String = "",
     val repositoryPath: String = "",
-    val remoteUrl: String = "",
     val branch: String = "",
     val entries: List<GitStatusEntry> = emptyList(),
     val history: List<GitHistoryEntry> = emptyList(),
     val branches: List<GitBranch> = emptyList(),
+    val remotes: List<GitRemote> = emptyList(),
     val conflicts: List<GitConflict> = emptyList(),
+    val divergence: GitDivergence? = null,
+    val repositoryState: GitRepositoryOperationState =
+        GitRepositoryOperationState.NONE,
     val loading: Boolean = true,
     val refreshing: Boolean = false,
     val operationInProgress: Boolean = false,
@@ -50,6 +59,15 @@ data class GitWorkspaceUiState(
 
     val remoteBranches: List<GitBranch>
         get() = branches.filter { it.remote }
+
+    val currentBranch: GitBranch?
+        get() = localBranches.firstOrNull { it.head }
+
+    val currentUpstream: String
+        get() = currentBranch?.upstream.orEmpty()
+
+    val rebaseInProgress: Boolean
+        get() = repositoryState == GitRepositoryOperationState.REBASE
 }
 
 @HiltViewModel
@@ -116,7 +134,9 @@ class GitWorkspaceViewModel @Inject constructor(
             .toList()
 
         if (paths.isEmpty()) {
-            showError("There are no resolvable working-tree changes to stage.")
+            showError(
+                "There are no resolvable working-tree changes to stage.",
+            )
             return
         }
 
@@ -160,6 +180,13 @@ class GitWorkspaceViewModel @Inject constructor(
             return
         }
 
+        if (state.value.conflicts.isNotEmpty()) {
+            showError(
+                "Resolve all merge or rebase conflicts before committing.",
+            )
+            return
+        }
+
         launchOperation {
             val commit = gitEngine.commit(
                 repositoryPath = workspacePath,
@@ -191,6 +218,15 @@ class GitWorkspaceViewModel @Inject constructor(
     }
 
     fun checkout(branch: String) {
+        if (state.value.repositoryState !=
+            GitRepositoryOperationState.NONE
+        ) {
+            showError(
+                "Finish or abort the current Git operation before switching branches.",
+            )
+            return
+        }
+
         launchOperation("Switched to " + branch + ".") {
             gitEngine.checkout(
                 repositoryPath = workspacePath,
@@ -199,29 +235,158 @@ class GitWorkspaceViewModel @Inject constructor(
         }
     }
 
-    fun fetch() {
-        launchOperation("Fetch completed.") {
-            gitEngine.fetch(
+    fun addRemote(
+        name: String,
+        url: String,
+    ) {
+        val normalizedName = runCatching {
+            GitWorkflowPolicy.normalizeRemoteName(name)
+        }.getOrElse {
+            showError(it.message ?: "Invalid remote name.")
+            return
+        }
+        val normalizedUrl = runCatching {
+            GitWorkflowPolicy.normalizeGitHubRemoteUrl(url)
+        }.getOrElse {
+            showError(it.message ?: "Invalid remote URL.")
+            return
+        }
+
+        launchOperation("Added remote " + normalizedName + ".") {
+            gitEngine.addRemote(
                 repositoryPath = workspacePath,
-                remote = "origin",
+                name = normalizedName,
+                url = normalizedUrl,
             )
         }
     }
 
-    fun pullMerge(
+    fun renameRemote(
+        oldName: String,
+        newName: String,
+    ) {
+        val normalized = runCatching {
+            GitWorkflowPolicy.normalizeRemoteName(newName)
+        }.getOrElse {
+            showError(it.message ?: "Invalid remote name.")
+            return
+        }
+
+        launchOperation(
+            "Renamed " + oldName + " to " + normalized + ".",
+        ) {
+            gitEngine.renameRemote(
+                repositoryPath = workspacePath,
+                oldName = oldName,
+                newName = normalized,
+            )
+        }
+    }
+
+    fun removeRemote(name: String) {
+        launchOperation("Removed remote " + name + ".") {
+            gitEngine.removeRemote(
+                repositoryPath = workspacePath,
+                name = name,
+            )
+        }
+    }
+
+    fun setUpstream(upstream: String?) {
+        val current = state.value.branch
+        if (current.isBlank()) {
+            showError("A checked-out local branch is required.")
+            return
+        }
+
+        launchOperation(
+            if (upstream.isNullOrBlank()) {
+                "Removed upstream from " + current + "."
+            } else {
+                "Tracking " + upstream + "."
+            },
+        ) {
+            gitEngine.setUpstream(
+                repositoryPath = workspacePath,
+                branch = current,
+                upstream = upstream,
+            )
+        }
+    }
+
+    fun fetch(remote: String) {
+        val normalized = runCatching {
+            GitWorkflowPolicy.normalizeRemoteName(remote)
+        }.getOrElse {
+            showError(it.message ?: "Invalid remote.")
+            return
+        }
+
+        launchOperation("Fetched " + normalized + ".") {
+            gitEngine.fetch(
+                repositoryPath = workspacePath,
+                remote = normalized,
+            )
+        }
+    }
+
+    fun pull(
+        remote: String,
+        strategy: GitPullStrategy,
+        authorName: String,
+        authorEmail: String,
+    ) {
+        if (state.value.conflicts.isNotEmpty()) {
+            showError(
+                "Resolve the current conflicts before pulling again.",
+            )
+            return
+        }
+
+        val author = authorOrNull(authorName, authorEmail) ?: return
+        val normalized = runCatching {
+            GitWorkflowPolicy.normalizeRemoteName(remote)
+        }.getOrElse {
+            showError(it.message ?: "Invalid remote.")
+            return
+        }
+
+        launchMergeOperation(
+            label = when (strategy) {
+                GitPullStrategy.MERGE -> "Pull with merge"
+                GitPullStrategy.FAST_FORWARD_ONLY ->
+                    "Fast-forward-only pull"
+                GitPullStrategy.REBASE -> "Pull with rebase"
+            },
+        ) {
+            gitEngine.pull(
+                GitPullRequest(
+                    repositoryPath = workspacePath,
+                    remote = normalized,
+                    author = author,
+                    strategy = strategy,
+                ),
+            )
+        }
+    }
+
+    fun continueRebase(
         authorName: String,
         authorEmail: String,
     ) {
         val author = authorOrNull(authorName, authorEmail) ?: return
 
-        launchMergeOperation("Pull") {
-            gitEngine.pull(
-                GitPullRequest(
-                    repositoryPath = workspacePath,
-                    remote = "origin",
-                    author = author,
-                ),
+        launchMergeOperation("Continue rebase") {
+            gitEngine.continueRebase(
+                repositoryPath = workspacePath,
+                author = author,
             )
+        }
+    }
+
+    fun abortRebase() {
+        launchOperation("Rebase aborted and original branch restored.") {
+            gitEngine.abortRebase(workspacePath)
         }
     }
 
@@ -245,9 +410,32 @@ class GitWorkspaceViewModel @Inject constructor(
         }
     }
 
-    fun push(targetBranch: String) {
+    fun push(
+        remote: String,
+        targetBranch: String,
+        forceWithLease: Boolean,
+    ) {
         val current = state.value.branch
-        val target = targetBranch.ifBlank { current }
+        if (current.isBlank()) {
+            showError("Push requires a checked-out local branch.")
+            return
+        }
+
+        val normalizedRemote = runCatching {
+            GitWorkflowPolicy.normalizeRemoteName(remote)
+        }.getOrElse {
+            showError(it.message ?: "Invalid remote.")
+            return
+        }
+
+        val target = runCatching {
+            GitWorkflowPolicy.normalizeBranchName(
+                targetBranch.ifBlank { current },
+            )
+        }.getOrElse {
+            showError(it.message ?: "Invalid push branch.")
+            return
+        }
 
         val refspec = runCatching {
             GitWorkflowPolicy.pushRefspec(
@@ -255,42 +443,82 @@ class GitWorkspaceViewModel @Inject constructor(
                 targetBranch = target,
             )
         }.getOrElse {
-            showError(it.message ?: "Invalid push branch.")
+            showError(it.message ?: "Invalid push refspec.")
             return
         }
 
         launchOperation {
+            val expectedOid = if (forceWithLease) {
+                val remoteTracking =
+                    normalizedRemote + "/" + target
+                gitEngine.divergence(
+                    repositoryPath = workspacePath,
+                    localRef = current,
+                    upstreamRef = remoteTracking,
+                ).upstreamOid.also {
+                    require(it.isNotBlank()) {
+                        "Force-with-lease requires a verified remote-tracking branch. Fetch first."
+                    }
+                }
+            } else {
+                ""
+            }
+
             val result = gitEngine.push(
                 GitPushRequest(
                     repositoryPath = workspacePath,
-                    remote = "origin",
+                    remote = normalizedRemote,
                     refspec = refspec,
+                    forceWithLease = forceWithLease,
+                    expectedRemoteOid = expectedOid,
                 ),
             )
-            "Pushed " + current + " to " +
-                result.remote + "/" + target + "."
+
+            if (!forceWithLease) {
+                val upstream =
+                    normalizedRemote + "/" + target
+                runCatching {
+                    gitEngine.setUpstream(
+                        repositoryPath = workspacePath,
+                        branch = current,
+                        upstream = upstream,
+                    )
+                }
+            }
+
+            if (result.forceWithLease) {
+                "Force-with-lease push completed to " +
+                    normalizedRemote + "/" + target + "."
+            } else {
+                "Pushed " + current + " to " +
+                    normalizedRemote + "/" + target + "."
+            }
         }
     }
 
     fun markConflictResolved(path: String) {
         launchOperation("Marked " + path + " as resolved.") {
-            val root = File(workspacePath).canonicalFile
-            val file = File(root, path).canonicalFile
-            val rootPrefix = root.path + File.separator
+            withContext(Dispatchers.IO) {
+                val root = File(workspacePath).canonicalFile
+                val file = File(root, path).canonicalFile
+                val rootPrefix = root.path + File.separator
 
-            require(
-                file.path == root.path ||
-                    file.path.startsWith(rootPrefix),
-            ) {
-                "Conflict path escapes the workspace."
-            }
-            require(file.isFile) {
-                "Conflict file does not exist."
-            }
+                require(
+                    file.path == root.path ||
+                        file.path.startsWith(rootPrefix),
+                ) {
+                    "Conflict path escapes the workspace."
+                }
+                require(file.isFile) {
+                    "Conflict file does not exist."
+                }
 
-            val text = file.readText()
-            require(!GitWorkflowPolicy.hasConflictMarkers(text)) {
-                "Conflict markers are still present. Finish editing before marking the file resolved."
+                val text = file.readText()
+                require(
+                    !GitWorkflowPolicy.hasConflictMarkers(text),
+                ) {
+                    "Conflict markers are still present. Finish editing before marking the file resolved."
+                }
             }
 
             gitEngine.stage(
@@ -382,34 +610,56 @@ class GitWorkspaceViewModel @Inject constructor(
                 repositoryPath = workspacePath,
                 limit = 80,
             )
-            val conflicts = if (status.conflicted) {
+            val repositoryState =
+                gitEngine.repositoryState(workspacePath)
+            val conflicts = if (
+                status.conflicted ||
+                repositoryState !=
+                    GitRepositoryOperationState.NONE
+            ) {
                 gitEngine.conflicts(workspacePath)
             } else {
                 emptyList()
             }
-            val remoteUrl = runCatching {
-                gitEngine.remoteUrl(
-                    repositoryPath = workspacePath,
-                    remote = "origin",
-                )
-            }.getOrNull().orEmpty()
+            val remotes = gitEngine.remotes(workspacePath)
+
+            val current = branches.firstOrNull {
+                !it.remote && it.head
+            }
+            val divergence = current
+                ?.upstream
+                ?.takeIf(String::isNotBlank)
+                ?.let { upstream ->
+                    runCatching {
+                        gitEngine.divergence(
+                            repositoryPath = workspacePath,
+                            localRef = status.branch,
+                            upstreamRef = upstream,
+                        )
+                    }.getOrNull()
+                }
 
             Snapshot(
                 branch = status.branch,
                 entries = status.entries,
                 history = history,
                 branches = branches,
+                remotes = remotes,
                 conflicts = conflicts,
-                remoteUrl = remoteUrl,
+                divergence = divergence,
+                repositoryState = repositoryState,
             )
         }.onSuccess { snapshot ->
+            val origin = snapshot.remotes.firstOrNull {
+                it.name == "origin"
+            }
+
             runCatching {
                 workspaceRegistry.bindRepository(
                     workspaceId = workspaceId,
-                    remoteUrl = snapshot.remoteUrl
-                        .takeIf { it.isNotBlank() },
+                    remoteUrl = origin?.url,
                     currentBranch = snapshot.branch
-                        .takeIf { it.isNotBlank() },
+                        .takeIf(String::isNotBlank),
                     accountId = null,
                 )
             }
@@ -420,8 +670,11 @@ class GitWorkspaceViewModel @Inject constructor(
                     entries = snapshot.entries,
                     history = snapshot.history,
                     branches = snapshot.branches,
+                    remotes = snapshot.remotes,
                     conflicts = snapshot.conflicts,
-                    remoteUrl = snapshot.remoteUrl,
+                    divergence = snapshot.divergence,
+                    repositoryState =
+                        snapshot.repositoryState,
                     loading = false,
                     refreshing = false,
                 )
@@ -431,8 +684,7 @@ class GitWorkspaceViewModel @Inject constructor(
                 it.copy(
                     loading = false,
                     refreshing = false,
-                    errorMessage = error.message
-                        ?: "Unable to refresh Git state.",
+                    errorMessage = friendlyGitError(error),
                 )
             }
         }
@@ -474,9 +726,7 @@ class GitWorkspaceViewModel @Inject constructor(
                 mutableState.update {
                     it.copy(operationInProgress = false)
                 }
-                showError(
-                    error.message ?: "Git operation failed.",
-                )
+                showError(friendlyGitError(error))
             }
         }
     }
@@ -491,7 +741,7 @@ class GitWorkspaceViewModel @Inject constructor(
                 result.conflicts.isNotEmpty() ->
                     label + " produced " +
                         result.conflicts.size +
-                        " conflict(s). Resolve them before committing."
+                        " conflict(s). Resolve them in the editor."
                 result.commitOid.isNotBlank() ->
                     label + " completed at " +
                         result.commitOid.take(7) + "."
@@ -508,13 +758,37 @@ class GitWorkspaceViewModel @Inject constructor(
         email: String,
     ): GitAuthor? {
         if (name.isBlank() || email.isBlank()) {
-            showError("Commit author name and email are required.")
+            showError(
+                "Commit author name and email are required.",
+            )
             return null
         }
         return GitAuthor(
             name = name.trim(),
             email = email.trim(),
         )
+    }
+
+    private fun friendlyGitError(error: Throwable): String {
+        val raw = error.message
+            ?.takeIf(String::isNotBlank)
+            ?: "Git operation failed."
+        val text = raw.lowercase()
+
+        return when {
+            "non-fast" in text ||
+                "nonfast" in text ->
+                "The remote branch contains commits that are not in your local branch. Fetch first, review ahead/behind, then merge, rebase, or use Force with lease only when you intentionally need to rewrite the remote branch."
+
+            "force-with-lease rejected" in text ->
+                "Force with lease was rejected because the remote branch changed after your last verified state. Fetch again and review the new commits before retrying."
+
+            "protected branch" in text ||
+                "protected_branch" in text ->
+                "GitHub rejected this update because branch protection or a repository rule applies. Nexora Git will not bypass those protections."
+
+            else -> raw
+        }
     }
 
     private fun showError(message: String) {
@@ -528,7 +802,9 @@ class GitWorkspaceViewModel @Inject constructor(
         val entries: List<GitStatusEntry>,
         val history: List<GitHistoryEntry>,
         val branches: List<GitBranch>,
+        val remotes: List<GitRemote>,
         val conflicts: List<GitConflict>,
-        val remoteUrl: String,
+        val divergence: GitDivergence?,
+        val repositoryState: GitRepositoryOperationState,
     )
 }
