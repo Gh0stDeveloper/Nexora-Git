@@ -183,11 +183,13 @@ class Libgit2GitEngine @Inject constructor(
     override suspend fun diff(
         repositoryPath: String,
         mode: GitDiffMode,
+        relativePath: String?,
     ): GitDiff = native {
         parser.diff(
             bridge.nativeDiff(
                 repositoryPath = repositoryPath,
                 mode = mode.wireValue,
+                relativePath = relativePath.orEmpty(),
             ),
         )
     }
