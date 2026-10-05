@@ -539,10 +539,10 @@ private fun CreateIssueDialog(
         mutableStateOf("")
     }
     var selectedLabels by rememberSaveable {
-        mutableStateOf(emptySet<String>())
+        mutableStateOf(emptyList<String>())
     }
     var selectedAssignees by rememberSaveable {
-        mutableStateOf(emptySet<String>())
+        mutableStateOf(emptyList<String>())
     }
     var selectedMilestone by rememberSaveable {
         mutableStateOf<Int?>(null)
@@ -697,7 +697,7 @@ private fun CreateIssueDialog(
     )
 }
 
-private fun Set<String>.toggle(value: String): Set<String> =
-    toMutableSet().apply {
+private fun List<String>.toggle(value: String): List<String> =
+    toMutableList().apply {
         if (!add(value)) remove(value)
     }
