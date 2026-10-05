@@ -927,13 +927,14 @@ void rebase_recovery_workflow(
         "Repository did not retain rebase state"
     );
 
-    write_file(
-        local_clone / "rebase-conflict.txt",
-        "resolved local and remote\n"
-    );
-    nexora::git::stage(
+    nexora::git::resolve_conflict(
         local_clone.string(),
-        {"rebase-conflict.txt"}
+        "rebase-conflict.txt",
+        "theirs"
+    );
+    require(
+        nexora::git::conflicts(local_clone.string()) == "[]",
+        "Use theirs did not clear the rebase conflict"
     );
 
     const std::string continued =
