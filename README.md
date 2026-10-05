@@ -132,9 +132,9 @@ The project must use its own branding and must not imply that it is an official 
 
 ## Status
 
-**Current stage:** Phase J — Issues implementation is complete; CI validation is in progress.
+**Current stage:** Phase J — Issues is complete and CI validated. Phase K — Pull Requests and Review is next.
 
-Nexora Git now adds a native repository Issues workflow with search and filters, issue creation/editing, labels, assignees, milestones, comments, reactions, and close/reopen actions on top of the authenticated GitHub REST platform layer.
+Nexora Git now includes a native repository Issues workflow with search and filters, issue creation/editing, labels, assignees, milestones, comments, reactions, and close/reopen actions on top of the authenticated GitHub REST platform layer.
 
 ---
 
