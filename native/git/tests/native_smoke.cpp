@@ -58,6 +58,19 @@ void append_file(
     output << value;
 }
 
+std::string json_string(
+    const std::string& payload,
+    const std::string& key
+) {
+    const std::string prefix = "\"" + key + "\":\"";
+    const size_t start = payload.find(prefix);
+    if (start == std::string::npos) return "";
+    const size_t value_start = start + prefix.size();
+    const size_t end = payload.find('"', value_start);
+    if (end == std::string::npos) return "";
+    return payload.substr(value_start, end - value_start);
+}
+
 void create_bare_remote(const fs::path& path) {
     git_repository* repository = nullptr;
     raw_check(
@@ -393,6 +406,47 @@ void remote_workflow(
         "Clones did not check out main"
     );
 
+    const std::string listed_remotes =
+        nexora::git::remotes(clone_b.string());
+    require(
+        listed_remotes.find("\"name\":\"origin\"") !=
+            std::string::npos,
+        "Origin remote was not listed"
+    );
+
+    nexora::git::add_remote(
+        clone_b.string(),
+        "backup",
+        remote.string()
+    );
+    nexora::git::rename_remote(
+        clone_b.string(),
+        "backup",
+        "mirror"
+    );
+    require(
+        nexora::git::remotes(clone_b.string())
+            .find("\"name\":\"mirror\"") !=
+            std::string::npos,
+        "Remote rename was not persisted"
+    );
+    nexora::git::remove_remote(
+        clone_b.string(),
+        "mirror"
+    );
+    require(
+        nexora::git::remotes(clone_b.string())
+            .find("\"name\":\"mirror\"") ==
+            std::string::npos,
+        "Remote delete was not persisted"
+    );
+
+    nexora::git::set_upstream(
+        clone_b.string(),
+        "main",
+        "origin/main"
+    );
+
     append_file(
         clone_a / "README.md",
         "remote change\n"
@@ -426,10 +480,25 @@ void remote_workflow(
         "Fetch did not update origin/main"
     );
 
+    const std::string divergence_before_pull =
+        nexora::git::divergence(
+            clone_b.string(),
+            "main",
+            "origin/main"
+        );
+    require(
+        divergence_before_pull.find("\"ahead\":0") !=
+            std::string::npos &&
+        divergence_before_pull.find("\"behind\":1") !=
+            std::string::npos,
+        "Ahead/behind did not report clone B behind origin"
+    );
+
     const std::string first_pull =
-        nexora::git::pull(
+        nexora::git::pull_with_strategy(
             clone_b.string(),
             "origin",
+            "ff_only",
             kAuthor,
             {}
         );
@@ -439,6 +508,181 @@ void remote_workflow(
         first_pull.find("\"state\":\"up_to_date\"") !=
             std::string::npos,
         "Pull did not fast-forward clone B"
+    );
+
+    write_file(
+        clone_b / "local-rebase.txt",
+        "local rebase work\n"
+    );
+    nexora::git::stage(
+        clone_b.string(),
+        {"local-rebase.txt"}
+    );
+    nexora::git::commit(
+        clone_b.string(),
+        "Local rebase commit",
+        kAuthor
+    );
+
+    write_file(
+        clone_a / "remote-rebase.txt",
+        "remote rebase work\n"
+    );
+    nexora::git::stage(
+        clone_a.string(),
+        {"remote-rebase.txt"}
+    );
+    nexora::git::commit(
+        clone_a.string(),
+        "Remote rebase commit",
+        kAuthor
+    );
+    nexora::git::push(
+        clone_a.string(),
+        "origin",
+        "",
+        {}
+    );
+
+    const std::string rebase_pull =
+        nexora::git::pull_with_strategy(
+            clone_b.string(),
+            "origin",
+            "rebase",
+            kAuthor,
+            {}
+        );
+    require(
+        rebase_pull.find("\"state\":\"rebased\"") !=
+            std::string::npos,
+        "Rebase pull did not replay the local commit"
+    );
+    require(
+        nexora::git::repository_state(clone_b.string()) ==
+            "none",
+        "Repository remained in rebase state after clean rebase"
+    );
+
+    nexora::git::push(
+        clone_b.string(),
+        "origin",
+        "",
+        {}
+    );
+    nexora::git::pull(
+        clone_a.string(),
+        "origin",
+        kAuthor,
+        {}
+    );
+
+    nexora::git::create_branch(
+        clone_b.string(),
+        "lease-test",
+        ""
+    );
+    nexora::git::checkout(
+        clone_b.string(),
+        "lease-test"
+    );
+    write_file(
+        clone_b / "lease.txt",
+        "lease base\n"
+    );
+    nexora::git::stage(
+        clone_b.string(),
+        {"lease.txt"}
+    );
+    nexora::git::commit(
+        clone_b.string(),
+        "Lease branch base",
+        kAuthor
+    );
+    nexora::git::push(
+        clone_b.string(),
+        "origin",
+        "refs/heads/lease-test:refs/heads/lease-test",
+        {}
+    );
+    nexora::git::fetch(
+        clone_b.string(),
+        "origin",
+        {}
+    );
+
+    const std::string lease_state =
+        nexora::git::divergence(
+            clone_b.string(),
+            "lease-test",
+            "origin/lease-test"
+        );
+    const std::string lease_oid =
+        json_string(lease_state, "upstreamOid");
+    require(
+        !lease_oid.empty(),
+        "Lease divergence did not expose upstream OID"
+    );
+
+    append_file(
+        clone_b / "lease.txt",
+        "lease rewrite\n"
+    );
+    nexora::git::stage(
+        clone_b.string(),
+        {"lease.txt"}
+    );
+    nexora::git::commit(
+        clone_b.string(),
+        "Lease update",
+        kAuthor
+    );
+    const std::string lease_push =
+        nexora::git::push_force_with_lease(
+            clone_b.string(),
+            "origin",
+            "refs/heads/lease-test:refs/heads/lease-test",
+            lease_oid,
+            {}
+        );
+    require(
+        lease_push.find("\"forceWithLease\":true") !=
+            std::string::npos,
+        "Force-with-lease did not report guarded push"
+    );
+
+    bool stale_lease_rejected = false;
+    append_file(
+        clone_b / "lease.txt",
+        "stale lease attempt\n"
+    );
+    nexora::git::stage(
+        clone_b.string(),
+        {"lease.txt"}
+    );
+    nexora::git::commit(
+        clone_b.string(),
+        "Stale lease commit",
+        kAuthor
+    );
+    try {
+        nexora::git::push_force_with_lease(
+            clone_b.string(),
+            "origin",
+            "refs/heads/lease-test:refs/heads/lease-test",
+            lease_oid,
+            {}
+        );
+    } catch (const nexora::git::GitError&) {
+        stale_lease_rejected = true;
+    }
+    require(
+        stale_lease_rejected,
+        "Stale force-with-lease was not rejected"
+    );
+
+    nexora::git::checkout(
+        clone_b.string(),
+        "main"
     );
 
     write_file(
