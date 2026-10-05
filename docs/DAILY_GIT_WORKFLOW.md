@@ -55,6 +55,10 @@ Conflicted paths are surfaced in the workbench and open directly in the Phase H 
 
 Before a path can be marked resolved, Nexora Git checks that standard conflict markers are no longer present. Resolution stages the path through libgit2.
 
+A conflicted merge remains in the native merge state. After every conflict is resolved and staged, **Continue merge** creates the final merge commit with both the local and incoming commits as parents and then clears the merge metadata.
+
+A conflicted rebase remains in the native rebase state. **Continue rebase** commits the resolved operation and resumes the remaining rebase operations; **Abort** restores the pre-rebase state.
+
 ## Push safety
 
 Normal Push never adds a force refspec.
@@ -87,6 +91,7 @@ Native workflow tests exercise real disposable repositories for:
 - ahead/behind
 - fast-forward-only pull
 - clean rebase
+- conflicted merge continuation with a two-parent merge commit
 - rebase conflict continuation
 - rebase abort
 - force-with-lease success
