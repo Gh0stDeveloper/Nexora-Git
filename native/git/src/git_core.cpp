@@ -1340,6 +1340,7 @@ std::string diff(
         pathspec.strings = &path_raw;
         pathspec.count = 1;
         options.pathspec = pathspec;
+        options.flags |= GIT_DIFF_DISABLE_PATHSPEC_MATCH;
     }
 
     git_tree* tree = nullptr;
