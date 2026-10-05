@@ -243,15 +243,47 @@ This roadmap is intentionally staged. A phase is not complete if it only contain
 
 ## Phase I — Complete Daily Git Workflow
 
-- changes
-- staging
-- commit history
-- branch manager
-- remotes
-- pull strategies
-- merge
-- conflict resolution
-- advanced push handling
+**Status: in progress on `phase-i-daily-git-workflow`.**
+
+### I.1 Daily workbench — Implemented
+- [x] dedicated Git workspace UI
+- [x] changes and staged-change views
+- [x] stage / unstage per path
+- [x] safe stage-all / unstage-all
+- [x] staged-only commit flow
+- [x] commit history
+- [x] local and remote branch listing
+- [x] create-and-switch branch flow
+- [x] safe checkout
+- [x] origin URL discovery
+- [x] fetch origin
+- [x] pull with merge strategy
+- [x] explicit branch/ref merge
+- [x] conflict list and editor handoff
+- [x] conflict-marker check before marking resolved
+- [x] explicit non-force push refspec
+- [x] branch/refspec safety policy and JVM tests
+
+### I.2 Pull strategies and remotes — Pending
+- [ ] fast-forward-only pull
+- [ ] rebase pull
+- [ ] multi-remote list/add/rename/remove
+- [ ] upstream tracking controls
+
+### I.3 Advanced push and divergence — Pending
+- [ ] ahead/behind state
+- [ ] non-fast-forward rejection guidance
+- [ ] upstream creation flow
+- [ ] guarded force-with-lease design
+- [ ] protected-branch-aware guidance where available
+
+### I.4 Validation — Pending
+- [ ] Git workspace Compose instrumentation tests
+- [ ] native tests for new remote/pull primitives
+- [ ] Android CI validation
+- [ ] Native Git CI validation
+- [ ] Foundation CI validation
+- [ ] final Phase I documentation
 
 ## Phase J — Issues
 
