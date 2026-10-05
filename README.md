@@ -86,6 +86,8 @@ See [Git Engine](docs/GIT_ENGINE.md).
 - [Phase E report](docs/PHASE_E_REPORT.md)
 - [Repository experience](docs/REPOSITORY_EXPERIENCE.md)
 - [Phase F report](docs/PHASE_F_REPORT.md)
+- [Code browser](docs/CODE_BROWSER.md)
+- [Phase G report](docs/PHASE_G_REPORT.md)
 - [Auth Broker](auth-broker/README.md)
 - [Architecture decisions](docs/adr/)
 
@@ -125,9 +127,9 @@ The project must use its own branding and must not imply that it is an official 
 
 ## Status
 
-**Current stage:** Phase F — Repository Experience complete; Phase G — Code Browser is next.
+**Current stage:** Phase G — Code Browser complete; Phase H — Mobile Editor is next.
 
-Nexora Git now combines account-scoped GitHub repository discovery with persistent offline metadata, repository details, creation, fork/star/watch actions, permission-aware settings, real libgit2 cloning, and local-project Git import on top of the Phase E workspace system.
+Nexora Git now includes an offline-capable workspace code browser with safe directory navigation, text/binary detection, lightweight syntax highlighting, Markdown and image preview, real libgit2 history/blame, and constrained Android share/save-copy operations.
 
 ---
 

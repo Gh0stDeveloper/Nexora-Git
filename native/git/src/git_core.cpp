@@ -1476,4 +1476,315 @@ std::string conflicts(const std::string& repository_path) {
     return result;
 }
 
+std::string history(
+    const std::string& repository_path,
+    const std::string& relative_path,
+    int requested_limit
+) {
+    git_repository* repository = open_repository(repository_path);
+    git_revwalk* walk = nullptr;
+    check(git_revwalk_new(&walk, repository), "Create history walker");
+
+    git_revwalk_sorting(
+        walk,
+        GIT_SORT_TOPOLOGICAL | GIT_SORT_TIME
+    );
+
+    const int push_rc = git_revwalk_push_head(walk);
+    if (push_rc == GIT_EUNBORNBRANCH || push_rc == GIT_ENOTFOUND) {
+        git_revwalk_free(walk);
+        git_repository_free(repository);
+        return "[]";
+    }
+    if (push_rc < 0) {
+        git_revwalk_free(walk);
+        git_repository_free(repository);
+        throw_git_error(push_rc, "Start history at HEAD");
+    }
+
+    const int limit = std::max(1, std::min(requested_limit, 200));
+    std::ostringstream out;
+    out << "[";
+    bool first = true;
+    int emitted = 0;
+
+    git_oid oid{};
+    while (emitted < limit) {
+        const int next_rc = git_revwalk_next(&oid, walk);
+        if (next_rc == GIT_ITEROVER) break;
+        if (next_rc < 0) {
+            git_revwalk_free(walk);
+            git_repository_free(repository);
+            throw_git_error(next_rc, "Walk commit history");
+        }
+
+        git_commit* commit = nullptr;
+        check(
+            git_commit_lookup(&commit, repository, &oid),
+            "Open history commit"
+        );
+
+        bool include = relative_path.empty();
+
+        if (!include) {
+            git_tree* current_tree = nullptr;
+            check(
+                git_commit_tree(&current_tree, commit),
+                "Read history commit tree"
+            );
+
+            char* path_raw =
+                const_cast<char*>(relative_path.c_str());
+            git_strarray pathspec{};
+            pathspec.strings = &path_raw;
+            pathspec.count = 1;
+
+            git_diff_options options = GIT_DIFF_OPTIONS_INIT;
+            options.pathspec = pathspec;
+            options.flags =
+                GIT_DIFF_INCLUDE_TYPECHANGE;
+
+            const size_t parent_count =
+                git_commit_parentcount(commit);
+
+            if (parent_count == 0) {
+                git_diff* commit_diff = nullptr;
+                const int diff_rc = git_diff_tree_to_tree(
+                    &commit_diff,
+                    repository,
+                    nullptr,
+                    current_tree,
+                    &options
+                );
+                if (diff_rc < 0) {
+                    git_tree_free(current_tree);
+                    git_commit_free(commit);
+                    git_revwalk_free(walk);
+                    git_repository_free(repository);
+                    throw_git_error(
+                        diff_rc,
+                        "Compare initial commit path"
+                    );
+                }
+
+                include =
+                    git_diff_num_deltas(commit_diff) > 0;
+                git_diff_free(commit_diff);
+            } else {
+                for (
+                    size_t parent_index = 0;
+                    parent_index < parent_count && !include;
+                    ++parent_index
+                ) {
+                    git_commit* parent = nullptr;
+                    check(
+                        git_commit_parent(
+                            &parent,
+                            commit,
+                            static_cast<unsigned int>(
+                                parent_index
+                            )
+                        ),
+                        "Read history parent"
+                    );
+
+                    git_tree* parent_tree = nullptr;
+                    const int parent_tree_rc =
+                        git_commit_tree(
+                            &parent_tree,
+                            parent
+                        );
+                    git_commit_free(parent);
+
+                    if (parent_tree_rc < 0) {
+                        git_tree_free(current_tree);
+                        git_commit_free(commit);
+                        git_revwalk_free(walk);
+                        git_repository_free(repository);
+                        throw_git_error(
+                            parent_tree_rc,
+                            "Read history parent tree"
+                        );
+                    }
+
+                    git_diff* commit_diff = nullptr;
+                    const int diff_rc = git_diff_tree_to_tree(
+                        &commit_diff,
+                        repository,
+                        parent_tree,
+                        current_tree,
+                        &options
+                    );
+                    git_tree_free(parent_tree);
+
+                    if (diff_rc < 0) {
+                        git_tree_free(current_tree);
+                        git_commit_free(commit);
+                        git_revwalk_free(walk);
+                        git_repository_free(repository);
+                        throw_git_error(
+                            diff_rc,
+                            "Compare history commit path"
+                        );
+                    }
+
+                    include =
+                        git_diff_num_deltas(commit_diff) > 0;
+                    git_diff_free(commit_diff);
+                }
+            }
+
+            git_tree_free(current_tree);
+        }
+
+        if (!include) {
+            git_commit_free(commit);
+            continue;
+        }
+
+        const git_signature* author = git_commit_author(commit);
+        const char* summary = git_commit_summary(commit);
+        const char* message = git_commit_message(commit);
+
+        const std::string oid_string = oid_to_string(&oid);
+        const std::string short_oid =
+            oid_string.substr(
+                0,
+                std::min<size_t>(7, oid_string.size())
+            );
+
+        if (!first) out << ",";
+        first = false;
+
+        out << "{";
+        out << "\"oid\":" << quote(oid_string);
+        out << ",\"shortOid\":" << quote(short_oid);
+        out << ",\"summary\":"
+            << quote(summary != nullptr ? summary : "");
+        out << ",\"message\":"
+            << quote(message != nullptr ? message : "");
+        out << ",\"authorName\":"
+            << quote(
+                author != nullptr && author->name != nullptr
+                    ? author->name
+                    : ""
+            );
+        out << ",\"authorEmail\":"
+            << quote(
+                author != nullptr && author->email != nullptr
+                    ? author->email
+                    : ""
+            );
+        out << ",\"timestampSeconds\":"
+            << git_commit_time(commit);
+        out << ",\"timezoneOffsetMinutes\":"
+            << git_commit_time_offset(commit);
+        out << ",\"parentCount\":"
+            << git_commit_parentcount(commit);
+        out << "}";
+
+        emitted += 1;
+        git_commit_free(commit);
+    }
+
+    out << "]";
+    git_revwalk_free(walk);
+    git_repository_free(repository);
+    return out.str();
+}
+
+std::string blame(
+    const std::string& repository_path,
+    const std::string& relative_path
+) {
+    if (relative_path.empty()) {
+        throw GitError(
+            GIT_EINVALID,
+            0,
+            "Blame path is required"
+        );
+    }
+
+    git_repository* repository = open_repository(repository_path);
+    git_blame_options options = GIT_BLAME_OPTIONS_INIT;
+
+    git_blame* blame_result = nullptr;
+    const int blame_rc = git_blame_file(
+        &blame_result,
+        repository,
+        relative_path.c_str(),
+        &options
+    );
+    if (blame_rc < 0) {
+        git_repository_free(repository);
+        throw_git_error(blame_rc, "Blame file");
+    }
+
+    std::ostringstream out;
+    out << "[";
+
+    const size_t count = git_blame_get_hunk_count(blame_result);
+    for (size_t index = 0; index < count; ++index) {
+        const git_blame_hunk* hunk =
+            git_blame_get_hunk_byindex(
+                blame_result,
+                static_cast<uint32_t>(index)
+            );
+
+        if (hunk == nullptr) continue;
+        if (index > 0) out << ",";
+
+        out << "{";
+        out << "\"startLine\":"
+            << hunk->final_start_line_number;
+        out << ",\"lineCount\":"
+            << hunk->lines_in_hunk;
+        out << ",\"finalCommitOid\":"
+            << quote(oid_to_string(&hunk->final_commit_id));
+        out << ",\"originalCommitOid\":"
+            << quote(oid_to_string(&hunk->orig_commit_id));
+        out << ",\"originalStartLine\":"
+            << hunk->orig_start_line_number;
+        out << ",\"originalPath\":"
+            << quote(hunk->orig_path != nullptr
+                ? hunk->orig_path
+                : relative_path);
+        out << ",\"authorName\":"
+            << quote(
+                hunk->final_signature != nullptr &&
+                hunk->final_signature->name != nullptr
+                    ? hunk->final_signature->name
+                    : ""
+            );
+        out << ",\"authorEmail\":"
+            << quote(
+                hunk->final_signature != nullptr &&
+                hunk->final_signature->email != nullptr
+                    ? hunk->final_signature->email
+                    : ""
+            );
+        out << ",\"timestampSeconds\":"
+            << (
+                hunk->final_signature != nullptr
+                    ? hunk->final_signature->when.time
+                    : 0
+            );
+        out << ",\"timezoneOffsetMinutes\":"
+            << (
+                hunk->final_signature != nullptr
+                    ? hunk->final_signature->when.offset
+                    : 0
+            );
+        out << ",\"boundary\":"
+            << (hunk->boundary != 0 ? "true" : "false");
+        out << "}";
+    }
+
+    out << "]";
+
+    git_blame_free(blame_result);
+    git_repository_free(repository);
+    return out.str();
+}
+
 }  // namespace nexora::git

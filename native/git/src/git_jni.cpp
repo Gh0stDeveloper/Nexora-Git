@@ -434,3 +434,35 @@ Java_com_nexora_git_core_git_NativeGitBridge_nativeConflicts(
         );
     });
 }
+
+extern "C" JNIEXPORT jstring JNICALL
+Java_com_nexora_git_core_git_NativeGitBridge_nativeHistory(
+    JNIEnv* env,
+    jobject,
+    jstring repository_path,
+    jstring relative_path,
+    jint limit
+) {
+    return string_call(env, [&]() {
+        return nexora::git::history(
+            from_jstring(env, repository_path),
+            from_jstring(env, relative_path),
+            static_cast<int>(limit)
+        );
+    });
+}
+
+extern "C" JNIEXPORT jstring JNICALL
+Java_com_nexora_git_core_git_NativeGitBridge_nativeBlame(
+    JNIEnv* env,
+    jobject,
+    jstring repository_path,
+    jstring relative_path
+) {
+    return string_call(env, [&]() {
+        return nexora::git::blame(
+            from_jstring(env, repository_path),
+            from_jstring(env, relative_path)
+        );
+    });
+}

@@ -215,6 +215,32 @@ class Libgit2GitEngine @Inject constructor(
         )
     }
 
+    override suspend fun history(
+        repositoryPath: String,
+        relativePath: String?,
+        limit: Int,
+    ): List<GitHistoryEntry> = native {
+        parser.history(
+            bridge.nativeHistory(
+                repositoryPath = repositoryPath,
+                relativePath = relativePath.orEmpty(),
+                limit = limit.coerceIn(1, 200),
+            ),
+        )
+    }
+
+    override suspend fun blame(
+        repositoryPath: String,
+        relativePath: String,
+    ): List<GitBlameHunk> = native {
+        parser.blame(
+            bridge.nativeBlame(
+                repositoryPath = repositoryPath,
+                relativePath = relativePath,
+            ),
+        )
+    }
+
     private suspend fun credentialsForRemote(
         repositoryPath: String,
         remote: String,

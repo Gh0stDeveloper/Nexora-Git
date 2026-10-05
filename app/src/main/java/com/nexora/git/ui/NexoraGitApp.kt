@@ -34,6 +34,7 @@ import com.nexora.git.feature.auth.AuthViewModel
 import com.nexora.git.feature.auth.LoginScreen
 import com.nexora.git.feature.explore.ExploreScreen
 import com.nexora.git.feature.home.HomeScreen
+import com.nexora.git.feature.files.CodeBrowserScreen
 import com.nexora.git.feature.profile.ProfileScreen
 import com.nexora.git.feature.repositories.RepositoriesScreen
 import com.nexora.git.feature.repositories.RepositoryDetailScreen
@@ -170,6 +171,27 @@ private fun AuthenticatedNexoraGitApp(
                         navController.navigate(
                             "repository/" + owner + "/" + name,
                         )
+                    },
+                    onBrowseWorkspace = { workspaceId ->
+                        navController.navigate(
+                            "code/" + workspaceId,
+                        )
+                    },
+                )
+            }
+
+            composable(
+                route = "code/{workspaceId}",
+                arguments = listOf(
+                    navArgument("workspaceId") {
+                        type = NavType.StringType
+                    },
+                ),
+            ) {
+                CodeBrowserScreen(
+                    contentPadding = paddingValues,
+                    onBack = {
+                        navController.popBackStack()
                     },
                 )
             }

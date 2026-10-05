@@ -101,5 +101,14 @@ std::string merge(
     const Author& author
 );
 std::string conflicts(const std::string& repository_path);
+std::string history(
+    const std::string& repository_path,
+    const std::string& relative_path,
+    int limit
+);
+std::string blame(
+    const std::string& repository_path,
+    const std::string& relative_path
+);
 
 }  // namespace nexora::git
