@@ -3,6 +3,7 @@ package com.nexora.git.core.storage
 enum class WorkspaceStrategy {
     DIRECT,
     MANAGED,
+    REMOTE_CLONE,
 }
 
 enum class WorkspaceSyncState {

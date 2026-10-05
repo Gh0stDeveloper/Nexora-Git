@@ -17,6 +17,17 @@ interface WorkspaceDao {
     @Query("SELECT * FROM workspaces WHERE sourceTreeUri = :treeUri LIMIT 1")
     suspend fun findBySourceTreeUri(treeUri: String): WorkspaceEntity?
 
+    @Query(
+        """
+        SELECT * FROM workspaces
+        WHERE repositoryRemote = :remoteUrl
+        LIMIT 1
+        """,
+    )
+    suspend fun findByRepositoryRemote(
+        remoteUrl: String,
+    ): WorkspaceEntity?
+
     @Upsert
     suspend fun upsert(workspace: WorkspaceEntity)
 

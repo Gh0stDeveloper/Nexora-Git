@@ -41,6 +41,7 @@ Start with least privilege and add permissions only when the associated feature 
 | Permission area | Access | Purpose |
 |---|---:|---|
 | Metadata | Read | Repository identity/basic metadata |
+| Administration | Read/Write when repository management ships | Create repositories and modify supported repository settings |
 | Contents | Read/Write | Repository content operations and Git HTTPS authorization where applicable |
 | Issues | Read/Write | Issues/comments |
 | Pull requests | Read/Write | PRs/reviews/merge workflows |
@@ -48,8 +49,15 @@ Start with least privilege and add permissions only when the associated feature 
 | Workflows | Read/Write only when needed | Dispatch or workflow modification |
 | Commit statuses / Checks | Read | CI state |
 | Discussions | Read/Write only when shipped | Discussions |
+| Starring (user permission) | Read/Write | Read and change the authenticated user's starred repositories |
 
 Account permissions should be added only for implemented profile, identity or social features.
+
+### Repository watch state
+
+GitHub's REST repository-subscription mutation endpoints do not support GitHub App user access tokens. Nexora Git therefore does not use those endpoints for watch/unwatch.
+
+Phase F queries `viewerCanSubscribe` / `viewerSubscription` and uses the GraphQL `updateSubscription` mutation when GitHub reports the capability is available. The UI disables watch mutations when that capability is not available.
 
 ## Installation model
 

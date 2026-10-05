@@ -72,6 +72,10 @@ class SafProjectScanner @Inject constructor(
                     }
 
                     if (child.isDirectory) {
+                        if (isGitMetadataPath(relativePath)) {
+                            return@forEach
+                        }
+
                         walk(
                             directory = child,
                             basePath = relativePath,

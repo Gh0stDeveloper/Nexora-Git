@@ -5,6 +5,8 @@ import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.unit.dp
+import com.nexora.git.core.repository.RepositoryPermissions
+import com.nexora.git.core.repository.RepositorySummary
 import com.nexora.git.core.storage.Workspace
 import com.nexora.git.core.storage.WorkspaceStrategy
 import com.nexora.git.core.storage.WorkspaceSyncState
@@ -18,12 +20,43 @@ class RepositoriesContentTest {
     val composeRule = createComposeRule()
 
     @Test
-    fun displaysManagedWorkspaceAndFolderAction() {
+    fun displaysRemoteRepositoryAndManagedWorkspace() {
         composeRule.setContent {
             NexoraGitTheme {
                 RepositoriesContent(
                     state = RepositoriesUiState(
                         loading = false,
+                        remoteRepositories = listOf(
+                            RepositorySummary(
+                                id = 10L,
+                                nodeId = "R_repo",
+                                name = "Nexora-Git",
+                                fullName = "Ghost/Nexora-Git",
+                                ownerLogin = "Ghost",
+                                ownerAvatarUrl = null,
+                                description = "Android Git client",
+                                privateRepository = false,
+                                fork = false,
+                                archived = false,
+                                visibility = "public",
+                                language = "Kotlin",
+                                defaultBranch = "main",
+                                cloneUrl =
+                                    "https://github.com/Ghost/Nexora-Git.git",
+                                htmlUrl =
+                                    "https://github.com/Ghost/Nexora-Git",
+                                stars = 12,
+                                forks = 3,
+                                openIssues = 1,
+                                sizeKb = 2048,
+                                updatedAt = null,
+                                pushedAt = null,
+                                permissions = RepositoryPermissions(
+                                    admin = true,
+                                    push = true,
+                                ),
+                            ),
+                        ),
                         workspaces = listOf(
                             Workspace(
                                 id = "workspace-1",
@@ -35,7 +68,7 @@ class RepositoriesContentTest {
                                 strategy = WorkspaceStrategy.MANAGED,
                                 workspacePath = "/data/sample",
                                 repositoryRemote = null,
-                                currentBranch = null,
+                                currentBranch = "main",
                                 accountId = null,
                                 syncState = WorkspaceSyncState.READY,
                                 lastSyncedAtEpochMillis = 1L,
@@ -50,21 +83,30 @@ class RepositoriesContentTest {
                         ),
                     ),
                     contentPadding = PaddingValues(0.dp),
+                    onRefresh = {},
+                    onCreate = {},
+                    onCloneUrl = {},
                     onOpenFolder = {},
+                    onOpenRepository = { _, _ -> },
+                    onCloneRepository = {},
+                    onInitializeGit = {},
                     onSync = {},
                     onDelete = {},
                 )
             }
         }
 
-        composeRule.onNodeWithText("Open project folder")
+        composeRule.onNodeWithText("Create repository")
+            .assertIsDisplayed()
+        composeRule.onNodeWithText("Nexora-Git")
+            .assertIsDisplayed()
+        composeRule.onNodeWithText("Clone to device")
             .assertIsDisplayed()
         composeRule.onNodeWithText("Sample Project")
             .assertIsDisplayed()
-        composeRule.onNodeWithText("Managed workspace")
+        composeRule.onNodeWithText("Managed Android workspace")
             .assertIsDisplayed()
-        composeRule.onNodeWithText(
-            "1 secret warnings · 0 large-file warnings · 0 sync conflicts",
-        ).assertIsDisplayed()
+        composeRule.onNodeWithText("Branch: main")
+            .assertIsDisplayed()
     }
 }

@@ -84,6 +84,8 @@ See [Git Engine](docs/GIT_ENGINE.md).
 - [Phase C report](docs/PHASE_C_REPORT.md)
 - [Phase D report](docs/PHASE_D_REPORT.md)
 - [Phase E report](docs/PHASE_E_REPORT.md)
+- [Repository experience](docs/REPOSITORY_EXPERIENCE.md)
+- [Phase F report](docs/PHASE_F_REPORT.md)
 - [Auth Broker](auth-broker/README.md)
 - [Architecture decisions](docs/adr/)
 
@@ -123,9 +125,9 @@ The project must use its own branding and must not imply that it is an official 
 
 ## Status
 
-**Current stage:** Phase E — Android Project Storage complete; Phase F — Repository Experience is next.
+**Current stage:** Phase F — Repository Experience complete; Phase G — Code Browser is next.
 
-Nexora Git now includes SAF folder selection, persistent tree permissions, direct and managed workspace strategies, Room-backed workspace records, non-destructive managed synchronization, project scanning, `.gitignore` awareness, secret-risk warnings and GitHub large-file warnings.
+Nexora Git now combines account-scoped GitHub repository discovery with persistent offline metadata, repository details, creation, fork/star/watch actions, permission-aware settings, real libgit2 cloning, and local-project Git import on top of the Phase E workspace system.
 
 ---
 

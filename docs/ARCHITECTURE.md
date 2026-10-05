@@ -329,3 +329,53 @@ real path       SAF → app-private mirror
 ### Risk scan boundary
 
 The project scanner records path/size/ignore metadata and warnings. It never stores detected secret values in Room or the sync manifest.
+
+
+## Repository experience
+
+Phase F composes GitHub platform data, persistent normalized metadata and local Git workspaces behind a feature-level gateway.
+
+```text
+Repositories / Repository Detail
+              ↓
+       RepositoryGateway
+       ↙             ↘
+GitHubPlatformClient  Room v4 metadata cache
+       ↓
+ REST + GraphQL
+
+Clone / Import local project
+              ↓
+RepositoryWorkspaceCoordinator
+        ↙             ↘
+   GitEngine       WorkspaceRegistry
+      ↓                 ↓
+   libgit2      DIRECT / MANAGED / REMOTE_CLONE
+```
+
+### Remote repository cache
+
+The generic transport cache from Phase C remains memory-only. Phase F adds a separate normalized Room cache specifically for repository-list metadata, keyed by GitHub account ID.
+
+It stores repository metadata and permission flags, never access tokens or refresh tokens.
+
+On network/server/rate-limit failures, list and detail flows may surface cached metadata. Mutation actions remain online-only.
+
+### Repository workspaces
+
+A remote clone is registered as `REMOTE_CLONE` and lives only under app-private workspace storage.
+
+Imported projects retain their existing `DIRECT` or `MANAGED` strategy. `RepositoryWorkspaceCoordinator` runs `git init` only when the workspace does not already contain a `.git` directory.
+
+Deleting a `REMOTE_CLONE` may delete its app-owned directory. Deleting a `DIRECT` workspace never deletes the user's source directory.
+
+### Permission boundaries
+
+Repository UI uses the permissions returned by GitHub to gate administration controls.
+
+- repository creation/settings are remote API operations;
+- star/unstar is a GitHub user action;
+- watch/unwatch uses GraphQL capability checks and subscription state;
+- clone credentials continue to cross into libgit2 only through the Phase D credential callback boundary.
+
+The feature layer does not embed tokens in clone URLs or persist them in Room.
