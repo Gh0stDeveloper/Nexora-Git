@@ -131,6 +131,12 @@ interface GitEngine {
         repositoryPath: String,
     ): List<GitConflict>
 
+    suspend fun resolveConflict(
+        repositoryPath: String,
+        path: String,
+        resolution: GitConflictResolution,
+    )
+
     suspend fun history(
         repositoryPath: String,
         relativePath: String? = null,
