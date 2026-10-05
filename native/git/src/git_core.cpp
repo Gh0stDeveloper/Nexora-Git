@@ -5,7 +5,6 @@
 #include <algorithm>
 #include <cctype>
 #include <cstdio>
-#include <fstream>
 #include <mutex>
 #include <sstream>
 #include <string>
@@ -183,6 +182,20 @@ git_remote_callbacks remote_callbacks(const Credentials* credentials) {
     callbacks.credentials = credentials_callback;
     callbacks.payload = const_cast<Credentials*>(credentials);
     return callbacks;
+}
+
+int collect_merge_head(
+    const git_oid* oid,
+    void* payload
+) {
+    if (oid == nullptr || payload == nullptr) {
+        return 0;
+    }
+
+    auto* heads =
+        static_cast<std::vector<git_oid>*>(payload);
+    heads->push_back(*oid);
+    return 0;
 }
 
 git_tree* head_tree(git_repository* repository) {
@@ -1839,35 +1852,30 @@ std::string continue_merge(
         );
     }
 
-    const char* git_dir = git_repository_path(repository);
-    if (git_dir == nullptr) {
+    std::vector<git_oid> merge_heads;
+    const int merge_heads_rc =
+        git_repository_mergehead_foreach(
+            repository,
+            collect_merge_head,
+            &merge_heads
+        );
+    if (merge_heads_rc < 0) {
         git_repository_free(repository);
-        throw GitError(
-            GIT_ERROR,
-            0,
-            "Repository metadata path is unavailable"
+        throw_git_error(
+            merge_heads_rc,
+            "Read merge heads"
         );
     }
-
-    std::ifstream merge_head_file(
-        std::string(git_dir) + "MERGE_HEAD"
-    );
-    std::string merge_head_oid;
-    std::getline(merge_head_file, merge_head_oid);
-
-    git_oid incoming_oid{};
-    if (merge_head_oid.empty() ||
-        git_oid_fromstr(
-            &incoming_oid,
-            merge_head_oid.c_str()
-        ) < 0) {
+    if (merge_heads.size() != 1) {
         git_repository_free(repository);
         throw GitError(
             GIT_EINVALID,
             0,
-            "MERGE_HEAD is missing or invalid"
+            "Nexora Git expected exactly one merge head"
         );
     }
+
+    const git_oid incoming_oid = merge_heads.front();
 
     git_reference* head_reference = nullptr;
     const int head_rc = git_repository_head(
