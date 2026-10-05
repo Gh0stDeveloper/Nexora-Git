@@ -63,6 +63,7 @@ fun RepositoriesScreen(
     contentPadding: PaddingValues,
     onOpenRepository: (String, String) -> Unit,
     onBrowseWorkspace: (String) -> Unit,
+    onOpenGitWorkspace: (String) -> Unit,
     viewModel: RepositoriesViewModel = hiltViewModel(),
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
@@ -96,6 +97,7 @@ fun RepositoriesScreen(
         },
         onOpenRepository = onOpenRepository,
         onBrowseWorkspace = onBrowseWorkspace,
+        onOpenGitWorkspace = onOpenGitWorkspace,
         onCloneRepository = viewModel::cloneRepository,
         onInitializeGit = viewModel::initializeWorkspaceGit,
         onSync = viewModel::sync,
@@ -181,6 +183,7 @@ internal fun RepositoriesContent(
     onOpenFolder: () -> Unit,
     onOpenRepository: (String, String) -> Unit,
     onBrowseWorkspace: (String) -> Unit,
+    onOpenGitWorkspace: (String) -> Unit,
     onCloneRepository: (RepositorySummary) -> Unit,
     onInitializeGit: (String) -> Unit,
     onSync: (String) -> Unit,
@@ -354,6 +357,9 @@ internal fun RepositoriesContent(
                 onBrowse = {
                     onBrowseWorkspace(workspace.id)
                 },
+                onOpenGit = {
+                    onOpenGitWorkspace(workspace.id)
+                },
                 onInitializeGit = {
                     onInitializeGit(workspace.id)
                 },
@@ -522,6 +528,7 @@ private fun WorkspaceCard(
     workspace: Workspace,
     enabled: Boolean,
     onBrowse: () -> Unit,
+    onOpenGit: () -> Unit,
     onInitializeGit: () -> Unit,
     onSync: () -> Unit,
     onDelete: () -> Unit,
@@ -623,13 +630,25 @@ private fun WorkspaceCard(
                 OutlinedButton(
                     modifier = Modifier.weight(1f),
                     enabled = enabled,
-                    onClick = onInitializeGit,
+                    onClick = if (
+                        workspace.currentBranch.isNullOrBlank()
+                    ) {
+                        onInitializeGit
+                    } else {
+                        onOpenGit
+                    },
                 ) {
                     Icon(
                         imageVector = Icons.Outlined.Source,
                         contentDescription = null,
                     )
-                    Text("Git")
+                    Text(
+                        if (workspace.currentBranch.isNullOrBlank()) {
+                            "Init Git"
+                        } else {
+                            "Git workspace"
+                        },
+                    )
                 }
 
                 OutlinedButton(
