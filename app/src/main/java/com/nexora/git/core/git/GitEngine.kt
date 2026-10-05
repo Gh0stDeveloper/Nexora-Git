@@ -73,4 +73,15 @@ interface GitEngine {
     suspend fun conflicts(
         repositoryPath: String,
     ): List<GitConflict>
+
+    suspend fun history(
+        repositoryPath: String,
+        relativePath: String? = null,
+        limit: Int = 50,
+    ): List<GitHistoryEntry>
+
+    suspend fun blame(
+        repositoryPath: String,
+        relativePath: String,
+    ): List<GitBlameHunk>
 }
