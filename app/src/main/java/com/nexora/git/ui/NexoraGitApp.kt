@@ -1,5 +1,6 @@
 package com.nexora.git.ui
 
+import android.net.Uri
 import androidx.browser.customtabs.CustomTabsIntent
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.WindowInsets
@@ -33,6 +34,7 @@ import com.nexora.git.feature.auth.AuthUiState
 import com.nexora.git.feature.auth.AuthViewModel
 import com.nexora.git.feature.auth.LoginScreen
 import com.nexora.git.feature.explore.ExploreScreen
+import com.nexora.git.feature.editor.MobileEditorScreen
 import com.nexora.git.feature.home.HomeScreen
 import com.nexora.git.feature.files.CodeBrowserScreen
 import com.nexora.git.feature.profile.ProfileScreen
@@ -187,9 +189,42 @@ private fun AuthenticatedNexoraGitApp(
                         type = NavType.StringType
                     },
                 ),
-            ) {
+            ) { codeEntry ->
+                val workspaceId = codeEntry.arguments
+                    ?.getString("workspaceId")
+                    .orEmpty()
+
                 CodeBrowserScreen(
                     contentPadding = paddingValues,
+                    onBack = {
+                        navController.popBackStack()
+                    },
+                    onEdit = { relativePath ->
+                        navController.navigate(
+                            "editor/" +
+                                workspaceId +
+                                "?path=" +
+                                Uri.encode(relativePath),
+                        )
+                    },
+                )
+            }
+
+            composable(
+                route = "editor/{workspaceId}?path={path}",
+                arguments = listOf(
+                    navArgument("workspaceId") {
+                        type = NavType.StringType
+                    },
+                    navArgument("path") {
+                        type = NavType.StringType
+                        defaultValue = ""
+                    },
+                ),
+            ) {
+                MobileEditorScreen(
+                    contentPadding = paddingValues,
+                    activeAccount = activeAccount,
                     onBack = {
                         navController.popBackStack()
                     },

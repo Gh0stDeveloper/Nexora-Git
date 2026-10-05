@@ -88,6 +88,8 @@ See [Git Engine](docs/GIT_ENGINE.md).
 - [Phase F report](docs/PHASE_F_REPORT.md)
 - [Code browser](docs/CODE_BROWSER.md)
 - [Phase G report](docs/PHASE_G_REPORT.md)
+- [Mobile editor](docs/MOBILE_EDITOR.md)
+- [Phase H report](docs/PHASE_H_REPORT.md)
 - [Auth Broker](auth-broker/README.md)
 - [Architecture decisions](docs/adr/)
 
@@ -127,9 +129,9 @@ The project must use its own branding and must not imply that it is an official 
 
 ## Status
 
-**Current stage:** Phase G — Code Browser complete; Phase H — Mobile Editor is next.
+**Current stage:** Phase H — Mobile Editor complete and CI validated; Phase I — Complete Daily Git Workflow is next.
 
-Nexora Git now includes an offline-capable workspace code browser with safe directory navigation, text/binary detection, lightweight syntax highlighting, Markdown and image preview, real libgit2 history/blame, and constrained Android share/save-copy operations.
+Nexora Git now extends its offline code browser with a GitHub-familiar mobile editor: line numbers, editable syntax highlighting, search/replace, undo/redo, persisted indentation, atomic saves, file-scoped libgit2 diffs and a real commit flow.
 
 ---
 

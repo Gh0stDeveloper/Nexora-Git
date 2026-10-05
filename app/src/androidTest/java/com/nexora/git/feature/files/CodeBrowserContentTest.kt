@@ -3,6 +3,7 @@ package com.nexora.git.feature.files
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.createComposeRule
+import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.unit.dp
 import com.nexora.git.core.files.BrowserEntry
@@ -54,6 +55,7 @@ class CodeBrowserContentTest {
                     onOpenDirectory = {},
                     onSelectTab = {},
                     onShare = {},
+                    onEdit = {},
                     onDownload = {},
                 )
             }
@@ -98,6 +100,7 @@ class CodeBrowserContentTest {
                     onOpenDirectory = {},
                     onSelectTab = {},
                     onShare = {},
+                    onEdit = {},
                     onDownload = {},
                 )
             }
@@ -108,6 +111,8 @@ class CodeBrowserContentTest {
         composeRule.onNodeWithText("History")
             .assertIsDisplayed()
         composeRule.onNodeWithText("Blame")
+            .assertIsDisplayed()
+        composeRule.onNodeWithContentDescription("Edit file")
             .assertIsDisplayed()
     }
 }

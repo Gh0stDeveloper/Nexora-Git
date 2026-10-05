@@ -188,11 +188,85 @@ void basic_local_workflow(const fs::path& repository) {
 
     append_file(repository / "README.md", "modified\n");
 
+    write_file(
+        repository / "unrelated.txt",
+        "not part of readme diff\n"
+    );
+
     const std::string patch =
         nexora::git::diff(repository.string(), "unstaged");
     require(
         patch.find("modified") != std::string::npos,
         "Working tree diff did not contain modification"
+    );
+
+    const std::string readme_patch =
+        nexora::git::diff(
+            repository.string(),
+            "unstaged",
+            "README.md"
+        );
+    require(
+        readme_patch.find("modified") != std::string::npos,
+        "Path-scoped diff did not contain README change"
+    );
+    require(
+        readme_patch.find("unrelated.txt") ==
+            std::string::npos,
+        "Path-scoped diff leaked unrelated file"
+    );
+
+    write_file(
+        repository / "literal[1].txt",
+        "bracket base\n"
+    );
+    write_file(
+        repository / "literal1.txt",
+        "plain base\n"
+    );
+    nexora::git::stage(
+        repository.string(),
+        {"literal[1].txt", "literal1.txt"}
+    );
+    nexora::git::commit(
+        repository.string(),
+        "Add literal path fixtures",
+        kAuthor
+    );
+
+    append_file(
+        repository / "literal[1].txt",
+        "bracket change\n"
+    );
+    append_file(
+        repository / "literal1.txt",
+        "plain change\n"
+    );
+
+    const std::string literal_patch =
+        nexora::git::diff(
+            repository.string(),
+            "unstaged",
+            "literal[1].txt"
+        );
+    require(
+        literal_patch.find("literal[1].txt") !=
+            std::string::npos,
+        "Literal path diff did not contain target file"
+    );
+    require(
+        literal_patch.find("literal1.txt") ==
+            std::string::npos,
+        "Literal path diff treated path as wildcard"
+    );
+
+    write_file(
+        repository / "literal[1].txt",
+        "bracket base\n"
+    );
+    write_file(
+        repository / "literal1.txt",
+        "plain base\n"
     );
 
     nexora::git::stage(

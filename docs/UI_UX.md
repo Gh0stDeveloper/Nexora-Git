@@ -2,9 +2,9 @@
 
 ## Product identity
 
-Nexora Git must have an original identity and must not visually impersonate the official GitHub application.
+Nexora Git must remain clearly identifiable as an independent product while intentionally using a GitHub-familiar developer-tool visual language.
 
-The interface should feel like a professional mobile developer tool.
+The interface should feel immediately familiar to GitHub users through information density, neutral surfaces, bordered controls, repository hierarchy, compact toolbars and code-centric navigation. It must not use official GitHub logos, the Octocat as the application identity, or claim to be an official GitHub product.
 
 ## Design system
 
@@ -12,9 +12,11 @@ Recommended foundation:
 
 - Jetpack Compose
 - Material 3 primitives
-- custom Nexora design tokens
+- GitHub-familiar neutral surface hierarchy with custom Nexora design tokens
 - edge-to-edge implemented correctly with system insets
 - light, dark and AMOLED themes
+- compact 4–12 dp corner-radius scale
+- bordered repository/editor surfaces
 - vector icons instead of emoji controls
 - adaptive layouts
 
