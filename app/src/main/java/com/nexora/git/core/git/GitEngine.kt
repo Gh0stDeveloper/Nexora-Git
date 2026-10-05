@@ -16,6 +16,27 @@ interface GitEngine {
         remote: String = "origin",
     ): String?
 
+    suspend fun remotes(
+        repositoryPath: String,
+    ): List<GitRemote>
+
+    suspend fun addRemote(
+        repositoryPath: String,
+        name: String,
+        url: String,
+    )
+
+    suspend fun renameRemote(
+        repositoryPath: String,
+        oldName: String,
+        newName: String,
+    )
+
+    suspend fun removeRemote(
+        repositoryPath: String,
+        name: String,
+    )
+
     suspend fun status(
         repositoryPath: String,
     ): GitStatus
@@ -40,6 +61,22 @@ interface GitEngine {
         repositoryPath: String,
     ): List<GitBranch>
 
+    suspend fun setUpstream(
+        repositoryPath: String,
+        branch: String,
+        upstream: String?,
+    )
+
+    suspend fun divergence(
+        repositoryPath: String,
+        localRef: String,
+        upstreamRef: String,
+    ): GitDivergence
+
+    suspend fun repositoryState(
+        repositoryPath: String,
+    ): GitRepositoryOperationState
+
     suspend fun createBranch(
         repositoryPath: String,
         name: String,
@@ -59,6 +96,15 @@ interface GitEngine {
     suspend fun pull(
         request: GitPullRequest,
     ): GitMergeResult
+
+    suspend fun continueRebase(
+        repositoryPath: String,
+        author: GitAuthor,
+    ): GitMergeResult
+
+    suspend fun abortRebase(
+        repositoryPath: String,
+    )
 
     suspend fun push(
         request: GitPushRequest,
