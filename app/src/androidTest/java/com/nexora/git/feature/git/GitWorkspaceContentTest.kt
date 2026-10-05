@@ -8,6 +8,7 @@ import androidx.compose.ui.test.onNodeWithText
 import com.nexora.git.core.git.GitBranch
 import com.nexora.git.core.git.GitDivergence
 import com.nexora.git.core.git.GitPullStrategy
+import com.nexora.git.core.git.GitRepositoryOperationState
 import com.nexora.git.ui.theme.NexoraGitTheme
 import org.junit.Rule
 import org.junit.Test
@@ -59,6 +60,23 @@ class GitWorkspaceContentTest {
             "Upstream: origin/feature/mobile",
         ).assertIsDisplayed()
         composeRule.onNodeWithText("2 ahead · 1 behind")
+            .assertIsDisplayed()
+    }
+
+    @Test
+    fun summaryShowsMergeInProgress() {
+        composeRule.setContent {
+            NexoraGitTheme {
+                RepositorySummaryCard(
+                    synchronizedState.copy(
+                        repositoryState =
+                            GitRepositoryOperationState.MERGE,
+                    ),
+                )
+            }
+        }
+
+        composeRule.onNodeWithText("Merge in progress")
             .assertIsDisplayed()
     }
 
