@@ -19,6 +19,8 @@ import androidx.core.view.WindowCompat
 private val DarkColors = darkColorScheme(
     primary = DarkPrimary,
     secondary = DarkSecondary,
+    tertiary = DarkTertiary,
+    error = DarkError,
     background = DarkBackground,
     surface = DarkSurface,
     surfaceVariant = DarkSurfaceVariant,
@@ -33,6 +35,8 @@ private val AmoledColors = DarkColors.copy(
 private val LightColors = lightColorScheme(
     primary = LightPrimary,
     secondary = LightSecondary,
+    tertiary = LightTertiary,
+    error = LightError,
     background = LightBackground,
     surface = LightSurface,
     surfaceVariant = LightSurfaceVariant,
@@ -86,6 +90,7 @@ fun NexoraGitTheme(
     MaterialTheme(
         colorScheme = colorScheme,
         typography = NexoraTypography,
+        shapes = NexoraShapes,
         content = content,
     )
 }
