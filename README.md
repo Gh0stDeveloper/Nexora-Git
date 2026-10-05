@@ -91,6 +91,8 @@ See [Git Engine](docs/GIT_ENGINE.md).
 - [Mobile editor](docs/MOBILE_EDITOR.md)
 - [Phase H report](docs/PHASE_H_REPORT.md)
 - [Phase I report](docs/PHASE_I_REPORT.md)
+- [Issues](docs/ISSUES.md)
+- [Phase J report](docs/PHASE_J_REPORT.md)
 - [Auth Broker](auth-broker/README.md)
 - [Architecture decisions](docs/adr/)
 
@@ -130,9 +132,9 @@ The project must use its own branding and must not imply that it is an official 
 
 ## Status
 
-**Current stage:** Phase I — Complete Daily Git Workflow is complete and CI validated. Phase J — Issues is next.
+**Current stage:** Phase J — Issues is complete and CI validated. Phase K — Pull Requests and Review is next.
 
-Nexora Git now supports a complete daily Git workflow on Android: changes/staging, commits and history, branch and upstream management, multiple remotes, merge/FF-only/rebase pull strategies, merge and rebase conflict recovery, ahead/behind state, normal push, and guarded force-with-lease with exact remote OID verification.
+Nexora Git now includes a native repository Issues workflow with search and filters, issue creation/editing, labels, assignees, milestones, comments, reactions, and close/reopen actions on top of the authenticated GitHub REST platform layer.
 
 ---
 

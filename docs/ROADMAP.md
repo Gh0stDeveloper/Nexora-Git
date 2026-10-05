@@ -302,14 +302,45 @@ This roadmap is intentionally staged. A phase is not complete if it only contain
 
 ## Phase J — Issues
 
-- list/search/filter
-- create/edit
-- labels
-- assignees
-- milestones
-- comments
-- reactions
-- close/reopen
+**Status: complete and CI validated.**
+
+### J.1 Discovery — Complete
+- [x] list open / closed / all
+- [x] repository-scoped search
+- [x] label filters
+- [x] assignee filters
+- [x] milestone filters
+- [x] bounded pagination
+- [x] Pull Request exclusion
+
+### J.2 Authoring and lifecycle — Complete
+- [x] create issue
+- [x] edit title/body
+- [x] labels
+- [x] assignees
+- [x] milestones
+- [x] close
+- [x] reopen
+
+### J.3 Comments and reactions — Complete
+- [x] list comments
+- [x] create comment
+- [x] edit own comment
+- [x] delete own comment
+- [x] issue reactions
+- [x] comment reactions
+- [x] reaction summaries
+
+### J.4 Validation — Complete
+- [x] typed Issue gateway
+- [x] GitHub REST integration
+- [x] navigation and Compose surfaces
+- [x] JVM parser tests
+- [x] Compose tests
+- [x] Issues documentation
+- [x] Android CI validation
+- [x] Foundation CI validation
+- [x] pull-request integration validation
 
 ## Phase K — Pull Requests and Review
 

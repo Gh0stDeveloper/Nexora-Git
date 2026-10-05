@@ -84,6 +84,7 @@ class RepositoryDetailContentTest {
                     onFork = {},
                     onClone = {},
                     onOpenSettings = {},
+                    onOpenIssues = { _, _ -> },
                 )
             }
         }
