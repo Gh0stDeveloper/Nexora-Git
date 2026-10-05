@@ -394,12 +394,14 @@ Java_com_nexora_git_core_git_NativeGitBridge_nativeDiff(
     JNIEnv* env,
     jobject,
     jstring repository_path,
-    jstring mode
+    jstring mode,
+    jstring relative_path
 ) {
     return string_call(env, [&]() {
         return nexora::git::diff(
             from_jstring(env, repository_path),
-            from_jstring(env, mode)
+            from_jstring(env, mode),
+            from_jstring(env, relative_path)
         );
     });
 }
