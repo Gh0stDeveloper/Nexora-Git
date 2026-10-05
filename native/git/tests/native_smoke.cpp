@@ -216,6 +216,32 @@ void basic_local_workflow(const fs::path& repository) {
         "Path-scoped diff leaked unrelated file"
     );
 
+    write_file(
+        repository / "literal[1].txt",
+        "bracket path\n"
+    );
+    write_file(
+        repository / "literal1.txt",
+        "plain path\n"
+    );
+
+    const std::string literal_patch =
+        nexora::git::diff(
+            repository.string(),
+            "unstaged",
+            "literal[1].txt"
+        );
+    require(
+        literal_patch.find("literal[1].txt") !=
+            std::string::npos,
+        "Literal path diff did not contain target file"
+    );
+    require(
+        literal_patch.find("literal1.txt") ==
+            std::string::npos,
+        "Literal path diff treated path as wildcard"
+    );
+
     nexora::git::stage(
         repository.string(),
         {"README.md"}
