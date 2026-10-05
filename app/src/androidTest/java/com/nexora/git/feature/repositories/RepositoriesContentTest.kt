@@ -89,6 +89,7 @@ class RepositoriesContentTest {
                     onOpenFolder = {},
                     onOpenRepository = { _, _ -> },
                     onBrowseWorkspace = {},
+                    onOpenGitWorkspace = {},
                     onCloneRepository = {},
                     onInitializeGit = {},
                     onSync = {},

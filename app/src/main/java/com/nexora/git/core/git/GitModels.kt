@@ -38,6 +38,35 @@ data class GitBranch(
     val upstream: String,
 )
 
+data class GitRemote(
+    val name: String,
+    val url: String,
+)
+
+data class GitDivergence(
+    val localRef: String,
+    val upstreamRef: String,
+    val localOid: String,
+    val upstreamOid: String,
+    val ahead: Long,
+    val behind: Long,
+)
+
+enum class GitRepositoryOperationState {
+    NONE,
+    MERGE,
+    REBASE,
+    OTHER,
+}
+
+enum class GitPullStrategy(
+    internal val wireValue: String,
+) {
+    MERGE("merge"),
+    FAST_FORWARD_ONLY("ff_only"),
+    REBASE("rebase"),
+}
+
 enum class GitDiffMode(
     internal val wireValue: String,
 ) {
@@ -60,10 +89,18 @@ data class GitConflict(
     val theirs: String,
 )
 
+enum class GitConflictResolution(
+    internal val wireValue: String,
+) {
+    OURS("ours"),
+    THEIRS("theirs"),
+}
+
 enum class GitMergeState {
     UP_TO_DATE,
     FAST_FORWARD,
     MERGED,
+    REBASED,
     CONFLICTS,
 }
 
@@ -76,6 +113,7 @@ data class GitMergeResult(
 data class GitPushResult(
     val remote: String,
     val refspec: String,
+    val forceWithLease: Boolean = false,
 )
 
 data class GitCloneRequest(
@@ -87,12 +125,15 @@ data class GitPullRequest(
     val repositoryPath: String,
     val remote: String = "origin",
     val author: GitAuthor,
+    val strategy: GitPullStrategy = GitPullStrategy.MERGE,
 )
 
 data class GitPushRequest(
     val repositoryPath: String,
     val remote: String = "origin",
     val refspec: String = "",
+    val forceWithLease: Boolean = false,
+    val expectedRemoteOid: String = "",
 )
 
 data class GitTransportCredentials(

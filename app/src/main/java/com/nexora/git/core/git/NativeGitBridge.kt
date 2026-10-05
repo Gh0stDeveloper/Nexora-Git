@@ -49,6 +49,27 @@ class NativeGitBridge @Inject constructor(
         remote: String,
     ): String
 
+    external fun nativeRemotes(
+        repositoryPath: String,
+    ): String
+
+    external fun nativeAddRemote(
+        repositoryPath: String,
+        name: String,
+        url: String,
+    )
+
+    external fun nativeRenameRemote(
+        repositoryPath: String,
+        oldName: String,
+        newName: String,
+    )
+
+    external fun nativeRemoveRemote(
+        repositoryPath: String,
+        name: String,
+    )
+
     external fun nativeStatus(
         repositoryPath: String,
     ): String
@@ -74,6 +95,22 @@ class NativeGitBridge @Inject constructor(
         repositoryPath: String,
     ): String
 
+    external fun nativeSetUpstream(
+        repositoryPath: String,
+        branch: String,
+        upstream: String,
+    )
+
+    external fun nativeDivergence(
+        repositoryPath: String,
+        localRef: String,
+        upstreamRef: String,
+    ): String
+
+    external fun nativeRepositoryState(
+        repositoryPath: String,
+    ): String
+
     external fun nativeCreateBranch(
         repositoryPath: String,
         name: String,
@@ -95,16 +132,42 @@ class NativeGitBridge @Inject constructor(
     external fun nativePull(
         repositoryPath: String,
         remote: String,
+        strategy: String,
         authorName: String,
         authorEmail: String,
         username: String,
         password: String,
     ): String
 
+    external fun nativeContinueMerge(
+        repositoryPath: String,
+        authorName: String,
+        authorEmail: String,
+    ): String
+
+    external fun nativeContinueRebase(
+        repositoryPath: String,
+        authorName: String,
+        authorEmail: String,
+    ): String
+
+    external fun nativeAbortRebase(
+        repositoryPath: String,
+    )
+
     external fun nativePush(
         repositoryPath: String,
         remote: String,
         refspec: String,
+        username: String,
+        password: String,
+    ): String
+
+    external fun nativePushForceWithLease(
+        repositoryPath: String,
+        remote: String,
+        refspec: String,
+        expectedRemoteOid: String,
         username: String,
         password: String,
     ): String
@@ -125,6 +188,12 @@ class NativeGitBridge @Inject constructor(
     external fun nativeConflicts(
         repositoryPath: String,
     ): String
+
+    external fun nativeResolveConflict(
+        repositoryPath: String,
+        path: String,
+        resolution: String,
+    )
 
     external fun nativeHistory(
         repositoryPath: String,

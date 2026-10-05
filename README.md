@@ -90,6 +90,7 @@ See [Git Engine](docs/GIT_ENGINE.md).
 - [Phase G report](docs/PHASE_G_REPORT.md)
 - [Mobile editor](docs/MOBILE_EDITOR.md)
 - [Phase H report](docs/PHASE_H_REPORT.md)
+- [Phase I report](docs/PHASE_I_REPORT.md)
 - [Auth Broker](auth-broker/README.md)
 - [Architecture decisions](docs/adr/)
 
@@ -129,9 +130,9 @@ The project must use its own branding and must not imply that it is an official 
 
 ## Status
 
-**Current stage:** Phase H — Mobile Editor complete and CI validated; Phase I — Complete Daily Git Workflow is next.
+**Current stage:** Phase I — Complete Daily Git Workflow is complete and CI validated. Phase J — Issues is next.
 
-Nexora Git now extends its offline code browser with a GitHub-familiar mobile editor: line numbers, editable syntax highlighting, search/replace, undo/redo, persisted indentation, atomic saves, file-scoped libgit2 diffs and a real commit flow.
+Nexora Git now supports a complete daily Git workflow on Android: changes/staging, commits and history, branch and upstream management, multiple remotes, merge/FF-only/rebase pull strategies, merge and rebase conflict recovery, ahead/behind state, normal push, and guarded force-with-lease with exact remote OID verification.
 
 ---
 

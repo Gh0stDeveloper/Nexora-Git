@@ -41,6 +41,64 @@ class Libgit2GitEngine @Inject constructor(
         )
     }
 
+    override suspend fun remoteUrl(
+        repositoryPath: String,
+        remote: String,
+    ): String? = native {
+        bridge.nativeRemoteUrl(
+            repositoryPath = repositoryPath,
+            remote = remote,
+        ).takeIf { it.isNotBlank() }
+    }
+
+    override suspend fun remotes(
+        repositoryPath: String,
+    ): List<GitRemote> = native {
+        parser.remotes(
+            bridge.nativeRemotes(repositoryPath),
+        )
+    }
+
+    override suspend fun addRemote(
+        repositoryPath: String,
+        name: String,
+        url: String,
+    ) {
+        native {
+            bridge.nativeAddRemote(
+                repositoryPath = repositoryPath,
+                name = name,
+                url = url,
+            )
+        }
+    }
+
+    override suspend fun renameRemote(
+        repositoryPath: String,
+        oldName: String,
+        newName: String,
+    ) {
+        native {
+            bridge.nativeRenameRemote(
+                repositoryPath = repositoryPath,
+                oldName = oldName,
+                newName = newName,
+            )
+        }
+    }
+
+    override suspend fun removeRemote(
+        repositoryPath: String,
+        name: String,
+    ) {
+        native {
+            bridge.nativeRemoveRemote(
+                repositoryPath = repositoryPath,
+                name = name,
+            )
+        }
+    }
+
     override suspend fun status(
         repositoryPath: String,
     ): GitStatus = native {
@@ -93,6 +151,42 @@ class Libgit2GitEngine @Inject constructor(
     ): List<GitBranch> = native {
         parser.branches(
             bridge.nativeBranches(repositoryPath),
+        )
+    }
+
+    override suspend fun setUpstream(
+        repositoryPath: String,
+        branch: String,
+        upstream: String?,
+    ) {
+        native {
+            bridge.nativeSetUpstream(
+                repositoryPath = repositoryPath,
+                branch = branch,
+                upstream = upstream.orEmpty(),
+            )
+        }
+    }
+
+    override suspend fun divergence(
+        repositoryPath: String,
+        localRef: String,
+        upstreamRef: String,
+    ): GitDivergence = native {
+        parser.divergence(
+            bridge.nativeDivergence(
+                repositoryPath = repositoryPath,
+                localRef = localRef,
+                upstreamRef = upstreamRef,
+            ),
+        )
+    }
+
+    override suspend fun repositoryState(
+        repositoryPath: String,
+    ): GitRepositoryOperationState = native {
+        parser.repositoryState(
+            bridge.nativeRepositoryState(repositoryPath),
         )
     }
 
@@ -153,12 +247,47 @@ class Libgit2GitEngine @Inject constructor(
             bridge.nativePull(
                 repositoryPath = request.repositoryPath,
                 remote = request.remote,
+                strategy = request.strategy.wireValue,
                 authorName = request.author.name,
                 authorEmail = request.author.email,
                 username = credentials.username,
                 password = credentials.password,
             ),
         )
+    }
+
+    override suspend fun continueMerge(
+        repositoryPath: String,
+        author: GitAuthor,
+    ): GitMergeResult = native {
+        parser.mergeResult(
+            bridge.nativeContinueMerge(
+                repositoryPath = repositoryPath,
+                authorName = author.name,
+                authorEmail = author.email,
+            ),
+        )
+    }
+
+    override suspend fun continueRebase(
+        repositoryPath: String,
+        author: GitAuthor,
+    ): GitMergeResult = native {
+        parser.mergeResult(
+            bridge.nativeContinueRebase(
+                repositoryPath = repositoryPath,
+                authorName = author.name,
+                authorEmail = author.email,
+            ),
+        )
+    }
+
+    override suspend fun abortRebase(
+        repositoryPath: String,
+    ) {
+        native {
+            bridge.nativeAbortRebase(repositoryPath)
+        }
     }
 
     override suspend fun push(
@@ -169,15 +298,29 @@ class Libgit2GitEngine @Inject constructor(
             request.remote,
         )
 
-        parser.pushResult(
+        val json = if (request.forceWithLease) {
+            require(request.expectedRemoteOid.isNotBlank()) {
+                "Force-with-lease requires the expected remote OID."
+            }
+            bridge.nativePushForceWithLease(
+                repositoryPath = request.repositoryPath,
+                remote = request.remote,
+                refspec = request.refspec,
+                expectedRemoteOid = request.expectedRemoteOid,
+                username = credentials.username,
+                password = credentials.password,
+            )
+        } else {
             bridge.nativePush(
                 repositoryPath = request.repositoryPath,
                 remote = request.remote,
                 refspec = request.refspec,
                 username = credentials.username,
                 password = credentials.password,
-            ),
-        )
+            )
+        }
+
+        parser.pushResult(json)
     }
 
     override suspend fun diff(
@@ -215,6 +358,20 @@ class Libgit2GitEngine @Inject constructor(
         parser.conflicts(
             bridge.nativeConflicts(repositoryPath),
         )
+    }
+
+    override suspend fun resolveConflict(
+        repositoryPath: String,
+        path: String,
+        resolution: GitConflictResolution,
+    ) {
+        native {
+            bridge.nativeResolveConflict(
+                repositoryPath = repositoryPath,
+                path = path,
+                resolution = resolution.wireValue,
+            )
+        }
     }
 
     override suspend fun history(
