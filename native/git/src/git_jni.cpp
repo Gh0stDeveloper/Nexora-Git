@@ -618,6 +618,23 @@ Java_com_nexora_git_core_git_NativeGitBridge_nativeConflicts(
     });
 }
 
+extern "C" JNIEXPORT void JNICALL
+Java_com_nexora_git_core_git_NativeGitBridge_nativeResolveConflict(
+    JNIEnv* env,
+    jobject,
+    jstring repository_path,
+    jstring path,
+    jstring resolution
+) {
+    void_call(env, [&]() {
+        nexora::git::resolve_conflict(
+            from_jstring(env, repository_path),
+            from_jstring(env, path),
+            from_jstring(env, resolution)
+        );
+    });
+}
+
 extern "C" JNIEXPORT jstring JNICALL
 Java_com_nexora_git_core_git_NativeGitBridge_nativeHistory(
     JNIEnv* env,
