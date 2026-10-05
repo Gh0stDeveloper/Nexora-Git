@@ -35,6 +35,53 @@ class GitJsonParserTest {
     }
 
     @Test
+    fun parsesHistoryAndBlamePayloads() {
+        val history = parser.history(
+            """
+            [
+              {
+                "oid":"abcdef012345",
+                "shortOid":"abcdef0",
+                "summary":"Update file",
+                "message":"Update file\n",
+                "authorName":"Ghost",
+                "authorEmail":"ghost@example.invalid",
+                "timestampSeconds":1700000000,
+                "timezoneOffsetMinutes":-420,
+                "parentCount":1
+              }
+            ]
+            """.trimIndent(),
+        )
+
+        assertEquals("abcdef0", history.single().shortOid)
+        assertEquals("Ghost", history.single().authorName)
+
+        val blame = parser.blame(
+            """
+            [
+              {
+                "startLine":1,
+                "lineCount":2,
+                "finalCommitOid":"abcdef012345",
+                "originalCommitOid":"abcdef012345",
+                "originalStartLine":1,
+                "originalPath":"README.md",
+                "authorName":"Ghost",
+                "authorEmail":"ghost@example.invalid",
+                "timestampSeconds":1700000000,
+                "timezoneOffsetMinutes":-420,
+                "boundary":false
+              }
+            ]
+            """.trimIndent(),
+        )
+
+        assertEquals(1L, blame.single().startLine)
+        assertEquals("README.md", blame.single().originalPath)
+    }
+
+    @Test
     fun parsesConflictMergeResult() {
         val result = parser.mergeResult(
             """
