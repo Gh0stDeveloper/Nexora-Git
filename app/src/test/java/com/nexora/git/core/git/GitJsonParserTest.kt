@@ -82,6 +82,70 @@ class GitJsonParserTest {
     }
 
     @Test
+    fun parsesRemotesDivergenceAndLeasePush() {
+        val remotes = parser.remotes(
+            """
+            [
+              {
+                "name":"origin",
+                "url":"https://github.com/example/repo.git"
+              }
+            ]
+            """.trimIndent(),
+        )
+
+        assertEquals("origin", remotes.single().name)
+
+        val divergence = parser.divergence(
+            """
+            {
+              "localRef":"main",
+              "upstreamRef":"origin/main",
+              "localOid":"aaaaaaaa",
+              "upstreamOid":"bbbbbbbb",
+              "ahead":2,
+              "behind":1
+            }
+            """.trimIndent(),
+        )
+
+        assertEquals(2L, divergence.ahead)
+        assertEquals(1L, divergence.behind)
+        assertEquals(
+            GitRepositoryOperationState.REBASE,
+            parser.repositoryState("rebase"),
+        )
+
+        val push = parser.pushResult(
+            """
+            {
+              "remote":"origin",
+              "refspec":"+refs/heads/main:refs/heads/main",
+              "forceWithLease":true
+            }
+            """.trimIndent(),
+        )
+
+        assertTrue(push.forceWithLease)
+    }
+
+    @Test
+    fun parsesRebasedMergeResult() {
+        val result = parser.mergeResult(
+            """
+            {
+              "state":"rebased",
+              "commitOid":"abcdef012345",
+              "conflicts":[]
+            }
+            """.trimIndent(),
+        )
+
+        assertEquals(GitMergeState.REBASED, result.state)
+        assertEquals("abcdef012345", result.commitOid)
+    }
+
+    @Test
     fun parsesConflictMergeResult() {
         val result = parser.mergeResult(
             """
