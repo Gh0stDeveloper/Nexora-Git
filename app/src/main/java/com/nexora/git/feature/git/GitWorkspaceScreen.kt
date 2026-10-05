@@ -54,6 +54,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.nexora.git.core.auth.AuthAccountSummary
 import com.nexora.git.core.git.GitBranch
+import com.nexora.git.core.git.GitConflictResolution
 import com.nexora.git.core.git.GitHistoryEntry
 import com.nexora.git.core.git.GitPullStrategy
 import com.nexora.git.core.git.GitRemote
@@ -408,6 +409,20 @@ fun GitWorkspaceScreen(
                                 onResolved = {
                                     viewModel.markConflictResolved(
                                         conflict.path,
+                                    )
+                                },
+                                onUseOurs = {
+                                    viewModel.resolveConflictSide(
+                                        path = conflict.path,
+                                        resolution =
+                                            GitConflictResolution.OURS,
+                                    )
+                                },
+                                onUseTheirs = {
+                                    viewModel.resolveConflictSide(
+                                        path = conflict.path,
+                                        resolution =
+                                            GitConflictResolution.THEIRS,
                                     )
                                 },
                             )
@@ -990,6 +1005,8 @@ private fun ConflictCard(
     busy: Boolean,
     onEdit: () -> Unit,
     onResolved: () -> Unit,
+    onUseOurs: () -> Unit,
+    onUseTheirs: () -> Unit,
 ) {
     Card(
         modifier = Modifier.fillMaxWidth(),
@@ -1008,6 +1025,9 @@ private fun ConflictCard(
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
             Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .horizontalScroll(rememberScrollState()),
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
             ) {
                 OutlinedButton(
@@ -1019,6 +1039,18 @@ private fun ConflictCard(
                         contentDescription = null,
                     )
                     Text("Edit")
+                }
+                OutlinedButton(
+                    enabled = !busy,
+                    onClick = onUseOurs,
+                ) {
+                    Text("Use ours")
+                }
+                OutlinedButton(
+                    enabled = !busy,
+                    onClick = onUseTheirs,
+                ) {
+                    Text("Use theirs")
                 }
                 Button(
                     enabled = !busy,
