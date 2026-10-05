@@ -89,6 +89,13 @@ data class GitConflict(
     val theirs: String,
 )
 
+enum class GitConflictResolution(
+    internal val wireValue: String,
+) {
+    OURS("ours"),
+    THEIRS("theirs"),
+}
+
 enum class GitMergeState {
     UP_TO_DATE,
     FAST_FORWARD,
