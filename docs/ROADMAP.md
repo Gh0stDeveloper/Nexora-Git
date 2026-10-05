@@ -217,7 +217,7 @@ This roadmap is intentionally staged. A phase is not complete if it only contain
 
 ## Phase H — Mobile Editor
 
-**Implementation status: complete; final CI validation required before merge.**
+**Status: complete and CI validated.**
 
 - [x] editable text and Markdown files
 - [x] 512 KiB mobile editor safety limit
