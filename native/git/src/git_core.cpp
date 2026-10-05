@@ -571,6 +571,171 @@ std::string merge_annotated(
     );
 }
 
+
+git_reference* resolve_pull_upstream(
+    git_repository* repository,
+    git_reference* head,
+    const std::string& remote
+) {
+    git_reference* upstream = nullptr;
+    int rc = git_branch_upstream(&upstream, head);
+
+    if (rc == GIT_ENOTFOUND) {
+        const char* branch_name = git_reference_shorthand(head);
+        const std::string tracking =
+            "refs/remotes/" + remote + "/" +
+            (branch_name != nullptr ? branch_name : "");
+        rc = git_reference_lookup(
+            &upstream,
+            repository,
+            tracking.c_str()
+        );
+    }
+
+    if (rc < 0) {
+        throw_git_error(rc, "Resolve pull upstream");
+    }
+
+    return upstream;
+}
+
+std::string fast_forward_only(
+    git_repository* repository,
+    git_reference* head,
+    const git_annotated_commit* target
+) {
+    git_merge_analysis_t analysis = GIT_MERGE_ANALYSIS_NONE;
+    git_merge_preference_t preference = GIT_MERGE_PREFERENCE_NONE;
+    const git_annotated_commit* heads[] = {target};
+
+    check(
+        git_merge_analysis(
+            &analysis,
+            &preference,
+            repository,
+            heads,
+            1
+        ),
+        "Analyze fast-forward pull"
+    );
+
+    if ((analysis & GIT_MERGE_ANALYSIS_UP_TO_DATE) != 0) {
+        return merge_result_json("up_to_date", "", "[]");
+    }
+
+    if ((analysis & GIT_MERGE_ANALYSIS_FASTFORWARD) != 0 ||
+        (analysis & GIT_MERGE_ANALYSIS_UNBORN) != 0) {
+        return fast_forward(repository, head, target);
+    }
+
+    throw GitError(
+        GIT_ENONFASTFORWARD,
+        0,
+        "Fast-forward-only pull rejected because local and upstream histories diverged"
+    );
+}
+
+std::string advance_rebase(
+    git_repository* repository,
+    git_rebase* rebase,
+    const Author& author,
+    bool commit_current
+) {
+    git_signature* signature = make_signature(author);
+    git_oid last_oid{};
+    bool has_last_oid = false;
+
+    auto commit_operation = [&]() {
+        if (repository_has_conflicts(repository)) {
+            return false;
+        }
+
+        git_oid oid{};
+        const int rc = git_rebase_commit(
+            &oid,
+            rebase,
+            nullptr,
+            signature,
+            nullptr,
+            nullptr
+        );
+
+        if (rc == GIT_EAPPLIED) {
+            return true;
+        }
+        if (rc < 0) {
+            git_signature_free(signature);
+            git_rebase_free(rebase);
+            throw_git_error(rc, "Commit rebased change");
+        }
+
+        last_oid = oid;
+        has_last_oid = true;
+        return true;
+    };
+
+    if (commit_current && !commit_operation()) {
+        const std::string payload = conflicts_json(repository);
+        git_signature_free(signature);
+        git_rebase_free(rebase);
+        return merge_result_json("conflicts", "", payload);
+    }
+
+    while (true) {
+        git_rebase_operation* operation = nullptr;
+        const int next_rc = git_rebase_next(
+            &operation,
+            rebase
+        );
+
+        if (next_rc == GIT_ITEROVER) {
+            const int finish_rc = git_rebase_finish(
+                rebase,
+                signature
+            );
+            git_signature_free(signature);
+            git_rebase_free(rebase);
+            check(finish_rc, "Finish rebase");
+
+            return merge_result_json(
+                "rebased",
+                has_last_oid
+                    ? oid_to_string(&last_oid)
+                    : "",
+                "[]"
+            );
+        }
+
+        if (next_rc < 0) {
+            git_signature_free(signature);
+            git_rebase_free(rebase);
+            throw_git_error(next_rc, "Apply next rebase operation");
+        }
+
+        if (repository_has_conflicts(repository)) {
+            const std::string payload = conflicts_json(repository);
+            git_signature_free(signature);
+            git_rebase_free(rebase);
+            return merge_result_json(
+                "conflicts",
+                "",
+                payload
+            );
+        }
+
+        if (!commit_operation()) {
+            const std::string payload = conflicts_json(repository);
+            git_signature_free(signature);
+            git_rebase_free(rebase);
+            return merge_result_json(
+                "conflicts",
+                "",
+                payload
+            );
+        }
+    }
+}
+
 }  // namespace
 
 GitError::GitError(int code, int klass, std::string message)
@@ -711,6 +876,125 @@ std::string remote_url(
     git_remote_free(remote);
     git_repository_free(repository);
     return result;
+}
+
+std::string remotes(const std::string& repository_path) {
+    git_repository* repository = open_repository(repository_path);
+    git_strarray names{};
+    check(
+        git_remote_list(&names, repository),
+        "List remotes"
+    );
+
+    std::ostringstream out;
+    out << "[";
+    for (size_t index = 0; index < names.count; ++index) {
+        if (index > 0) out << ",";
+
+        const std::string name =
+            names.strings[index] != nullptr
+                ? names.strings[index]
+                : "";
+
+        git_remote* remote = nullptr;
+        const int lookup_rc = git_remote_lookup(
+            &remote,
+            repository,
+            name.c_str()
+        );
+        if (lookup_rc < 0) {
+            git_strarray_dispose(&names);
+            git_repository_free(repository);
+            throw_git_error(lookup_rc, "Open listed remote");
+        }
+
+        const char* raw_url = git_remote_url(remote);
+        out << "{";
+        out << "\"name\":" << quote(name);
+        out << ",\"url\":"
+            << quote(raw_url != nullptr ? raw_url : "");
+        out << "}";
+
+        git_remote_free(remote);
+    }
+    out << "]";
+
+    git_strarray_dispose(&names);
+    git_repository_free(repository);
+    return out.str();
+}
+
+void add_remote(
+    const std::string& repository_path,
+    const std::string& name,
+    const std::string& url
+) {
+    if (name.empty() || url.empty()) {
+        throw GitError(
+            GIT_EINVALID,
+            0,
+            "Remote name and URL are required"
+        );
+    }
+
+    git_repository* repository = open_repository(repository_path);
+    git_remote* remote = nullptr;
+    const int rc = git_remote_create(
+        &remote,
+        repository,
+        name.c_str(),
+        url.c_str()
+    );
+
+    if (remote != nullptr) git_remote_free(remote);
+    git_repository_free(repository);
+    check(rc, "Create remote");
+}
+
+void rename_remote(
+    const std::string& repository_path,
+    const std::string& old_name,
+    const std::string& new_name
+) {
+    if (old_name.empty() || new_name.empty()) {
+        throw GitError(
+            GIT_EINVALID,
+            0,
+            "Remote names are required"
+        );
+    }
+
+    git_repository* repository = open_repository(repository_path);
+    git_strarray problems{};
+    const int rc = git_remote_rename(
+        &problems,
+        repository,
+        old_name.c_str(),
+        new_name.c_str()
+    );
+
+    if (rc == 0) {
+        git_strarray_dispose(&problems);
+    }
+    git_repository_free(repository);
+    check(rc, "Rename remote");
+}
+
+void remove_remote(
+    const std::string& repository_path,
+    const std::string& name
+) {
+    if (name.empty()) {
+        throw GitError(GIT_EINVALID, 0, "Remote name is required");
+    }
+
+    git_repository* repository = open_repository(repository_path);
+    const int rc = git_remote_delete(
+        repository,
+        name.c_str()
+    );
+    git_repository_free(repository);
+    check(rc, "Delete remote");
 }
 
 std::string status(const std::string& repository_path) {
@@ -1019,6 +1303,121 @@ std::string branches(const std::string& repository_path) {
     return out.str();
 }
 
+void set_upstream(
+    const std::string& repository_path,
+    const std::string& branch_name,
+    const std::string& upstream
+) {
+    if (branch_name.empty()) {
+        throw GitError(GIT_EINVALID, 0, "Local branch is required");
+    }
+
+    git_repository* repository = open_repository(repository_path);
+    git_reference* branch = nullptr;
+    const int lookup_rc = git_branch_lookup(
+        &branch,
+        repository,
+        branch_name.c_str(),
+        GIT_BRANCH_LOCAL
+    );
+    if (lookup_rc < 0) {
+        git_repository_free(repository);
+        throw_git_error(lookup_rc, "Open local branch");
+    }
+
+    const int rc = git_branch_set_upstream(
+        branch,
+        upstream.empty() ? nullptr : upstream.c_str()
+    );
+
+    git_reference_free(branch);
+    git_repository_free(repository);
+    check(rc, upstream.empty() ? "Unset upstream" : "Set upstream");
+}
+
+std::string divergence(
+    const std::string& repository_path,
+    const std::string& local_ref,
+    const std::string& upstream_ref
+) {
+    if (local_ref.empty() || upstream_ref.empty()) {
+        throw GitError(
+            GIT_EINVALID,
+            0,
+            "Local and upstream refs are required"
+        );
+    }
+
+    git_repository* repository = open_repository(repository_path);
+    git_commit* local = nullptr;
+    git_commit* upstream = nullptr;
+
+    try {
+        local = resolve_commit(repository, local_ref);
+        upstream = resolve_commit(repository, upstream_ref);
+    } catch (...) {
+        if (local != nullptr) git_commit_free(local);
+        if (upstream != nullptr) git_commit_free(upstream);
+        git_repository_free(repository);
+        throw;
+    }
+
+    size_t ahead = 0;
+    size_t behind = 0;
+    const int rc = git_graph_ahead_behind(
+        &ahead,
+        &behind,
+        repository,
+        git_commit_id(local),
+        git_commit_id(upstream)
+    );
+
+    if (rc < 0) {
+        git_commit_free(upstream);
+        git_commit_free(local);
+        git_repository_free(repository);
+        throw_git_error(rc, "Calculate branch divergence");
+    }
+
+    std::ostringstream out;
+    out << "{";
+    out << "\"localRef\":" << quote(local_ref);
+    out << ",\"upstreamRef\":" << quote(upstream_ref);
+    out << ",\"localOid\":"
+        << quote(oid_to_string(git_commit_id(local)));
+    out << ",\"upstreamOid\":"
+        << quote(oid_to_string(git_commit_id(upstream)));
+    out << ",\"ahead\":" << ahead;
+    out << ",\"behind\":" << behind;
+    out << "}";
+
+    git_commit_free(upstream);
+    git_commit_free(local);
+    git_repository_free(repository);
+    return out.str();
+}
+
+std::string repository_state(
+    const std::string& repository_path
+) {
+    git_repository* repository = open_repository(repository_path);
+    const int state = git_repository_state(repository);
+    git_repository_free(repository);
+
+    switch (state) {
+        case GIT_REPOSITORY_STATE_NONE:
+            return "none";
+        case GIT_REPOSITORY_STATE_MERGE:
+            return "merge";
+        case GIT_REPOSITORY_STATE_REBASE:
+        case GIT_REPOSITORY_STATE_REBASE_INTERACTIVE:
+        case GIT_REPOSITORY_STATE_REBASE_MERGE:
+            return "rebase";
+        default:
+            return "other";
+    }
+}
+
 void create_branch(
     const std::string& repository_path,
     const std::string& name,
@@ -1172,8 +1571,34 @@ std::string pull(
     const Author& author,
     const Credentials& credentials
 ) {
+    return pull_with_strategy(
+        repository_path,
+        remote_name,
+        "merge",
+        author,
+        credentials
+    );
+}
+
+std::string pull_with_strategy(
+    const std::string& repository_path,
+    const std::string& remote_name,
+    const std::string& strategy,
+    const Author& author,
+    const Credentials& credentials
+) {
     const std::string remote =
         remote_name.empty() ? "origin" : remote_name;
+
+    if (strategy != "merge" &&
+        strategy != "ff_only" &&
+        strategy != "rebase") {
+        throw GitError(
+            GIT_EINVALID,
+            0,
+            "Unsupported pull strategy"
+        );
+    }
 
     fetch(repository_path, remote, credentials);
 
@@ -1192,25 +1617,16 @@ std::string pull(
     }
 
     git_reference* upstream = nullptr;
-    int upstream_rc = git_branch_upstream(&upstream, head);
-
-    if (upstream_rc == GIT_ENOTFOUND) {
-        const char* branch_name = git_reference_shorthand(head);
-        const std::string tracking =
-            "refs/remotes/" + remote + "/" +
-            (branch_name != nullptr ? branch_name : "");
-
-        upstream_rc = git_reference_lookup(
-            &upstream,
+    try {
+        upstream = resolve_pull_upstream(
             repository,
-            tracking.c_str()
+            head,
+            remote
         );
-    }
-
-    if (upstream_rc < 0) {
+    } catch (...) {
         git_reference_free(head);
         git_repository_free(repository);
-        throw_git_error(upstream_rc, "Resolve pull upstream");
+        throw;
     }
 
     git_annotated_commit* target = nullptr;
@@ -1229,13 +1645,137 @@ std::string pull(
             ? git_reference_shorthand(upstream)
             : remote;
 
-    git_reference_free(upstream);
-    git_reference_free(head);
-
     if (annotated_rc < 0) {
+        git_reference_free(upstream);
+        git_reference_free(head);
         git_repository_free(repository);
         throw_git_error(annotated_rc, "Resolve fetched commit");
     }
+
+    if (strategy == "ff_only") {
+        std::string result;
+        try {
+            result = fast_forward_only(
+                repository,
+                head,
+                target
+            );
+        } catch (...) {
+            git_annotated_commit_free(target);
+            git_reference_free(upstream);
+            git_reference_free(head);
+            git_repository_free(repository);
+            throw;
+        }
+
+        git_annotated_commit_free(target);
+        git_reference_free(upstream);
+        git_reference_free(head);
+        git_repository_free(repository);
+        return result;
+    }
+
+    if (strategy == "rebase") {
+        git_merge_analysis_t analysis = GIT_MERGE_ANALYSIS_NONE;
+        git_merge_preference_t preference = GIT_MERGE_PREFERENCE_NONE;
+        const git_annotated_commit* heads[] = {target};
+
+        const int analysis_rc = git_merge_analysis(
+            &analysis,
+            &preference,
+            repository,
+            heads,
+            1
+        );
+        if (analysis_rc < 0) {
+            git_annotated_commit_free(target);
+            git_reference_free(upstream);
+            git_reference_free(head);
+            git_repository_free(repository);
+            throw_git_error(analysis_rc, "Analyze rebase pull");
+        }
+
+        if ((analysis & GIT_MERGE_ANALYSIS_UP_TO_DATE) != 0) {
+            git_annotated_commit_free(target);
+            git_reference_free(upstream);
+            git_reference_free(head);
+            git_repository_free(repository);
+            return merge_result_json(
+                "up_to_date",
+                "",
+                "[]"
+            );
+        }
+
+        if ((analysis & GIT_MERGE_ANALYSIS_FASTFORWARD) != 0 ||
+            (analysis & GIT_MERGE_ANALYSIS_UNBORN) != 0) {
+            std::string result;
+            try {
+                result = fast_forward(
+                    repository,
+                    head,
+                    target
+                );
+            } catch (...) {
+                git_annotated_commit_free(target);
+                git_reference_free(upstream);
+                git_reference_free(head);
+                git_repository_free(repository);
+                throw;
+            }
+
+            git_annotated_commit_free(target);
+            git_reference_free(upstream);
+            git_reference_free(head);
+            git_repository_free(repository);
+            return result;
+        }
+
+        git_rebase_options options = GIT_REBASE_OPTIONS_INIT;
+        options.checkout_options.checkout_strategy =
+            GIT_CHECKOUT_SAFE |
+            GIT_CHECKOUT_RECREATE_MISSING |
+            GIT_CHECKOUT_ALLOW_CONFLICTS |
+            GIT_CHECKOUT_CONFLICT_STYLE_MERGE;
+
+        git_rebase* rebase = nullptr;
+        const int rebase_rc = git_rebase_init(
+            &rebase,
+            repository,
+            nullptr,
+            target,
+            nullptr,
+            &options
+        );
+
+        git_annotated_commit_free(target);
+        git_reference_free(upstream);
+        git_reference_free(head);
+
+        if (rebase_rc < 0) {
+            git_repository_free(repository);
+            throw_git_error(rebase_rc, "Start rebase pull");
+        }
+
+        std::string result;
+        try {
+            result = advance_rebase(
+                repository,
+                rebase,
+                author,
+                false
+            );
+        } catch (...) {
+            git_repository_free(repository);
+            throw;
+        }
+
+        git_repository_free(repository);
+        return result;
+    }
+
+    git_reference_free(upstream);
+    git_reference_free(head);
 
     std::string result;
     try {
@@ -1254,6 +1794,82 @@ std::string pull(
     git_annotated_commit_free(target);
     git_repository_free(repository);
     return result;
+}
+
+std::string continue_rebase(
+    const std::string& repository_path,
+    const Author& author
+) {
+    git_repository* repository = open_repository(repository_path);
+
+    const int state = git_repository_state(repository);
+    if (state != GIT_REPOSITORY_STATE_REBASE &&
+        state != GIT_REPOSITORY_STATE_REBASE_INTERACTIVE &&
+        state != GIT_REPOSITORY_STATE_REBASE_MERGE) {
+        git_repository_free(repository);
+        throw GitError(
+            GIT_EINVALID,
+            0,
+            "No rebase is in progress"
+        );
+    }
+
+    git_rebase_options options = GIT_REBASE_OPTIONS_INIT;
+    options.checkout_options.checkout_strategy =
+        GIT_CHECKOUT_SAFE |
+        GIT_CHECKOUT_RECREATE_MISSING |
+        GIT_CHECKOUT_ALLOW_CONFLICTS |
+        GIT_CHECKOUT_CONFLICT_STYLE_MERGE;
+
+    git_rebase* rebase = nullptr;
+    const int open_rc = git_rebase_open(
+        &rebase,
+        repository,
+        &options
+    );
+    if (open_rc < 0) {
+        git_repository_free(repository);
+        throw_git_error(open_rc, "Open in-progress rebase");
+    }
+
+    std::string result;
+    try {
+        result = advance_rebase(
+            repository,
+            rebase,
+            author,
+            true
+        );
+    } catch (...) {
+        git_repository_free(repository);
+        throw;
+    }
+
+    git_repository_free(repository);
+    return result;
+}
+
+void abort_rebase(
+    const std::string& repository_path
+) {
+    git_repository* repository = open_repository(repository_path);
+    git_rebase_options options = GIT_REBASE_OPTIONS_INIT;
+    git_rebase* rebase = nullptr;
+
+    const int open_rc = git_rebase_open(
+        &rebase,
+        repository,
+        &options
+    );
+    if (open_rc < 0) {
+        git_repository_free(repository);
+        throw_git_error(open_rc, "Open rebase to abort");
+    }
+
+    const int abort_rc = git_rebase_abort(rebase);
+    git_rebase_free(rebase);
+    git_repository_free(repository);
+    check(abort_rc, "Abort rebase");
 }
 
 std::string push(
@@ -1315,6 +1931,159 @@ std::string push(
     out << "{";
     out << "\"remote\":" << quote(name);
     out << ",\"refspec\":" << quote(refspec);
+    out << ",\"forceWithLease\":false";
+    out << "}";
+    return out.str();
+}
+
+
+std::string push_force_with_lease(
+    const std::string& repository_path,
+    const std::string& remote_name,
+    const std::string& requested_refspec,
+    const std::string& expected_remote_oid,
+    const Credentials& credentials
+) {
+    if (requested_refspec.empty() ||
+        expected_remote_oid.empty()) {
+        throw GitError(
+            GIT_EINVALID,
+            0,
+            "Force-with-lease requires an explicit refspec and expected remote OID"
+        );
+    }
+
+    const size_t colon = requested_refspec.find(':');
+    if (colon == std::string::npos ||
+        colon + 1 >= requested_refspec.size()) {
+        throw GitError(
+            GIT_EINVALID,
+            0,
+            "Force-with-lease requires an explicit destination ref"
+        );
+    }
+
+    const std::string destination =
+        requested_refspec.substr(colon + 1);
+    if (destination.rfind("refs/heads/", 0) != 0) {
+        throw GitError(
+            GIT_EINVALID,
+            0,
+            "Force-with-lease is restricted to branch refs"
+        );
+    }
+
+    git_oid expected{};
+    if (git_oid_fromstr(&expected, expected_remote_oid.c_str()) < 0) {
+        throw GitError(
+            GIT_EINVALID,
+            0,
+            "Expected remote OID is invalid"
+        );
+    }
+
+    git_repository* repository = open_repository(repository_path);
+    git_remote* remote = nullptr;
+    const std::string name =
+        remote_name.empty() ? "origin" : remote_name;
+
+    const int lookup_rc = git_remote_lookup(
+        &remote,
+        repository,
+        name.c_str()
+    );
+    if (lookup_rc < 0) {
+        git_repository_free(repository);
+        throw_git_error(lookup_rc, "Open lease push remote");
+    }
+
+    git_remote_connect_options connect_options =
+        GIT_REMOTE_CONNECT_OPTIONS_INIT;
+    connect_options.callbacks =
+        remote_callbacks(&credentials);
+
+    const int connect_rc = git_remote_connect_ext(
+        remote,
+        GIT_DIRECTION_PUSH,
+        &connect_options
+    );
+    if (connect_rc < 0) {
+        git_remote_free(remote);
+        git_repository_free(repository);
+        throw_git_error(connect_rc, "Connect lease push remote");
+    }
+
+    const git_remote_head** heads = nullptr;
+    size_t heads_len = 0;
+    const int ls_rc = git_remote_ls(
+        &heads,
+        &heads_len,
+        remote
+    );
+    if (ls_rc < 0) {
+        git_remote_disconnect(remote);
+        git_remote_free(remote);
+        git_repository_free(repository);
+        throw_git_error(ls_rc, "Inspect remote lease");
+    }
+
+    bool found = false;
+    git_oid actual{};
+    for (size_t index = 0; index < heads_len; ++index) {
+        const git_remote_head* head = heads[index];
+        if (head != nullptr &&
+            head->name != nullptr &&
+            destination == head->name) {
+            actual = head->oid;
+            found = true;
+            break;
+        }
+    }
+
+    if (!found || git_oid_cmp(&actual, &expected) != 0) {
+        git_remote_disconnect(remote);
+        git_remote_free(remote);
+        git_repository_free(repository);
+        throw GitError(
+            GIT_ENONFASTFORWARD,
+            0,
+            "Force-with-lease rejected because the remote branch changed since the last verified fetch"
+        );
+    }
+
+    std::string forced_refspec = requested_refspec;
+    if (forced_refspec.front() != '+') {
+        forced_refspec.insert(
+            forced_refspec.begin(),
+            '+'
+        );
+    }
+
+    char* refspec_raw =
+        const_cast<char*>(forced_refspec.c_str());
+    git_strarray refspecs{};
+    refspecs.strings = &refspec_raw;
+    refspecs.count = 1;
+
+    git_push_options options = GIT_PUSH_OPTIONS_INIT;
+    options.callbacks = remote_callbacks(&credentials);
+
+    const int push_rc = git_remote_push(
+        remote,
+        &refspecs,
+        &options
+    );
+
+    git_remote_disconnect(remote);
+    git_remote_free(remote);
+    git_repository_free(repository);
+    check(push_rc, "Force-with-lease push");
+
+    std::ostringstream out;
+    out << "{";
+    out << "\"remote\":" << quote(name);
+    out << ",\"refspec\":" << quote(forced_refspec);
+    out << ",\"forceWithLease\":true";
     out << "}";
     return out.str();
 }
