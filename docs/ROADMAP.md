@@ -243,9 +243,9 @@ This roadmap is intentionally staged. A phase is not complete if it only contain
 
 ## Phase I — Complete Daily Git Workflow
 
-**Status: in progress on `phase-i-daily-git-workflow`.**
+**Status: complete and CI validated.**
 
-### I.1 Daily workbench — Implemented
+### I.1 Daily workbench — Complete
 - [x] dedicated Git workspace UI
 - [x] changes and staged-change views
 - [x] stage / unstage per path
@@ -256,34 +256,49 @@ This roadmap is intentionally staged. A phase is not complete if it only contain
 - [x] create-and-switch branch flow
 - [x] safe checkout
 - [x] origin URL discovery
-- [x] fetch origin
+- [x] fetch remote
 - [x] pull with merge strategy
 - [x] explicit branch/ref merge
 - [x] conflict list and editor handoff
+- [x] manual conflict resolution
+- [x] use-ours / use-theirs conflict resolution
+- [x] continue conflicted merge with two-parent commit
 - [x] conflict-marker check before marking resolved
 - [x] explicit non-force push refspec
 - [x] branch/refspec safety policy and JVM tests
 
-### I.2 Pull strategies and remotes — Pending
-- [ ] fast-forward-only pull
-- [ ] rebase pull
-- [ ] multi-remote list/add/rename/remove
-- [ ] upstream tracking controls
+### I.2 Pull strategies and remotes — Complete
+- [x] fast-forward-only pull
+- [x] rebase pull
+- [x] persisted rebase conflict state
+- [x] continue rebase
+- [x] abort rebase
+- [x] multi-remote list/add/rename/remove
+- [x] upstream tracking controls
+- [x] selected-remote-aware pull behavior
 
-### I.3 Advanced push and divergence — Pending
-- [ ] ahead/behind state
-- [ ] non-fast-forward rejection guidance
-- [ ] upstream creation flow
-- [ ] guarded force-with-lease design
-- [ ] protected-branch-aware guidance where available
+### I.3 Advanced push and divergence — Complete
+- [x] ahead/behind state
+- [x] non-fast-forward rejection guidance
+- [x] upstream creation flow after first push
+- [x] guarded force-with-lease
+- [x] exact remote OID lease verification immediately before push
+- [x] stale lease rejection
+- [x] destructive branch-name confirmation
+- [x] protected-branch / repository-rule guidance without bypass behavior
 
-### I.4 Validation — Pending
-- [ ] Git workspace Compose instrumentation tests
-- [ ] native tests for new remote/pull primitives
-- [ ] Android CI validation
-- [ ] Native Git CI validation
-- [ ] Foundation CI validation
-- [ ] final Phase I documentation
+### I.4 Validation — Complete
+- [x] Git workspace Compose instrumentation tests
+- [x] JVM parser and safety-policy tests
+- [x] native tests for remotes/upstream/ahead-behind
+- [x] native tests for FF-only / rebase / continue / abort
+- [x] native tests for conflicted merge continuation
+- [x] native tests for ours / theirs resolution
+- [x] native tests for force-with-lease and stale-lease rejection
+- [x] Android CI validation
+- [x] Native Git CI validation
+- [x] Foundation CI validation
+- [x] final Phase I documentation
 
 ## Phase J — Issues
 
