@@ -196,14 +196,24 @@ This roadmap is intentionally staged. A phase is not complete if it only contain
 
 ## Phase G — Code Browser
 
-- directories
-- file viewer
-- syntax highlighting
-- Markdown
-- images
-- history
-- blame
-- share/download operations
+**Implementation status: complete; final Android CI validation required before merge.**
+
+- [x] workspace-rooted directory navigation
+- [x] breadcrumbs and empty states
+- [x] canonical traversal/symlink confinement
+- [x] hidden and blocked `.git` internals
+- [x] text / Markdown / image / binary file classification
+- [x] bounded text viewer
+- [x] lightweight syntax highlighting
+- [x] Markdown preview
+- [x] sampled image preview
+- [x] libgit2 file history
+- [x] libgit2 blame
+- [x] share through constrained FileProvider cache
+- [x] save copy through Android document destination
+- [x] code browser navigation from workspaces
+- [x] native / JVM / Compose tests
+- [x] code browser documentation
 
 ## Phase H — Mobile Editor
 
