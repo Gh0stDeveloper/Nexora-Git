@@ -903,6 +903,7 @@ fun GitWorkspaceScreen(
                             onLfsPatternChange = {
                                 lfsPattern = it
                             },
+                            lfsRemoteName = selectedRemote,
                             onRebase = {
                                 viewModel.rebase(
                                     upstreamRef = advancedRebaseRef,
@@ -998,6 +999,12 @@ fun GitWorkspaceScreen(
                             },
                             onUntrackLfs =
                                 viewModel::untrackLfs,
+                            onDownloadLfs = {
+                                viewModel.downloadLfs(selectedRemote)
+                            },
+                            onUploadLfs = {
+                                viewModel.uploadLfs(selectedRemote)
+                            },
                         )
                     }
                 }
@@ -1033,6 +1040,7 @@ internal fun AdvancedGitPanel(
     onAnnotatedTagChange: (Boolean) -> Unit,
     lfsPattern: String,
     onLfsPatternChange: (String) -> Unit,
+    lfsRemoteName: String,
     onRebase: () -> Unit,
     onCherryPick: () -> Unit,
     onContinueCherryPick: () -> Unit,
@@ -1051,6 +1059,8 @@ internal fun AdvancedGitPanel(
     onUpdateSubmodule: (String) -> Unit,
     onTrackLfs: () -> Unit,
     onUntrackLfs: (String) -> Unit,
+    onDownloadLfs: () -> Unit,
+    onUploadLfs: () -> Unit,
 ) {
     Column(
         verticalArrangement = Arrangement.spacedBy(12.dp),
@@ -1468,6 +1478,32 @@ internal fun AdvancedGitPanel(
                     onClick = onTrackLfs,
                 ) {
                     Text("Track with LFS")
+                }
+                if (lfsRemoteName.isNotBlank()) {
+                    Text(
+                        "Transfer remote: " + lfsRemoteName,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                    Row(
+                        modifier = Modifier.horizontalScroll(
+                            rememberScrollState(),
+                        ),
+                        horizontalArrangement =
+                            Arrangement.spacedBy(8.dp),
+                    ) {
+                        OutlinedButton(
+                            enabled = !state.operationInProgress,
+                            onClick = onDownloadLfs,
+                        ) {
+                            Text("Download LFS")
+                        }
+                        OutlinedButton(
+                            enabled = !state.operationInProgress,
+                            onClick = onUploadLfs,
+                        ) {
+                            Text("Upload LFS")
+                        }
+                    }
                 }
                 if (state.lfs.trackedPatterns.isNotEmpty()) {
                     Text(
