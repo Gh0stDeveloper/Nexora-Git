@@ -1128,6 +1128,9 @@ void advanced_local_workflow(
         "HEAD",
         "hard"
     );
+    if (fs::exists(repository / "stash.txt")) {
+        fs::remove(repository / "stash.txt");
+    }
     if (fs::exists(repository / "untracked-stash.txt")) {
         fs::remove(repository / "untracked-stash.txt");
     }
