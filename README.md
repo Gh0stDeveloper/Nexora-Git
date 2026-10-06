@@ -101,6 +101,8 @@ See [Git Engine](docs/GIT_ENGINE.md).
 - [Phase M report](docs/PHASE_M_REPORT.md)
 - [Account and Social](docs/ACCOUNT_SOCIAL.md)
 - [Phase N report](docs/PHASE_N_REPORT.md)
+- [Advanced GitHub](docs/ADVANCED_GITHUB.md)
+- [Phase O report](docs/PHASE_O_REPORT.md)
 - [Auth Broker](auth-broker/README.md)
 - [Architecture decisions](docs/adr/)
 
@@ -140,9 +142,9 @@ The project must use its own branding and must not imply that it is an official 
 
 ## Status
 
-**Current stage:** Phase N — Account and Social is complete and CI validated for GitHub App-supported APIs. Phase O — Advanced GitHub is next.
+**Current stage:** Phase O — Advanced GitHub is implemented on its feature branch and is undergoing CI validation before merge.
 
-Nexora Git now includes a real GitHub profile, organizations, starred repositories, followers/following, and activity while preserving secure multi-account switching. GitHub's native Notifications REST inbox remains capability-guarded because GitHub does not support it for GitHub App user access tokens; Nexora Git provides a browser handoff rather than issuing requests that GitHub would reject.
+Nexora Git now extends repository workflows with Discussions, Projects V2, GitHub Pages, repository security views, Gists and Codespaces management. Every Phase O surface uses the existing GitHub App user token and shared platform client, with runtime capability handling when an installation, organization policy or user permission does not authorize an operation.
 
 ---
 
