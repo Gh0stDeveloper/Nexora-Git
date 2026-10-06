@@ -27,6 +27,7 @@ set(ENABLE_PROGRAMS OFF CACHE BOOL "" FORCE)
 set(ENABLE_TESTING OFF CACHE BOOL "" FORCE)
 set(USE_SHARED_MBEDTLS_LIBRARY OFF CACHE BOOL "" FORCE)
 set(USE_STATIC_MBEDTLS_LIBRARY ON CACHE BOOL "" FORCE)
+set(DISABLE_PACKAGE_CONFIG_AND_INSTALL ON CACHE BOOL "" FORCE)
 
 FetchContent_Declare(
     mbedtls
@@ -52,12 +53,16 @@ set(USE_HTTPS "mbedTLS" CACHE STRING "" FORCE)
 set(USE_BUNDLED_ZLIB ON CACHE BOOL "" FORCE)
 set(REGEX_BACKEND "builtin" CACHE STRING "" FORCE)
 set(SONAME OFF CACHE BOOL "" FORCE)
+set(NEXORA_LIBGIT2_SKIP_INSTALL ON CACHE BOOL "" FORCE)
 
 FetchContent_Declare(
     libgit2
     GIT_REPOSITORY https://github.com/libgit2/libgit2.git
     GIT_TAG ${NEXORA_LIBGIT2_REF}
     GIT_SHALLOW TRUE
+    PATCH_COMMAND
+        git apply --whitespace=nowarn
+        "${CMAKE_CURRENT_SOURCE_DIR}/cmake/libgit2-no-install.patch"
 )
 FetchContent_MakeAvailable(libgit2)
 
@@ -76,11 +81,9 @@ FetchContent_Declare(
     GIT_REPOSITORY https://github.com/tree-sitter/tree-sitter.git
     GIT_TAG ${NEXORA_TREE_SITTER_REF}
     GIT_SHALLOW TRUE
+    SOURCE_SUBDIR "__nexora_source_only__"
 )
-FetchContent_GetProperties(tree_sitter)
-if(NOT tree_sitter_POPULATED)
-    FetchContent_Populate(tree_sitter)
-endif()
+FetchContent_MakeAvailable(tree_sitter)
 
 add_library(
     nexora_tree_sitter
@@ -106,11 +109,9 @@ function(nexora_fetch_grammar target repository ref)
         GIT_REPOSITORY ${repository}
         GIT_TAG ${ref}
         GIT_SHALLOW TRUE
+        SOURCE_SUBDIR "__nexora_source_only__"
     )
-    FetchContent_GetProperties(${target}_source)
-    if(NOT ${target}_source_POPULATED)
-        FetchContent_Populate(${target}_source)
-    endif()
+    FetchContent_MakeAvailable(${target}_source)
     FetchContent_GetProperties(
         ${target}_source
         SOURCE_DIR source_dir
@@ -160,11 +161,9 @@ FetchContent_Declare(
     GIT_REPOSITORY https://github.com/tree-sitter/tree-sitter-typescript.git
     GIT_TAG ${NEXORA_TREE_SITTER_TYPESCRIPT_REF}
     GIT_SHALLOW TRUE
+    SOURCE_SUBDIR "__nexora_source_only__"
 )
-FetchContent_GetProperties(nexora_ts_typescript_source)
-if(NOT nexora_ts_typescript_source_POPULATED)
-    FetchContent_Populate(nexora_ts_typescript_source)
-endif()
+FetchContent_MakeAvailable(nexora_ts_typescript_source)
 FetchContent_GetProperties(
     nexora_ts_typescript_source
     SOURCE_DIR NEXORA_TS_TYPESCRIPT_DIR

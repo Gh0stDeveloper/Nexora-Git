@@ -1,0 +1,16 @@
+diff --git a/src/libgit2/CMakeLists.txt b/src/libgit2/CMakeLists.txt
+--- a/src/libgit2/CMakeLists.txt
++++ b/src/libgit2/CMakeLists.txt
+@@ -134,6 +134,7 @@ configure_file(config.cmake.in
+ 	"${PROJECT_BINARY_DIR}/cmake/${PROJECT_NAME}Config.cmake"
+ 	@ONLY)
+ 
++if(NOT NEXORA_LIBGIT2_SKIP_INSTALL)
+ install(FILES
+ 	"${PROJECT_BINARY_DIR}/cmake/${PROJECT_NAME}Config.cmake"
+ 	"${PROJECT_BINARY_DIR}/cmake/${PROJECT_NAME}ConfigVersion.cmake"
+@@ -154,3 +155,4 @@ install(FILES "${PROJECT_BINARY_DIR}/include/${LIBGIT2_FILENAME}.h"
+         DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
+ install(DIRECTORY "${PROJECT_BINARY_DIR}/include/${LIBGIT2_FILENAME}"
+         DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
++endif()
