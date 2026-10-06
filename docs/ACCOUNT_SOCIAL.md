@@ -1,6 +1,8 @@
 # Account and Social
 
-Phase N adds the authenticated GitHub account and social experience to Nexora Git.
+> **Current reference:** This document describes the implemented Nexora Git system. See the [Documentation Hub](README.md) for navigation.
+
+Nexora Git includes an authenticated GitHub account and social experience built on the shared platform layer.
 
 ## Profile
 
@@ -131,7 +133,7 @@ A future optional OAuth-App companion authorization could provide a native inbox
 
 ## API safety
 
-Phase N uses the shared authenticated GitHub REST platform layer.
+The account and social layer uses the shared authenticated GitHub REST platform layer.
 
 Safety controls include:
 
@@ -144,7 +146,7 @@ Safety controls include:
 
 ## Permissions
 
-For the full Phase N experience, the production GitHub App/user authorization should provide the account permissions required by GitHub for:
+For the full account and social experience, the production GitHub App/user authorization should provide the account permissions required by GitHub for:
 
 - profile read/write
 - followers read/write
@@ -157,7 +159,7 @@ The exact availability of organization memberships, private activity, email, not
 
 ## Validation
 
-Phase N includes:
+Validation includes:
 
 - JVM parser coverage for profile/orgs/users/stars/activity
 - Compose Profile coverage
@@ -166,3 +168,7 @@ Phase N includes:
 - navigation integration
 - Android CI
 - Foundation CI
+
+---
+
+[← Documentation hub](README.md)
