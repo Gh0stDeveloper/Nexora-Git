@@ -118,7 +118,7 @@ fi
 
 phase 4 "$TOTAL_PHASES" "Auth Broker container"
 if port_busy "$LOCAL_PORT"; then
-  if compose ps --status running 2>/dev/null | grep -q auth-broker; then
+  if compose ps 2>/dev/null | grep -Eq 'auth-broker.*(Up|running)'; then
     log_info "Broker port is already owned by the existing Nexora container; reusing it."
   else
     show_port_owner "$LOCAL_PORT"
@@ -150,11 +150,8 @@ if [[ -n "$conflicts" ]]; then
   die "Another enabled Nginx site already owns $DOMAIN. No configuration was overwritten."
 fi
 
-if [[ -f "$NGINX_AVAILABLE" ]]; then
-  cp -a "$NGINX_AVAILABLE" "${NGINX_AVAILABLE}.bak.$(date +%Y%m%d%H%M%S)"
-fi
-
-cat > "$NGINX_AVAILABLE" <<EOF
+render_nginx_http() {
+  cat > "$NGINX_AVAILABLE" <<EOF
 server {
     listen 80;
     listen [::]:80;
@@ -175,6 +172,59 @@ server {
     }
 }
 EOF
+}
+
+render_nginx_https() {
+  cat > "$NGINX_AVAILABLE" <<EOF
+server {
+    listen 80;
+    listen [::]:80;
+    server_name $DOMAIN;
+    return 301 https://\$host\$request_uri;
+}
+
+server {
+    listen 443 ssl http2;
+    listen [::]:443 ssl http2;
+    server_name $DOMAIN;
+
+    ssl_certificate /etc/letsencrypt/live/$DOMAIN/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/$DOMAIN/privkey.pem;
+    ssl_protocols TLSv1.2 TLSv1.3;
+    ssl_session_cache shared:NexoraGitSSL:10m;
+    ssl_session_timeout 1d;
+    ssl_session_tickets off;
+
+    add_header Strict-Transport-Security "max-age=31536000" always;
+    add_header X-Content-Type-Options "nosniff" always;
+    add_header Referrer-Policy "no-referrer" always;
+
+    client_max_body_size 32k;
+
+    location / {
+        proxy_pass http://127.0.0.1:$LOCAL_PORT;
+        proxy_http_version 1.1;
+        proxy_set_header Host \$host;
+        proxy_set_header X-Real-IP \$remote_addr;
+        proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto https;
+        proxy_connect_timeout 5s;
+        proxy_read_timeout 30s;
+        proxy_send_timeout 30s;
+    }
+}
+EOF
+}
+
+if [[ -f "$NGINX_AVAILABLE" ]]; then
+  cp -a "$NGINX_AVAILABLE" "${NGINX_AVAILABLE}.bak.$(date +%Y%m%d%H%M%S)"
+fi
+
+if [[ -r "/etc/letsencrypt/live/$DOMAIN/fullchain.pem" && -r "/etc/letsencrypt/live/$DOMAIN/privkey.pem" ]]; then
+  render_nginx_https
+else
+  render_nginx_http
+fi
 
 ln -sfn "$NGINX_AVAILABLE" "$NGINX_ENABLED"
 nginx -t
@@ -182,24 +232,25 @@ systemctl reload nginx
 log_ok "Nginx vhost enabled without modifying other site files."
 
 phase 6 "$TOTAL_PHASES" "HTTPS certificate"
-if [[ -r "/etc/letsencrypt/live/$DOMAIN/fullchain.pem" ]]; then
+if [[ -r "/etc/letsencrypt/live/$DOMAIN/fullchain.pem" && -r "/etc/letsencrypt/live/$DOMAIN/privkey.pem" ]]; then
   log_ok "Existing Let's Encrypt certificate detected; issuance skipped."
 else
   log_info "Requesting Let's Encrypt certificate for $DOMAIN."
-  certbot --nginx \
+  certbot certonly --nginx \
     --non-interactive \
     --agree-tos \
     --no-eff-email \
-    --redirect \
     --email "$EMAIL" \
     -d "$DOMAIN"
 fi
 
+render_nginx_https
 if systemctl list-unit-files certbot.timer >/dev/null 2>&1; then
   systemctl enable --now certbot.timer >/dev/null || true
 fi
 nginx -t
 systemctl reload nginx
+log_ok "HTTPS vhost is active with deterministic TLS configuration."
 
 phase 7 "$TOTAL_PHASES" "Firewall and command installation"
 if command -v ufw >/dev/null 2>&1 && ufw status 2>/dev/null | grep -q '^Status: active'; then
