@@ -55,6 +55,7 @@ fun RepositoryDetailScreen(
     contentPadding: PaddingValues,
     onBack: () -> Unit,
     onOpenIssues: (String, String) -> Unit,
+    onOpenPullRequests: (String, String) -> Unit,
     viewModel: RepositoryDetailViewModel = hiltViewModel(),
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
@@ -75,6 +76,7 @@ fun RepositoryDetailScreen(
             showSettings = true
         },
         onOpenIssues = onOpenIssues,
+        onOpenPullRequests = onOpenPullRequests,
     )
 
     val details = state.details
@@ -139,6 +141,7 @@ internal fun RepositoryDetailContent(
     onClone: () -> Unit,
     onOpenSettings: () -> Unit,
     onOpenIssues: (String, String) -> Unit,
+    onOpenPullRequests: (String, String) -> Unit,
 ) {
     LazyColumn(
         modifier = Modifier
@@ -256,6 +259,23 @@ internal fun RepositoryDetailContent(
                     ) {
                         Text("Issues")
                     }
+                }
+            }
+
+            item {
+                OutlinedButton(
+                    modifier = Modifier.fillMaxWidth(),
+                    enabled =
+                        !state.operationInProgress &&
+                            !details.offlineSnapshot,
+                    onClick = {
+                        onOpenPullRequests(
+                            details.summary.ownerLogin,
+                            details.summary.name,
+                        )
+                    },
+                ) {
+                    Text("Pull requests")
                 }
             }
 
