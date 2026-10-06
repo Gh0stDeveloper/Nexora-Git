@@ -14,14 +14,14 @@ class TreeSitterSyntaxEngine @Inject constructor(
     override fun supports(
         fileName: String,
         language: String?,
-    ): Boolean = grammarFor(fileName, language) != null
+    ): Boolean = treeSitterGrammarFor(fileName, language) != null
 
     override suspend fun analyze(
         fileName: String,
         language: String?,
         source: String,
     ): EditorSyntaxSnapshot? = withContext(Dispatchers.Default) {
-        val grammar = grammarFor(fileName, language)
+        val grammar = treeSitterGrammarFor(fileName, language)
             ?: return@withContext null
 
         parser.parse(
@@ -32,32 +32,33 @@ class TreeSitterSyntaxEngine @Inject constructor(
         )
     }
 
-    internal fun grammarFor(
-        fileName: String,
-        language: String?,
-    ): String? {
-        val lower = fileName.lowercase()
-        val extension = lower.substringAfterLast(
-            delimiter = '.',
-            missingDelimiterValue = "",
-        )
+}
 
-        return when {
-            extension == "kt" || extension == "kts" -> "Kotlin"
-            extension == "java" -> "Java"
-            extension == "jsx" -> "JavaScript"
-            extension == "js" -> "JavaScript"
-            extension == "tsx" -> "TSX"
-            extension == "ts" -> "TypeScript"
-            extension == "py" -> "Python"
-            extension == "json" -> "JSON"
-            language == "Kotlin" -> "Kotlin"
-            language == "Java" -> "Java"
-            language == "JavaScript" -> "JavaScript"
-            language == "TypeScript" -> "TypeScript"
-            language == "Python" -> "Python"
-            language == "JSON" -> "JSON"
-            else -> null
-        }
+internal fun treeSitterGrammarFor(
+    fileName: String,
+    language: String?,
+): String? {
+    val lower = fileName.lowercase()
+    val extension = lower.substringAfterLast(
+        delimiter = '.',
+        missingDelimiterValue = "",
+    )
+
+    return when {
+        extension == "kt" || extension == "kts" -> "Kotlin"
+        extension == "java" -> "Java"
+        extension == "jsx" -> "JavaScript"
+        extension == "js" -> "JavaScript"
+        extension == "tsx" -> "TSX"
+        extension == "ts" -> "TypeScript"
+        extension == "py" -> "Python"
+        extension == "json" -> "JSON"
+        language == "Kotlin" -> "Kotlin"
+        language == "Java" -> "Java"
+        language == "JavaScript" -> "JavaScript"
+        language == "TypeScript" -> "TypeScript"
+        language == "Python" -> "Python"
+        language == "JSON" -> "JSON"
+        else -> null
     }
 }
