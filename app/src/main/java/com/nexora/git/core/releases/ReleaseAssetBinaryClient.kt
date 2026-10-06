@@ -336,11 +336,27 @@ class ReleaseAssetBinaryClient @Inject constructor(
                 )
             }
 
-            val temp = File.createTempFile(
-                "release-asset-",
-                ".upload",
-                context.cacheDir,
-            )
+            val temp = try {
+                File.createTempFile(
+                    "release-asset-",
+                    ".upload",
+                    context.cacheDir,
+                )
+            } catch (error: IOException) {
+                return@withContext if (
+                    error.message
+                        ?.contains(
+                            "No space left",
+                            ignoreCase = true,
+                        ) == true
+                ) {
+                    AppResult.Failure(AppError.DiskFull)
+                } else {
+                    AppResult.Failure(
+                        AppError.Unknown(error),
+                    )
+                }
+            }
 
             try {
                 var total = 0L
@@ -393,6 +409,10 @@ class ReleaseAssetBinaryClient @Inject constructor(
                     .header(
                         "Accept",
                         GitHubApiConfig.DEFAULT_ACCEPT,
+                    )
+                    .header(
+                        "X-GitHub-Api-Version",
+                        GitHubApiConfig.REST_API_VERSION,
                     )
                     .post(
                         temp.asRequestBody(mediaType),
