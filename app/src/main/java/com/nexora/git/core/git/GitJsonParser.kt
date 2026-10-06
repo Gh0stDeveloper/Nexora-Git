@@ -84,6 +84,8 @@ class GitJsonParser @Inject constructor() {
             "none" -> GitRepositoryOperationState.NONE
             "merge" -> GitRepositoryOperationState.MERGE
             "rebase" -> GitRepositoryOperationState.REBASE
+            "cherry_pick" -> GitRepositoryOperationState.CHERRY_PICK
+            "revert" -> GitRepositoryOperationState.REVERT
             else -> GitRepositoryOperationState.OTHER
         }
 
@@ -145,6 +147,75 @@ class GitJsonParser @Inject constructor() {
                         timezoneOffsetMinutes =
                             item.optInt("timezoneOffsetMinutes"),
                         parentCount = item.optInt("parentCount"),
+                    ),
+                )
+            }
+        }
+    }
+
+
+    fun applyResult(json: String): GitApplyResult {
+        val root = JSONObject(json)
+        return GitApplyResult(
+            state = when (root.getString("state")) {
+                "applied" -> GitApplyState.APPLIED
+                "conflicts" -> GitApplyState.CONFLICTS
+                else -> error("Unknown native apply state")
+            },
+            commitOid = root.optString("commitOid"),
+            conflicts = conflicts(root.getJSONArray("conflicts")),
+        )
+    }
+
+    fun stashes(json: String): List<GitStash> {
+        val array = JSONArray(json)
+        return buildList {
+            for (index in 0 until array.length()) {
+                val item = array.getJSONObject(index)
+                add(
+                    GitStash(
+                        index = item.getInt("index"),
+                        oid = item.getString("oid"),
+                        message = item.optString("message"),
+                    ),
+                )
+            }
+        }
+    }
+
+    fun tags(json: String): List<GitTag> {
+        val array = JSONArray(json)
+        return buildList {
+            for (index in 0 until array.length()) {
+                val item = array.getJSONObject(index)
+                add(
+                    GitTag(
+                        name = item.getString("name"),
+                        targetOid = item.optString("targetOid"),
+                        annotated = item.optBoolean("annotated"),
+                        message = item.optString("message"),
+                        taggerName = item.optString("taggerName"),
+                        taggerEmail = item.optString("taggerEmail"),
+                    ),
+                )
+            }
+        }
+    }
+
+    fun submodules(json: String): List<GitSubmodule> {
+        val array = JSONArray(json)
+        return buildList {
+            for (index in 0 until array.length()) {
+                val item = array.getJSONObject(index)
+                add(
+                    GitSubmodule(
+                        name = item.getString("name"),
+                        path = item.optString("path"),
+                        url = item.optString("url"),
+                        headOid = item.optString("headOid"),
+                        workdirOid = item.optString("workdirOid"),
+                        status = item.optLong("status"),
+                        initialized = item.optBoolean("initialized"),
                     ),
                 )
             }

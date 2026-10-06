@@ -39,6 +39,8 @@ void initialize(
     const std::string& certificate_directory
 );
 
+void register_lfs_filter();
+
 std::string version();
 std::string init_repository(const std::string& path);
 std::string clone_repository(
@@ -168,6 +170,78 @@ std::string history(
 std::string blame(
     const std::string& repository_path,
     const std::string& relative_path
+);
+
+
+std::string rebase_onto(
+    const std::string& repository_path,
+    const std::string& upstream_ref,
+    const Author& author
+);
+std::string cherry_pick(
+    const std::string& repository_path,
+    const std::string& commit_ref,
+    const Author& author
+);
+std::string continue_cherry_pick(
+    const std::string& repository_path,
+    const Author& author
+);
+void abort_cherry_pick(const std::string& repository_path);
+std::string stashes(const std::string& repository_path);
+std::string save_stash(
+    const std::string& repository_path,
+    const std::string& message,
+    const Author& author,
+    bool include_untracked
+);
+void apply_stash(
+    const std::string& repository_path,
+    size_t index,
+    bool pop
+);
+void drop_stash(
+    const std::string& repository_path,
+    size_t index
+);
+void reset_to(
+    const std::string& repository_path,
+    const std::string& target_ref,
+    const std::string& mode
+);
+std::string revert_commit(
+    const std::string& repository_path,
+    const std::string& commit_ref,
+    const Author& author
+);
+std::string continue_revert(
+    const std::string& repository_path,
+    const Author& author
+);
+void abort_revert(const std::string& repository_path);
+std::string tags(const std::string& repository_path);
+std::string create_tag(
+    const std::string& repository_path,
+    const std::string& name,
+    const std::string& target_ref,
+    const std::string& message,
+    const Author& author,
+    bool annotated
+);
+void delete_tag(
+    const std::string& repository_path,
+    const std::string& name
+);
+std::string submodules(const std::string& repository_path);
+void sync_submodule(
+    const std::string& repository_path,
+    const std::string& name
+);
+void update_submodule(
+    const std::string& repository_path,
+    const std::string& name,
+    bool initialize,
+    const Credentials& credentials
 );
 
 }  // namespace nexora::git

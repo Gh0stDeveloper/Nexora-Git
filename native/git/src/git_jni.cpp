@@ -666,3 +666,298 @@ Java_com_nexora_git_core_git_NativeGitBridge_nativeBlame(
         );
     });
 }
+
+
+extern "C" JNIEXPORT jstring JNICALL
+Java_com_nexora_git_core_git_NativeGitBridge_nativeRebase(
+    JNIEnv* env,
+    jobject,
+    jstring repository_path,
+    jstring upstream_ref,
+    jstring author_name,
+    jstring author_email
+) {
+    return string_call(env, [&]() {
+        return nexora::git::rebase_onto(
+            from_jstring(env, repository_path),
+            from_jstring(env, upstream_ref),
+            author(env, author_name, author_email)
+        );
+    });
+}
+
+extern "C" JNIEXPORT jstring JNICALL
+Java_com_nexora_git_core_git_NativeGitBridge_nativeCherryPick(
+    JNIEnv* env,
+    jobject,
+    jstring repository_path,
+    jstring commit_ref,
+    jstring author_name,
+    jstring author_email
+) {
+    return string_call(env, [&]() {
+        return nexora::git::cherry_pick(
+            from_jstring(env, repository_path),
+            from_jstring(env, commit_ref),
+            author(env, author_name, author_email)
+        );
+    });
+}
+
+extern "C" JNIEXPORT jstring JNICALL
+Java_com_nexora_git_core_git_NativeGitBridge_nativeContinueCherryPick(
+    JNIEnv* env,
+    jobject,
+    jstring repository_path,
+    jstring author_name,
+    jstring author_email
+) {
+    return string_call(env, [&]() {
+        return nexora::git::continue_cherry_pick(
+            from_jstring(env, repository_path),
+            author(env, author_name, author_email)
+        );
+    });
+}
+
+extern "C" JNIEXPORT void JNICALL
+Java_com_nexora_git_core_git_NativeGitBridge_nativeAbortCherryPick(
+    JNIEnv* env,
+    jobject,
+    jstring repository_path
+) {
+    void_call(env, [&]() {
+        nexora::git::abort_cherry_pick(
+            from_jstring(env, repository_path)
+        );
+    });
+}
+
+extern "C" JNIEXPORT jstring JNICALL
+Java_com_nexora_git_core_git_NativeGitBridge_nativeStashes(
+    JNIEnv* env,
+    jobject,
+    jstring repository_path
+) {
+    return string_call(env, [&]() {
+        return nexora::git::stashes(
+            from_jstring(env, repository_path)
+        );
+    });
+}
+
+extern "C" JNIEXPORT jstring JNICALL
+Java_com_nexora_git_core_git_NativeGitBridge_nativeSaveStash(
+    JNIEnv* env,
+    jobject,
+    jstring repository_path,
+    jstring message,
+    jstring author_name,
+    jstring author_email,
+    jboolean include_untracked
+) {
+    return string_call(env, [&]() {
+        return nexora::git::save_stash(
+            from_jstring(env, repository_path),
+            from_jstring(env, message),
+            author(env, author_name, author_email),
+            include_untracked == JNI_TRUE
+        );
+    });
+}
+
+extern "C" JNIEXPORT void JNICALL
+Java_com_nexora_git_core_git_NativeGitBridge_nativeApplyStash(
+    JNIEnv* env,
+    jobject,
+    jstring repository_path,
+    jint index,
+    jboolean pop
+) {
+    void_call(env, [&]() {
+        nexora::git::apply_stash(
+            from_jstring(env, repository_path),
+            static_cast<size_t>(index),
+            pop == JNI_TRUE
+        );
+    });
+}
+
+extern "C" JNIEXPORT void JNICALL
+Java_com_nexora_git_core_git_NativeGitBridge_nativeDropStash(
+    JNIEnv* env,
+    jobject,
+    jstring repository_path,
+    jint index
+) {
+    void_call(env, [&]() {
+        nexora::git::drop_stash(
+            from_jstring(env, repository_path),
+            static_cast<size_t>(index)
+        );
+    });
+}
+
+extern "C" JNIEXPORT void JNICALL
+Java_com_nexora_git_core_git_NativeGitBridge_nativeReset(
+    JNIEnv* env,
+    jobject,
+    jstring repository_path,
+    jstring target_ref,
+    jstring mode
+) {
+    void_call(env, [&]() {
+        nexora::git::reset_to(
+            from_jstring(env, repository_path),
+            from_jstring(env, target_ref),
+            from_jstring(env, mode)
+        );
+    });
+}
+
+extern "C" JNIEXPORT jstring JNICALL
+Java_com_nexora_git_core_git_NativeGitBridge_nativeRevert(
+    JNIEnv* env,
+    jobject,
+    jstring repository_path,
+    jstring commit_ref,
+    jstring author_name,
+    jstring author_email
+) {
+    return string_call(env, [&]() {
+        return nexora::git::revert_commit(
+            from_jstring(env, repository_path),
+            from_jstring(env, commit_ref),
+            author(env, author_name, author_email)
+        );
+    });
+}
+
+extern "C" JNIEXPORT jstring JNICALL
+Java_com_nexora_git_core_git_NativeGitBridge_nativeContinueRevert(
+    JNIEnv* env,
+    jobject,
+    jstring repository_path,
+    jstring author_name,
+    jstring author_email
+) {
+    return string_call(env, [&]() {
+        return nexora::git::continue_revert(
+            from_jstring(env, repository_path),
+            author(env, author_name, author_email)
+        );
+    });
+}
+
+extern "C" JNIEXPORT void JNICALL
+Java_com_nexora_git_core_git_NativeGitBridge_nativeAbortRevert(
+    JNIEnv* env,
+    jobject,
+    jstring repository_path
+) {
+    void_call(env, [&]() {
+        nexora::git::abort_revert(
+            from_jstring(env, repository_path)
+        );
+    });
+}
+
+extern "C" JNIEXPORT jstring JNICALL
+Java_com_nexora_git_core_git_NativeGitBridge_nativeTags(
+    JNIEnv* env,
+    jobject,
+    jstring repository_path
+) {
+    return string_call(env, [&]() {
+        return nexora::git::tags(
+            from_jstring(env, repository_path)
+        );
+    });
+}
+
+extern "C" JNIEXPORT jstring JNICALL
+Java_com_nexora_git_core_git_NativeGitBridge_nativeCreateTag(
+    JNIEnv* env,
+    jobject,
+    jstring repository_path,
+    jstring name,
+    jstring target_ref,
+    jstring message,
+    jstring author_name,
+    jstring author_email,
+    jboolean annotated
+) {
+    return string_call(env, [&]() {
+        return nexora::git::create_tag(
+            from_jstring(env, repository_path),
+            from_jstring(env, name),
+            from_jstring(env, target_ref),
+            from_jstring(env, message),
+            author(env, author_name, author_email),
+            annotated == JNI_TRUE
+        );
+    });
+}
+
+extern "C" JNIEXPORT void JNICALL
+Java_com_nexora_git_core_git_NativeGitBridge_nativeDeleteTag(
+    JNIEnv* env,
+    jobject,
+    jstring repository_path,
+    jstring name
+) {
+    void_call(env, [&]() {
+        nexora::git::delete_tag(
+            from_jstring(env, repository_path),
+            from_jstring(env, name)
+        );
+    });
+}
+
+extern "C" JNIEXPORT jstring JNICALL
+Java_com_nexora_git_core_git_NativeGitBridge_nativeSubmodules(
+    JNIEnv* env,
+    jobject,
+    jstring repository_path
+) {
+    return string_call(env, [&]() {
+        return nexora::git::submodules(
+            from_jstring(env, repository_path)
+        );
+    });
+}
+
+extern "C" JNIEXPORT void JNICALL
+Java_com_nexora_git_core_git_NativeGitBridge_nativeSyncSubmodule(
+    JNIEnv* env,
+    jobject,
+    jstring repository_path,
+    jstring name
+) {
+    void_call(env, [&]() {
+        nexora::git::sync_submodule(
+            from_jstring(env, repository_path),
+            from_jstring(env, name)
+        );
+    });
+}
+
+extern "C" JNIEXPORT void JNICALL
+Java_com_nexora_git_core_git_NativeGitBridge_nativeUpdateSubmodule(
+    JNIEnv* env,
+    jobject,
+    jstring repository_path,
+    jstring name,
+    jboolean initialize,
+    jstring username,
+    jstring password
+) {
+    void_call(env, [&]() {
+        nexora::git::update_submodule(
+            from_jstring(env, repository_path),
+            from_jstring(env, name),
+            initialize == JNI_TRUE,
+            credentials(env, username, password)
+        );
+    });
+}

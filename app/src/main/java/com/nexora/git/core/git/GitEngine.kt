@@ -143,6 +143,104 @@ interface GitEngine {
         limit: Int = 50,
     ): List<GitHistoryEntry>
 
+
+    suspend fun rebase(
+        repositoryPath: String,
+        upstreamRef: String,
+        author: GitAuthor,
+    ): GitMergeResult
+
+    suspend fun cherryPick(
+        repositoryPath: String,
+        commitRef: String,
+        author: GitAuthor,
+    ): GitApplyResult
+
+    suspend fun continueCherryPick(
+        repositoryPath: String,
+        author: GitAuthor,
+    ): GitApplyResult
+
+    suspend fun abortCherryPick(
+        repositoryPath: String,
+    )
+
+    suspend fun stashes(
+        repositoryPath: String,
+    ): List<GitStash>
+
+    suspend fun saveStash(
+        repositoryPath: String,
+        message: String,
+        author: GitAuthor,
+        includeUntracked: Boolean = true,
+    ): String
+
+    suspend fun applyStash(
+        repositoryPath: String,
+        index: Int,
+        pop: Boolean,
+    )
+
+    suspend fun dropStash(
+        repositoryPath: String,
+        index: Int,
+    )
+
+    suspend fun reset(
+        repositoryPath: String,
+        targetRef: String,
+        mode: GitResetMode,
+    )
+
+    suspend fun revert(
+        repositoryPath: String,
+        commitRef: String,
+        author: GitAuthor,
+    ): GitApplyResult
+
+    suspend fun continueRevert(
+        repositoryPath: String,
+        author: GitAuthor,
+    ): GitApplyResult
+
+    suspend fun abortRevert(
+        repositoryPath: String,
+    )
+
+    suspend fun tags(
+        repositoryPath: String,
+    ): List<GitTag>
+
+    suspend fun createTag(
+        repositoryPath: String,
+        name: String,
+        targetRef: String = "HEAD",
+        message: String = "",
+        author: GitAuthor,
+        annotated: Boolean,
+    ): String
+
+    suspend fun deleteTag(
+        repositoryPath: String,
+        name: String,
+    )
+
+    suspend fun submodules(
+        repositoryPath: String,
+    ): List<GitSubmodule>
+
+    suspend fun syncSubmodule(
+        repositoryPath: String,
+        name: String,
+    )
+
+    suspend fun updateSubmodule(
+        repositoryPath: String,
+        name: String,
+        initialize: Boolean = true,
+    )
+
     suspend fun blame(
         repositoryPath: String,
         relativePath: String,

@@ -59,6 +59,8 @@ add_library(
     nexoragit_core
     STATIC
     src/git_core.cpp
+    src/advanced_git.cpp
+    src/lfs_filter.cpp
 )
 
 target_include_directories(
@@ -72,6 +74,7 @@ target_link_libraries(
     nexoragit_core
     PUBLIC
     libgit2package
+    MbedTLS::mbedcrypto
 )
 
 if(ANDROID)

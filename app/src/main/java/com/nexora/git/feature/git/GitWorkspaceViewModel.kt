@@ -3,6 +3,7 @@ package com.nexora.git.feature.git
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.nexora.git.core.git.GitApplyResult
 import com.nexora.git.core.git.GitAuthor
 import com.nexora.git.core.git.GitBranch
 import com.nexora.git.core.git.GitConflict
@@ -10,13 +11,20 @@ import com.nexora.git.core.git.GitConflictResolution
 import com.nexora.git.core.git.GitDivergence
 import com.nexora.git.core.git.GitEngine
 import com.nexora.git.core.git.GitHistoryEntry
+import com.nexora.git.core.git.GitLfsManager
+import com.nexora.git.core.git.GitLfsState
+import com.nexora.git.core.git.GitLfsTransport
 import com.nexora.git.core.git.GitMergeResult
 import com.nexora.git.core.git.GitPullRequest
 import com.nexora.git.core.git.GitPullStrategy
 import com.nexora.git.core.git.GitPushRequest
 import com.nexora.git.core.git.GitRemote
+import com.nexora.git.core.git.GitResetMode
 import com.nexora.git.core.git.GitRepositoryOperationState
 import com.nexora.git.core.git.GitStatusEntry
+import com.nexora.git.core.git.GitStash
+import com.nexora.git.core.git.GitSubmodule
+import com.nexora.git.core.git.GitTag
 import com.nexora.git.core.storage.WorkspaceRegistry
 import dagger.hilt.android.lifecycle.HiltViewModel
 import java.io.File
@@ -41,6 +49,13 @@ data class GitWorkspaceUiState(
     val divergence: GitDivergence? = null,
     val repositoryState: GitRepositoryOperationState =
         GitRepositoryOperationState.NONE,
+    val stashes: List<GitStash> = emptyList(),
+    val tags: List<GitTag> = emptyList(),
+    val submodules: List<GitSubmodule> = emptyList(),
+    val lfs: GitLfsState = GitLfsState(
+        trackedPatterns = emptyList(),
+        pointers = emptyList(),
+    ),
     val loading: Boolean = true,
     val refreshing: Boolean = false,
     val operationInProgress: Boolean = false,
@@ -72,6 +87,14 @@ data class GitWorkspaceUiState(
 
     val mergeInProgress: Boolean
         get() = repositoryState == GitRepositoryOperationState.MERGE
+
+    val cherryPickInProgress: Boolean
+        get() = repositoryState ==
+            GitRepositoryOperationState.CHERRY_PICK
+
+    val revertInProgress: Boolean
+        get() = repositoryState ==
+            GitRepositoryOperationState.REVERT
 }
 
 @HiltViewModel
@@ -79,6 +102,8 @@ class GitWorkspaceViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle,
     private val workspaceRegistry: WorkspaceRegistry,
     private val gitEngine: GitEngine,
+    private val lfsManager: GitLfsManager,
+    private val lfsTransport: GitLfsTransport,
 ) : ViewModel() {
 
     private val workspaceId =
@@ -410,6 +435,293 @@ class GitWorkspaceViewModel @Inject constructor(
         }
     }
 
+    fun rebase(
+        upstreamRef: String,
+        authorName: String,
+        authorEmail: String,
+    ) {
+        if (upstreamRef.isBlank()) {
+            showError("Choose a branch, tag, or commit to rebase onto.")
+            return
+        }
+        val author = authorOrNull(authorName, authorEmail) ?: return
+
+        launchMergeOperation("Rebase onto " + upstreamRef.trim()) {
+            gitEngine.rebase(
+                repositoryPath = workspacePath,
+                upstreamRef = upstreamRef.trim(),
+                author = author,
+            )
+        }
+    }
+
+    fun cherryPick(
+        commitRef: String,
+        authorName: String,
+        authorEmail: String,
+    ) {
+        if (commitRef.isBlank()) {
+            showError("Choose a commit to cherry-pick.")
+            return
+        }
+        val author = authorOrNull(authorName, authorEmail) ?: return
+
+        launchApplyOperation("Cherry-pick " + commitRef.trim()) {
+            gitEngine.cherryPick(
+                repositoryPath = workspacePath,
+                commitRef = commitRef.trim(),
+                author = author,
+            )
+        }
+    }
+
+    fun continueCherryPick(
+        authorName: String,
+        authorEmail: String,
+    ) {
+        val author = authorOrNull(authorName, authorEmail) ?: return
+        launchApplyOperation("Continue cherry-pick") {
+            gitEngine.continueCherryPick(
+                repositoryPath = workspacePath,
+                author = author,
+            )
+        }
+    }
+
+    fun abortCherryPick() {
+        launchOperation("Cherry-pick aborted.") {
+            gitEngine.abortCherryPick(workspacePath)
+        }
+    }
+
+    fun saveStash(
+        message: String,
+        authorName: String,
+        authorEmail: String,
+        includeUntracked: Boolean,
+    ) {
+        val author = authorOrNull(authorName, authorEmail) ?: return
+        launchOperation {
+            val oid = gitEngine.saveStash(
+                repositoryPath = workspacePath,
+                message = message.trim(),
+                author = author,
+                includeUntracked = includeUntracked,
+            )
+            "Saved stash " + oid.take(7) + "."
+        }
+    }
+
+    fun applyStash(index: Int, pop: Boolean) {
+        launchOperation(
+            if (pop) "Popped stash@$index." else "Applied stash@$index.",
+        ) {
+            gitEngine.applyStash(
+                repositoryPath = workspacePath,
+                index = index,
+                pop = pop,
+            )
+        }
+    }
+
+    fun dropStash(index: Int) {
+        launchOperation("Dropped stash@$index.") {
+            gitEngine.dropStash(
+                repositoryPath = workspacePath,
+                index = index,
+            )
+        }
+    }
+
+    fun reset(
+        targetRef: String,
+        mode: GitResetMode,
+    ) {
+        if (targetRef.isBlank()) {
+            showError("Reset target is required.")
+            return
+        }
+        launchOperation(
+            "Reset " + mode.name.lowercase() +
+                " to " + targetRef.trim() + ".",
+        ) {
+            gitEngine.reset(
+                repositoryPath = workspacePath,
+                targetRef = targetRef.trim(),
+                mode = mode,
+            )
+        }
+    }
+
+    fun revert(
+        commitRef: String,
+        authorName: String,
+        authorEmail: String,
+    ) {
+        if (commitRef.isBlank()) {
+            showError("Choose a commit to revert.")
+            return
+        }
+        val author = authorOrNull(authorName, authorEmail) ?: return
+
+        launchApplyOperation("Revert " + commitRef.trim()) {
+            gitEngine.revert(
+                repositoryPath = workspacePath,
+                commitRef = commitRef.trim(),
+                author = author,
+            )
+        }
+    }
+
+    fun continueRevert(
+        authorName: String,
+        authorEmail: String,
+    ) {
+        val author = authorOrNull(authorName, authorEmail) ?: return
+        launchApplyOperation("Continue revert") {
+            gitEngine.continueRevert(
+                repositoryPath = workspacePath,
+                author = author,
+            )
+        }
+    }
+
+    fun abortRevert() {
+        launchOperation("Revert aborted.") {
+            gitEngine.abortRevert(workspacePath)
+        }
+    }
+
+    fun createTag(
+        name: String,
+        targetRef: String,
+        message: String,
+        annotated: Boolean,
+        authorName: String,
+        authorEmail: String,
+    ) {
+        val normalized = name.trim()
+        if (normalized.isBlank() ||
+            normalized.any { it.isWhitespace() } ||
+            normalized.startsWith("-") ||
+            normalized.contains("..")
+        ) {
+            showError("Enter a valid local Git tag name.")
+            return
+        }
+
+        val author = authorOrNull(authorName, authorEmail) ?: return
+        launchOperation {
+            val oid = gitEngine.createTag(
+                repositoryPath = workspacePath,
+                name = normalized,
+                targetRef = targetRef.trim().ifBlank { "HEAD" },
+                message = message.trim(),
+                author = author,
+                annotated = annotated,
+            )
+            "Created tag " + normalized + " at " + oid.take(7) + "."
+        }
+    }
+
+    fun deleteTag(name: String) {
+        launchOperation("Deleted local tag " + name + ".") {
+            gitEngine.deleteTag(
+                repositoryPath = workspacePath,
+                name = name,
+            )
+        }
+    }
+
+    fun syncSubmodule(name: String) {
+        launchOperation("Synced submodule " + name + ".") {
+            gitEngine.syncSubmodule(
+                repositoryPath = workspacePath,
+                name = name,
+            )
+        }
+    }
+
+    fun updateSubmodule(name: String) {
+        launchOperation("Updated submodule " + name + ".") {
+            gitEngine.updateSubmodule(
+                repositoryPath = workspacePath,
+                name = name,
+                initialize = true,
+            )
+        }
+    }
+
+    fun trackLfs(pattern: String) {
+        launchOperation {
+            withContext(Dispatchers.IO) {
+                lfsManager.track(workspacePath, pattern)
+            }
+            "Tracking " + pattern.trim() + " with Git LFS attributes."
+        }
+    }
+
+    fun untrackLfs(pattern: String) {
+        launchOperation {
+            withContext(Dispatchers.IO) {
+                lfsManager.untrack(workspacePath, pattern)
+            }
+            "Removed Git LFS tracking for " + pattern + "."
+        }
+    }
+
+    fun downloadLfs(remoteName: String) {
+        val remote = state.value.remotes.firstOrNull {
+            it.name == remoteName
+        }
+        if (remote == null) {
+            showError("Choose a configured remote for Git LFS.")
+            return
+        }
+        if (!lfsTransport.supportsRemote(remote.url)) {
+            showError(
+                "Git LFS object transfer currently supports GitHub HTTPS remotes.",
+            )
+            return
+        }
+
+        launchOperation {
+            val result = lfsTransport.downloadMissing(
+                repositoryPath = workspacePath,
+                remoteUrl = remote.url,
+            )
+            "Git LFS download: " +
+                result.transferred + " transferred · " +
+                result.alreadyPresent + " already local."
+        }
+    }
+
+    fun uploadLfs(remoteName: String) {
+        val remote = state.value.remotes.firstOrNull {
+            it.name == remoteName
+        }
+        if (remote == null) {
+            showError("Choose a configured remote for Git LFS.")
+            return
+        }
+        if (!lfsTransport.supportsRemote(remote.url)) {
+            showError(
+                "Git LFS object transfer currently supports GitHub HTTPS remotes.",
+            )
+            return
+        }
+
+        launchOperation {
+            val result = lfsTransport.uploadPending(
+                repositoryPath = workspacePath,
+                remoteUrl = remote.url,
+            )
+            "Git LFS upload: " +
+                result.transferred + " transferred · " +
+                result.alreadyPresent + " already remote."
+        }
+    }
+
     fun merge(
         ref: String,
         authorName: String,
@@ -482,6 +794,18 @@ class GitWorkspaceViewModel @Inject constructor(
                 }
             } else {
                 ""
+            }
+
+            val remoteConfig = state.value.remotes
+                .firstOrNull { it.name == normalizedRemote }
+            if (state.value.lfs.trackedPatterns.isNotEmpty() &&
+                remoteConfig != null &&
+                lfsTransport.supportsRemote(remoteConfig.url)
+            ) {
+                lfsTransport.uploadPending(
+                    repositoryPath = workspacePath,
+                    remoteUrl = remoteConfig.url,
+                )
             }
 
             val result = gitEngine.push(
@@ -663,6 +987,12 @@ class GitWorkspaceViewModel @Inject constructor(
                 emptyList()
             }
             val remotes = gitEngine.remotes(workspacePath)
+            val stashes = gitEngine.stashes(workspacePath)
+            val tags = gitEngine.tags(workspacePath)
+            val submodules = gitEngine.submodules(workspacePath)
+            val lfs = withContext(Dispatchers.IO) {
+                lfsManager.inspect(workspacePath)
+            }
 
             val current = branches.firstOrNull {
                 !it.remote && it.head
@@ -689,6 +1019,10 @@ class GitWorkspaceViewModel @Inject constructor(
                 conflicts = conflicts,
                 divergence = divergence,
                 repositoryState = repositoryState,
+                stashes = stashes,
+                tags = tags,
+                submodules = submodules,
+                lfs = lfs,
             )
         }.onSuccess { snapshot ->
             val origin = snapshot.remotes.firstOrNull {
@@ -716,6 +1050,10 @@ class GitWorkspaceViewModel @Inject constructor(
                     divergence = snapshot.divergence,
                     repositoryState =
                         snapshot.repositoryState,
+                    stashes = snapshot.stashes,
+                    tags = snapshot.tags,
+                    submodules = snapshot.submodules,
+                    lfs = snapshot.lfs,
                     loading = false,
                     refreshing = false,
                 )
@@ -794,6 +1132,23 @@ class GitWorkspaceViewModel @Inject constructor(
         }
     }
 
+    private fun launchApplyOperation(
+        label: String,
+        operation: suspend () -> GitApplyResult,
+    ) {
+        launchOperation {
+            val result = operation()
+            if (result.conflicts.isNotEmpty()) {
+                label + " produced " +
+                    result.conflicts.size +
+                    " conflict(s). Resolve them before continuing."
+            } else {
+                label + " completed at " +
+                    result.commitOid.take(7) + "."
+            }
+        }
+    }
+
     private fun authorOrNull(
         name: String,
         email: String,
@@ -847,5 +1202,9 @@ class GitWorkspaceViewModel @Inject constructor(
         val conflicts: List<GitConflict>,
         val divergence: GitDivergence?,
         val repositoryState: GitRepositoryOperationState,
+        val stashes: List<GitStash>,
+        val tags: List<GitTag>,
+        val submodules: List<GitSubmodule>,
+        val lfs: GitLfsState,
     )
 }

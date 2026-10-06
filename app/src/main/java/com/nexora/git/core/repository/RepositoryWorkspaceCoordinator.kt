@@ -5,6 +5,7 @@ import com.nexora.git.core.common.AppError
 import com.nexora.git.core.common.AppResult
 import com.nexora.git.core.git.GitCloneRequest
 import com.nexora.git.core.git.GitEngine
+import com.nexora.git.core.git.GitLfsTransport
 import com.nexora.git.core.storage.Workspace
 import com.nexora.git.core.storage.WorkspaceRegistry
 import java.io.File
@@ -23,6 +24,7 @@ class RepositoryWorkspaceCoordinator @Inject constructor(
     private val gitEngine: GitEngine,
     private val workspaceRegistry: WorkspaceRegistry,
     private val authSessionRepository: AuthSessionRepository,
+    private val lfsTransport: GitLfsTransport,
 ) {
 
     suspend fun clone(
@@ -65,6 +67,15 @@ class RepositoryWorkspaceCoordinator @Inject constructor(
                     destinationPath = reserved.workspacePath,
                 ),
             )
+
+            if (lfsTransport.supportsRemote(repository.cloneUrl)) {
+                runCatching {
+                    lfsTransport.downloadMissing(
+                        repositoryPath = reserved.workspacePath,
+                        remoteUrl = repository.cloneUrl,
+                    )
+                }
+            }
 
             val status = gitEngine.status(reserved.workspacePath)
             val completed = workspaceRegistry.completeRemoteClone(

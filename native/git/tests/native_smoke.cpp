@@ -71,6 +71,60 @@ std::string json_string(
     return payload.substr(value_start, end - value_start);
 }
 
+std::string index_blob_content(
+    const fs::path& repository_path,
+    const std::string& path
+) {
+    git_repository* repository = nullptr;
+    raw_check(
+        git_repository_open(
+            &repository,
+            repository_path.string().c_str()
+        ),
+        "Open repository for index blob"
+    );
+
+    git_index* index = nullptr;
+    const int index_rc =
+        git_repository_index(&index, repository);
+    if (index_rc < 0) {
+        git_repository_free(repository);
+        raw_check(index_rc, "Open index for blob");
+    }
+
+    const git_index_entry* entry =
+        git_index_get_bypath(index, path.c_str(), 0);
+    if (entry == nullptr) {
+        git_index_free(index);
+        git_repository_free(repository);
+        throw std::runtime_error(
+            "Index entry not found: " + path
+        );
+    }
+
+    git_blob* blob = nullptr;
+    const int blob_rc =
+        git_blob_lookup(&blob, repository, &entry->id);
+    if (blob_rc < 0) {
+        git_index_free(index);
+        git_repository_free(repository);
+        raw_check(blob_rc, "Open index blob");
+    }
+
+    const char* data = static_cast<const char*>(
+        git_blob_rawcontent(blob)
+    );
+    const size_t size =
+        static_cast<size_t>(git_blob_rawsize(blob));
+    const std::string content =
+        data != nullptr ? std::string(data, size) : "";
+
+    git_blob_free(blob);
+    git_index_free(index);
+    git_repository_free(repository);
+    return content;
+}
+
 void create_bare_remote(const fs::path& path) {
     git_repository* repository = nullptr;
     raw_check(
@@ -1049,6 +1103,293 @@ void rebase_recovery_workflow(
     );
 }
 
+
+void advanced_local_workflow(
+    const fs::path& repository
+) {
+    fs::create_directories(repository);
+    nexora::git::init_repository(repository.string());
+
+    write_file(repository / "base.txt", "base\n");
+    nexora::git::stage(repository.string(), {"base.txt"});
+    nexora::git::commit(
+        repository.string(),
+        "Advanced base",
+        kAuthor
+    );
+
+    write_file(
+        repository / ".gitattributes",
+        "*.bin filter=lfs diff=lfs merge=lfs -text\n"
+    );
+    const std::string lfs_content =
+        "Nexora LFS native clean and smudge payload\n";
+    write_file(repository / "asset.bin", lfs_content);
+    nexora::git::stage(
+        repository.string(),
+        {".gitattributes", "asset.bin"}
+    );
+
+    const std::string lfs_staged =
+        index_blob_content(
+            repository,
+            "asset.bin"
+        );
+    require(
+        lfs_staged.find(
+            "version https://git-lfs.github.com/spec/v1"
+        ) != std::string::npos &&
+            lfs_staged.find("oid sha256:") !=
+                std::string::npos,
+        "LFS clean filter did not stage a pointer"
+    );
+
+    nexora::git::commit(
+        repository.string(),
+        "Add LFS asset",
+        kAuthor
+    );
+
+    fs::remove(repository / "asset.bin");
+    nexora::git::checkout(repository.string(), "main");
+    std::ifstream restored_input(
+        repository / "asset.bin",
+        std::ios::binary
+    );
+    const std::string restored{
+        std::istreambuf_iterator<char>(restored_input),
+        std::istreambuf_iterator<char>()
+    };
+    require(
+        restored == lfs_content,
+        "LFS smudge filter did not restore the local object"
+    );
+
+    nexora::git::create_branch(
+        repository.string(),
+        "source",
+        ""
+    );
+    nexora::git::checkout(repository.string(), "source");
+    write_file(repository / "picked.txt", "picked\n");
+    nexora::git::stage(repository.string(), {"picked.txt"});
+    const std::string source_commit =
+        nexora::git::commit(
+            repository.string(),
+            "Pick this commit",
+            kAuthor
+        );
+    const std::string source_oid =
+        json_string(source_commit, "oid");
+    require(
+        !source_oid.empty(),
+        "Cherry-pick source OID missing"
+    );
+
+    nexora::git::checkout(repository.string(), "main");
+    const std::string picked =
+        nexora::git::cherry_pick(
+            repository.string(),
+            source_oid,
+            kAuthor
+        );
+    require(
+        picked.find("\"state\":\"applied\"") !=
+            std::string::npos &&
+            fs::exists(repository / "picked.txt"),
+        "Cherry-pick did not apply source commit"
+    );
+
+    write_file(repository / "stash.txt", "stashed\n");
+    write_file(repository / "untracked-stash.txt", "untracked\n");
+    const std::string stash_oid =
+        nexora::git::save_stash(
+            repository.string(),
+            "Advanced stash",
+            kAuthor,
+            true
+        );
+    require(
+        !stash_oid.empty() &&
+            nexora::git::stashes(repository.string())
+                .find("Advanced stash") != std::string::npos,
+        "Stash was not persisted"
+    );
+    nexora::git::apply_stash(
+        repository.string(),
+        0,
+        false
+    );
+    require(
+        fs::exists(repository / "stash.txt"),
+        "Stash apply did not restore changes"
+    );
+    nexora::git::reset_to(
+        repository.string(),
+        "HEAD",
+        "hard"
+    );
+    if (fs::exists(repository / "stash.txt")) {
+        fs::remove(repository / "stash.txt");
+    }
+    if (fs::exists(repository / "untracked-stash.txt")) {
+        fs::remove(repository / "untracked-stash.txt");
+    }
+    nexora::git::drop_stash(repository.string(), 0);
+    require(
+        nexora::git::stashes(repository.string()) == "[]",
+        "Stash drop did not empty stash list"
+    );
+
+    const std::string lightweight =
+        nexora::git::create_tag(
+            repository.string(),
+            "v-local",
+            "HEAD",
+            "",
+            kAuthor,
+            false
+        );
+    const std::string annotated =
+        nexora::git::create_tag(
+            repository.string(),
+            "v-annotated",
+            "HEAD",
+            "Advanced tag",
+            kAuthor,
+            true
+        );
+    const std::string listed_tags =
+        nexora::git::tags(repository.string());
+    require(
+        !lightweight.empty() &&
+            !annotated.empty() &&
+            listed_tags.find("v-local") != std::string::npos &&
+            listed_tags.find("v-annotated") != std::string::npos &&
+            listed_tags.find("\"annotated\":true") !=
+                std::string::npos,
+        "Local tags were not listed"
+    );
+    nexora::git::delete_tag(
+        repository.string(),
+        "v-local"
+    );
+    nexora::git::delete_tag(
+        repository.string(),
+        "v-annotated"
+    );
+
+    write_file(repository / "revert.txt", "remove me\n");
+    nexora::git::stage(repository.string(), {"revert.txt"});
+    const std::string revert_source =
+        nexora::git::commit(
+            repository.string(),
+            "Revert source",
+            kAuthor
+        );
+    const std::string revert_oid =
+        json_string(revert_source, "oid");
+    const std::string reverted =
+        nexora::git::revert_commit(
+            repository.string(),
+            revert_oid,
+            kAuthor
+        );
+    require(
+        reverted.find("\"state\":\"applied\"") !=
+            std::string::npos &&
+            !fs::exists(repository / "revert.txt"),
+        "Revert did not invert source commit"
+    );
+
+    write_file(repository / "reset.txt", "one\n");
+    nexora::git::stage(repository.string(), {"reset.txt"});
+    const std::string reset_base =
+        nexora::git::commit(
+            repository.string(),
+            "Reset base",
+            kAuthor
+        );
+    const std::string reset_base_oid =
+        json_string(reset_base, "oid");
+    write_file(repository / "reset.txt", "two\n");
+    nexora::git::stage(repository.string(), {"reset.txt"});
+    nexora::git::commit(
+        repository.string(),
+        "Reset target",
+        kAuthor
+    );
+    nexora::git::reset_to(
+        repository.string(),
+        reset_base_oid,
+        "soft"
+    );
+    require(
+        nexora::git::diff(
+            repository.string(),
+            "staged"
+        ).find("two") != std::string::npos,
+        "Soft reset did not preserve staged changes"
+    );
+    nexora::git::reset_to(
+        repository.string(),
+        reset_base_oid,
+        "hard"
+    );
+
+    nexora::git::create_branch(
+        repository.string(),
+        "topic-rebase",
+        ""
+    );
+    nexora::git::checkout(
+        repository.string(),
+        "topic-rebase"
+    );
+    write_file(repository / "topic.txt", "topic\n");
+    nexora::git::stage(repository.string(), {"topic.txt"});
+    nexora::git::commit(
+        repository.string(),
+        "Topic before rebase",
+        kAuthor
+    );
+
+    nexora::git::checkout(repository.string(), "main");
+    write_file(repository / "main-advance.txt", "main\n");
+    nexora::git::stage(
+        repository.string(),
+        {"main-advance.txt"}
+    );
+    nexora::git::commit(
+        repository.string(),
+        "Advance main",
+        kAuthor
+    );
+
+    nexora::git::checkout(
+        repository.string(),
+        "topic-rebase"
+    );
+    const std::string rebased =
+        nexora::git::rebase_onto(
+            repository.string(),
+            "main",
+            kAuthor
+        );
+    require(
+        rebased.find("\"state\":\"rebased\"") !=
+            std::string::npos &&
+            fs::exists(repository / "main-advance.txt") &&
+            fs::exists(repository / "topic.txt"),
+        "Explicit rebase did not replay topic onto main"
+    );
+
+    require(
+        nexora::git::submodules(repository.string()) == "[]",
+        "Repository without submodules did not return an empty list"
+    );
+}
+
 }  // namespace
 
 int main() {
@@ -1062,6 +1403,7 @@ int main() {
     const fs::path rebase_remote = root / "rebase-remote.git";
     const fs::path rebase_local = root / "rebase-local";
     const fs::path rebase_peer = root / "rebase-peer";
+    const fs::path advanced_local = root / "advanced-local";
 
     try {
         fs::create_directories(seed);
@@ -1091,6 +1433,7 @@ int main() {
             rebase_local,
             rebase_peer
         );
+        advanced_local_workflow(advanced_local);
 
         fs::remove_all(root);
         std::cout
