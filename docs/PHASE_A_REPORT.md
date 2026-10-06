@@ -1,5 +1,7 @@
 # Phase A — Android Foundation Report
 
+> **Historical implementation record — Complete.** This report is retained for traceability. For current product behavior and operations, use the [Documentation Hub](README.md).
+
 Date: 2026-10-04
 
 ## Status
@@ -110,3 +112,7 @@ SHA-256: 1ab00fc96d055188f3ef7adad1c9f40d26c395e3f96826a4bb188615158b07cc
 Phase A is complete.
 
 The next phase is **Phase B — GitHub Authentication**, which will implement GitHub App authorization, OAuth + PKCE, callback validation, secure token storage, refresh/expiry handling and multi-account session foundations.
+
+---
+
+[← Documentation hub](README.md)
