@@ -91,16 +91,13 @@ Git LFS is implemented for GitHub HTTPS remotes. The GitHub credential is used o
 - [x] Advanced Git Compose coverage added
 - [x] native real-repository workflow coverage added
 - [x] native LFS clean/smudge repository coverage added
-- [ ] final Native Git CI after full test expansion
-- [ ] final Android CI
-- [ ] final Foundation CI
-- [ ] pull-request integration validation
+- [x] final Native Git CI after full test expansion
+- [x] final Android CI
+- [x] final Foundation CI
+- [x] pull-request integration validation
 
-## Merge gate
+## Integration result
 
-Phase P must not be marked complete or merged as a finished phase until:
-
-1. Native Git, Android and Foundation CI pass on the final branch head.
-2. The final pull request is validated against `main`.
+Phase P passed Native Git, Android and Foundation CI, then merged into `main` through PR #18. The post-merge checks on `main` also passed.
 
 See [Advanced Git](ADVANCED_GIT.md) for the implementation details and safety model.

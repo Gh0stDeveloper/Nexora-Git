@@ -9,6 +9,7 @@ import androidx.compose.ui.unit.dp
 import com.nexora.git.core.files.BrowserEntry
 import com.nexora.git.core.files.BrowserFile
 import com.nexora.git.core.files.BrowserFileKind
+import com.nexora.git.core.search.ProjectSearchMatch
 import com.nexora.git.ui.theme.NexoraGitTheme
 import org.junit.Rule
 import org.junit.Test
@@ -51,6 +52,15 @@ class CodeBrowserContentTest {
                     contentPadding = PaddingValues(0.dp),
                     onBack = {},
                     onRefresh = {},
+                    onToggleSearch = {},
+                    onSearchQueryChange = {},
+                    onSearchRegexChange = {},
+                    onSearchMatchCaseChange = {},
+                    onSearchWholeWordChange = {},
+                    onSearchIncludeGlobChange = {},
+                    onSearchExcludeGlobChange = {},
+                    onSearch = {},
+                    onOpenSearchResult = {},
                     onOpenEntry = {},
                     onOpenDirectory = {},
                     onSelectTab = {},
@@ -96,6 +106,15 @@ class CodeBrowserContentTest {
                     contentPadding = PaddingValues(0.dp),
                     onBack = {},
                     onRefresh = {},
+                    onToggleSearch = {},
+                    onSearchQueryChange = {},
+                    onSearchRegexChange = {},
+                    onSearchMatchCaseChange = {},
+                    onSearchWholeWordChange = {},
+                    onSearchIncludeGlobChange = {},
+                    onSearchExcludeGlobChange = {},
+                    onSearch = {},
+                    onOpenSearchResult = {},
                     onOpenEntry = {},
                     onOpenDirectory = {},
                     onSelectTab = {},
@@ -115,4 +134,58 @@ class CodeBrowserContentTest {
         composeRule.onNodeWithContentDescription("Edit file")
             .assertIsDisplayed()
     }
+    @Test
+    fun displaysAdvancedProjectSearch() {
+        composeRule.setContent {
+            NexoraGitTheme {
+                CodeBrowserContent(
+                    state = CodeBrowserUiState(
+                        workspaceName = "Sample",
+                        loading = false,
+                        searchVisible = true,
+                        projectSearchQuery = "Nexora",
+                        projectSearchMatches = listOf(
+                            ProjectSearchMatch(
+                                path = "src/Main.kt",
+                                line = 4,
+                                column = 9,
+                                preview = "println(\"Nexora\")",
+                                start = 30,
+                                endExclusive = 36,
+                            ),
+                        ),
+                        projectSearchFilesScanned = 8,
+                    ),
+                    contentPadding = PaddingValues(0.dp),
+                    onBack = {},
+                    onRefresh = {},
+                    onToggleSearch = {},
+                    onSearchQueryChange = {},
+                    onSearchRegexChange = {},
+                    onSearchMatchCaseChange = {},
+                    onSearchWholeWordChange = {},
+                    onSearchIncludeGlobChange = {},
+                    onSearchExcludeGlobChange = {},
+                    onSearch = {},
+                    onOpenSearchResult = {},
+                    onOpenEntry = {},
+                    onOpenDirectory = {},
+                    onSelectTab = {},
+                    onShare = {},
+                    onEdit = {},
+                    onDownload = {},
+                )
+            }
+        }
+
+        composeRule.onNodeWithText("Search entire project")
+            .assertIsDisplayed()
+        composeRule.onNodeWithText("Regex")
+            .assertIsDisplayed()
+        composeRule.onNodeWithText("Whole word")
+            .assertIsDisplayed()
+        composeRule.onNodeWithText("src/Main.kt:4:9")
+            .assertIsDisplayed()
+    }
+
 }

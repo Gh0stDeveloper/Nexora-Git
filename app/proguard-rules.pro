@@ -14,3 +14,7 @@
 -keep class com.nexora.git.core.git.GitNativeException {
     <init>(int, int, java.lang.String);
 }
+
+-keepclasseswithmembernames,includedescriptorclasses class com.nexora.git.core.editor.NativeSyntaxBridge {
+    native <methods>;
+}

@@ -1,4 +1,5 @@
 #include "nexora/git_core.h"
+#include "nexora/syntax_engine.h"
 
 #include <git2.h>
 
@@ -1390,6 +1391,63 @@ void advanced_local_workflow(
     );
 }
 
+
+void syntax_intelligence_workflow() {
+    const std::string kotlin_source =
+        "package demo\n"
+        "// emoji before declarations 🚀\n"
+        "class Greeter {\n"
+        "    fun hello(name: String): String = \"Hi, $name\"\n"
+        "}\n";
+    const std::string kotlin =
+        nexora::syntax::analyze("Kotlin", kotlin_source);
+
+    require(
+        kotlin.find("\"engine\":\"tree-sitter\"") != std::string::npos &&
+            kotlin.find("\"hasErrors\":false") != std::string::npos,
+        "Tree-sitter did not parse valid Kotlin"
+    );
+    require(
+        kotlin.find("\"name\":\"Greeter\"") != std::string::npos &&
+            kotlin.find("\"name\":\"hello\"") != std::string::npos,
+        "Tree-sitter did not expose Kotlin symbols"
+    );
+    require(
+        kotlin.find("\"kind\":\"keyword\"") != std::string::npos &&
+            kotlin.find("\"kind\":\"string\"") != std::string::npos &&
+            kotlin.find("\"kind\":\"comment\"") != std::string::npos,
+        "Tree-sitter did not expose semantic syntax spans"
+    );
+
+    const std::string broken =
+        nexora::syntax::analyze(
+            "JSON",
+            "{\"name\":\"Nexora\",\"broken\":[1,}"
+        );
+    require(
+        broken.find("\"hasErrors\":true") != std::string::npos &&
+            broken.find("\"diagnostics\":[{") != std::string::npos,
+        "Tree-sitter did not report invalid JSON diagnostics"
+    );
+
+    const std::string typescript =
+        nexora::syntax::analyze(
+            "TypeScript",
+            "interface User { name: string }\n"
+            "const user: User = { name: \"Nexora\" }\n"
+        );
+    require(
+        typescript.find("\"hasErrors\":false") != std::string::npos,
+        "Tree-sitter TypeScript grammar failed"
+    );
+
+    require(
+        nexora::syntax::supports_language("TSX") &&
+            !nexora::syntax::supports_language("Rust"),
+        "Tree-sitter language capability reporting is incorrect"
+    );
+}
+
 }  // namespace
 
 int main() {
@@ -1434,6 +1492,7 @@ int main() {
             rebase_peer
         );
         advanced_local_workflow(advanced_local);
+        syntax_intelligence_workflow();
 
         fs::remove_all(root);
         std::cout

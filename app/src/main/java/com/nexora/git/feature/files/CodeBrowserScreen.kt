@@ -13,11 +13,13 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.ArrowBack
 import androidx.compose.material.icons.outlined.Code
@@ -29,6 +31,7 @@ import androidx.compose.material.icons.outlined.History
 import androidx.compose.material.icons.outlined.Image
 import androidx.compose.material.icons.outlined.InsertDriveFile
 import androidx.compose.material.icons.outlined.Refresh
+import androidx.compose.material.icons.outlined.Search
 import androidx.compose.material.icons.outlined.Share
 import androidx.compose.material.icons.outlined.Source
 import androidx.compose.material3.AlertDialog
@@ -38,6 +41,8 @@ import androidx.compose.material3.FilterChip
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -53,6 +58,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.nexora.git.core.files.BrowserEntry
 import com.nexora.git.core.files.BrowserFile
 import com.nexora.git.core.files.BrowserFileKind
+import com.nexora.git.core.search.ProjectSearchMatch
 import java.util.Locale
 import kotlinx.coroutines.flow.collectLatest
 
@@ -98,6 +104,15 @@ fun CodeBrowserScreen(
         contentPadding = contentPadding,
         onBack = ::navigateBack,
         onRefresh = viewModel::refresh,
+        onToggleSearch = viewModel::toggleProjectSearch,
+        onSearchQueryChange = viewModel::setProjectSearchQuery,
+        onSearchRegexChange = viewModel::setProjectSearchRegex,
+        onSearchMatchCaseChange = viewModel::setProjectSearchMatchCase,
+        onSearchWholeWordChange = viewModel::setProjectSearchWholeWord,
+        onSearchIncludeGlobChange = viewModel::setProjectSearchIncludeGlob,
+        onSearchExcludeGlobChange = viewModel::setProjectSearchExcludeGlob,
+        onSearch = viewModel::searchProject,
+        onOpenSearchResult = viewModel::openSearchResult,
         onOpenEntry = viewModel::open,
         onOpenDirectory = viewModel::openDirectory,
         onSelectTab = viewModel::selectTab,
@@ -151,6 +166,15 @@ internal fun CodeBrowserContent(
     contentPadding: PaddingValues,
     onBack: () -> Unit,
     onRefresh: () -> Unit,
+    onToggleSearch: () -> Unit,
+    onSearchQueryChange: (String) -> Unit,
+    onSearchRegexChange: (Boolean) -> Unit,
+    onSearchMatchCaseChange: (Boolean) -> Unit,
+    onSearchWholeWordChange: (Boolean) -> Unit,
+    onSearchIncludeGlobChange: (String) -> Unit,
+    onSearchExcludeGlobChange: (String) -> Unit,
+    onSearch: () -> Unit,
+    onOpenSearchResult: (ProjectSearchMatch) -> Unit,
     onOpenEntry: (BrowserEntry) -> Unit,
     onOpenDirectory: (String) -> Unit,
     onSelectTab: (CodeBrowserTab) -> Unit,
@@ -169,6 +193,7 @@ internal fun CodeBrowserContent(
             loading = state.loading,
             onBack = onBack,
             onRefresh = onRefresh,
+            onToggleSearch = onToggleSearch,
         )
 
         if (state.loading &&
@@ -186,11 +211,25 @@ internal fun CodeBrowserContent(
 
         val file = state.selectedFile
         if (file == null) {
+            if (state.searchVisible) {
+                ProjectSearchPanel(
+                    state = state,
+                    onQueryChange = onSearchQueryChange,
+                    onRegexChange = onSearchRegexChange,
+                    onMatchCaseChange = onSearchMatchCaseChange,
+                    onWholeWordChange = onSearchWholeWordChange,
+                    onIncludeGlobChange = onSearchIncludeGlobChange,
+                    onExcludeGlobChange = onSearchExcludeGlobChange,
+                    onSearch = onSearch,
+                    onOpenResult = onOpenSearchResult,
+                )
+            }
             DirectoryBrowser(
                 currentDirectory = state.currentDirectory,
                 entries = state.entries,
                 onOpenEntry = onOpenEntry,
                 onOpenDirectory = onOpenDirectory,
+                modifier = Modifier.weight(1f),
             )
         } else {
             FileBrowser(
@@ -212,6 +251,7 @@ private fun BrowserHeader(
     loading: Boolean,
     onBack: () -> Unit,
     onRefresh: () -> Unit,
+    onToggleSearch: () -> Unit,
 ) {
     Row(
         modifier = Modifier
@@ -256,6 +296,16 @@ private fun BrowserHeader(
             }
         }
 
+        Row {
+            IconButton(
+                onClick = onToggleSearch,
+            ) {
+                Icon(
+                    imageVector = Icons.Outlined.Search,
+                    contentDescription = "Search project",
+                )
+            }
+
         IconButton(
             enabled = !loading,
             onClick = onRefresh,
@@ -265,9 +315,181 @@ private fun BrowserHeader(
                 contentDescription = "Refresh",
             )
         }
+        }
     }
 
     HorizontalDivider()
+}
+
+@Composable
+private fun ProjectSearchPanel(
+    state: CodeBrowserUiState,
+    onQueryChange: (String) -> Unit,
+    onRegexChange: (Boolean) -> Unit,
+    onMatchCaseChange: (Boolean) -> Unit,
+    onWholeWordChange: (Boolean) -> Unit,
+    onIncludeGlobChange: (String) -> Unit,
+    onExcludeGlobChange: (String) -> Unit,
+    onSearch: () -> Unit,
+    onOpenResult: (ProjectSearchMatch) -> Unit,
+) {
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 12.dp, vertical = 8.dp),
+    ) {
+        Column(
+            modifier = Modifier
+                .heightIn(max = 360.dp)
+                .verticalScroll(rememberScrollState())
+                .padding(12.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp),
+        ) {
+            OutlinedTextField(
+                modifier = Modifier.fillMaxWidth(),
+                value = state.projectSearchQuery,
+                onValueChange = onQueryChange,
+                singleLine = true,
+                label = {
+                    Text("Search entire project")
+                },
+            )
+
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .horizontalScroll(rememberScrollState()),
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+            ) {
+                FilterChip(
+                    selected = state.projectSearchRegex,
+                    onClick = {
+                        onRegexChange(!state.projectSearchRegex)
+                    },
+                    label = {
+                        Text("Regex")
+                    },
+                )
+                FilterChip(
+                    selected = state.projectSearchMatchCase,
+                    onClick = {
+                        onMatchCaseChange(!state.projectSearchMatchCase)
+                    },
+                    label = {
+                        Text("Match case")
+                    },
+                )
+                FilterChip(
+                    selected = state.projectSearchWholeWord,
+                    onClick = {
+                        onWholeWordChange(!state.projectSearchWholeWord)
+                    },
+                    label = {
+                        Text("Whole word")
+                    },
+                )
+            }
+
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+            ) {
+                OutlinedTextField(
+                    modifier = Modifier.weight(1f),
+                    value = state.projectSearchIncludeGlob,
+                    onValueChange = onIncludeGlobChange,
+                    singleLine = true,
+                    label = {
+                        Text("Include glob")
+                    },
+                )
+                OutlinedTextField(
+                    modifier = Modifier.weight(1f),
+                    value = state.projectSearchExcludeGlob,
+                    onValueChange = onExcludeGlobChange,
+                    singleLine = true,
+                    label = {
+                        Text("Exclude glob")
+                    },
+                )
+            }
+
+            Button(
+                modifier = Modifier.fillMaxWidth(),
+                enabled = state.projectSearchQuery.isNotBlank() &&
+                    !state.projectSearchLoading,
+                onClick = onSearch,
+            ) {
+                if (state.projectSearchLoading) {
+                    CircularProgressIndicator(
+                        modifier = Modifier.size(18.dp),
+                        strokeWidth = 2.dp,
+                    )
+                } else {
+                    Icon(
+                        imageVector = Icons.Outlined.Search,
+                        contentDescription = null,
+                    )
+                }
+                Text("Search project")
+            }
+
+            if (
+                state.projectSearchMatches.isNotEmpty() ||
+                state.projectSearchFilesScanned > 0
+            ) {
+                Text(
+                    state.projectSearchMatches.size.toString() +
+                        " matches · " +
+                        state.projectSearchFilesScanned.toString() +
+                        " files scanned" +
+                        if (state.projectSearchTruncated) {
+                            " · capped"
+                        } else {
+                            ""
+                        },
+                    style = MaterialTheme.typography.labelMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
+
+            state.projectSearchMatches.take(12).forEach { match ->
+                TextButton(
+                    modifier = Modifier.fillMaxWidth(),
+                    onClick = {
+                        onOpenResult(match)
+                    },
+                ) {
+                    Column(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalAlignment = Alignment.Start,
+                    ) {
+                        Text(
+                            match.path +
+                                ":" + match.line +
+                                ":" + match.column,
+                            style = MaterialTheme.typography.labelLarge,
+                        )
+                        Text(
+                            match.preview,
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            maxLines = 2,
+                        )
+                    }
+                }
+            }
+
+            if (state.projectSearchMatches.size > 12) {
+                Text(
+                    "+" +
+                        (state.projectSearchMatches.size - 12) +
+                        " more results",
+                    style = MaterialTheme.typography.bodySmall,
+                )
+            }
+        }
+    }
 }
 
 @Composable
@@ -276,9 +498,10 @@ private fun DirectoryBrowser(
     entries: List<BrowserEntry>,
     onOpenEntry: (BrowserEntry) -> Unit,
     onOpenDirectory: (String) -> Unit,
+    modifier: Modifier = Modifier,
 ) {
     LazyColumn(
-        modifier = Modifier.fillMaxSize(),
+        modifier = modifier.fillMaxSize(),
         contentPadding = PaddingValues(
             start = 16.dp,
             end = 16.dp,
