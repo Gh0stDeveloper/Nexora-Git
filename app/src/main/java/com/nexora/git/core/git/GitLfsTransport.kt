@@ -39,7 +39,7 @@ class GitLfsTransport @Inject constructor(
     ): GitLfsTransferSummary = withContext(Dispatchers.IO) {
         val state = manager.inspect(repositoryPath)
         if (state.pointers.isEmpty()) {
-            return GitLfsTransferSummary(0, 0, 0)
+            return@withContext GitLfsTransferSummary(0, 0, 0)
         }
 
         val root = canonicalRepository(repositoryPath)
@@ -126,7 +126,7 @@ class GitLfsTransport @Inject constructor(
             }
         }
 
-        return GitLfsTransferSummary(
+        GitLfsTransferSummary(
             requested = specs.size,
             transferred = transferred,
             alreadyPresent = alreadyPresent,
@@ -140,7 +140,7 @@ class GitLfsTransport @Inject constructor(
         val root = canonicalRepository(repositoryPath)
         val objects = localObjects(root)
         if (objects.isEmpty()) {
-            return GitLfsTransferSummary(0, 0, 0)
+            return@withContext GitLfsTransferSummary(0, 0, 0)
         }
 
         var transferred = 0
@@ -207,7 +207,7 @@ class GitLfsTransport @Inject constructor(
             }
         }
 
-        return GitLfsTransferSummary(
+        GitLfsTransferSummary(
             requested = objects.size,
             transferred = transferred,
             alreadyPresent = alreadyPresent,
