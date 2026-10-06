@@ -1,5 +1,8 @@
 # ADR-0001: Native Android with Kotlin and Jetpack Compose
 
+**Status:** Accepted  
+**Scope:** Architectural decision for the current Nexora Git implementation.
+
 - Status: Accepted
 - Date: 2026-10-04
 
@@ -18,3 +21,7 @@ React Native, a Next.js wrapper and a WebView-first architecture are not the cor
 Benefits include direct Android API access, straightforward SAF/Keystore integration, strong Compose state management and simpler JNI/NDK interoperability.
 
 The main cost is an Android-specific implementation if other platforms are added later.
+
+---
+
+[← Documentation hub](../README.md)
