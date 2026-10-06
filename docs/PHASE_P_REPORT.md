@@ -67,20 +67,30 @@ Phase P expands the real local Git engine with advanced operations while preserv
 - [x] add/remove standard tracking rules
 - [x] detect standard pointer files
 - [x] bounded mobile scan
-- [x] Advanced Git UI
-- [ ] authenticated LFS object transfer
-- [ ] embedded clean/smudge transport
+- [x] native libgit2 clean filter
+- [x] native libgit2 smudge filter
+- [x] SHA-256 local object cache
+- [x] authenticated GitHub LFS batch transport
+- [x] basic upload/download transfer
+- [x] server verify action support
+- [x] credential isolation for transfer-action URLs
+- [x] upload-before-push
+- [x] clone hydration attempt
+- [x] explicit Advanced Git download/upload controls
 
-Git LFS is intentionally not marked fully complete while object transfer is unavailable. The app reports this capability boundary instead of pretending pointer-only support is equivalent to a complete LFS implementation.
+Git LFS is implemented for GitHub HTTPS remotes. The GitHub credential is used only for the GitHub batch endpoint; presigned object URLs receive only the headers supplied by the LFS server.
 
 ## Validation
 
 - [x] native core compiles against the pinned libgit2 revision
 - [x] JNI contract compiles
 - [x] parser unit coverage added
-- [x] LFS JVM coverage added
+- [x] LFS tracking/pointer JVM coverage added
+- [x] LFS batch upload/download protocol tests added
+- [x] credential-isolation test coverage added
 - [x] Advanced Git Compose coverage added
 - [x] native real-repository workflow coverage added
+- [x] native LFS clean/smudge repository coverage added
 - [ ] final Native Git CI after full test expansion
 - [ ] final Android CI
 - [ ] final Foundation CI
@@ -91,7 +101,6 @@ Git LFS is intentionally not marked fully complete while object transfer is unav
 Phase P must not be marked complete or merged as a finished phase until:
 
 1. Native Git, Android and Foundation CI pass on the final branch head.
-2. Git LFS object transfer/clean-smudge scope is either fully implemented and tested, or the roadmap explicitly re-scopes it into a named follow-up accepted by the project.
-3. The final pull request is validated against `main`.
+2. The final pull request is validated against `main`.
 
 See [Advanced Git](ADVANCED_GIT.md) for the implementation details and safety model.
