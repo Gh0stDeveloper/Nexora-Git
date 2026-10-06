@@ -63,7 +63,10 @@ jobs:
       - name: Build Kotlin/Java for CodeQL
         shell: bash
         run: |
-          ./gradlew --no-daemon \
+          # CodeQL must observe real compiler invocations. A dependency-only PR can
+          # otherwise restore compile outputs from Gradle cache and leave the
+          # CodeQL database with "no source code seen during build".
+          ./gradlew --no-daemon --no-build-cache --rerun-tasks \
             :app:compileDebugKotlin \
             :app:compileDebugJavaWithJavac
 
