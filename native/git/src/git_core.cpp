@@ -791,6 +791,7 @@ void initialize(
 ) {
     std::call_once(init_flag, [&]() {
         check(git_libgit2_init(), "Initialize libgit2");
+        register_lfs_filter();
 
         if (!home_directory.empty()) {
             check(
