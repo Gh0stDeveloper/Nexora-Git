@@ -85,6 +85,7 @@ class RepositoryDetailContentTest {
                     onClone = {},
                     onOpenSettings = {},
                     onOpenIssues = { _, _ -> },
+                    onOpenPullRequests = { _, _ -> },
                 )
             }
         }
