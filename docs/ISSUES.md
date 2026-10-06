@@ -1,6 +1,8 @@
 # Issues
 
-Phase J adds a native GitHub Issues workflow to Nexora Git using the authenticated GitHub REST platform layer.
+> **Current reference:** This document describes the implemented Nexora Git system. See the [Documentation Hub](README.md) for navigation.
+
+Nexora Git includes a native GitHub Issues workflow built on the authenticated GitHub REST platform layer.
 
 ## Entry point
 
@@ -86,7 +88,7 @@ Repository labels, assignable users and milestones are loaded from GitHub and re
 
 ## Tests
 
-Phase J includes:
+Validation includes:
 
 - JVM JSON parser tests
 - search-response Pull Request exclusion test
@@ -94,3 +96,7 @@ Phase J includes:
 - Compose test for issue list/filter/create surface
 - Compose test for issue detail/comment/reaction surface
 - repository-detail navigation callback coverage
+
+---
+
+[← Documentation hub](README.md)
