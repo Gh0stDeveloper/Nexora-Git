@@ -683,7 +683,7 @@ This roadmap is intentionally staged. A phase is not complete if it only contain
 
 ## Phase Q — Advanced Mobile Development
 
-**Implementation status: feature-complete on `phase-q-advanced-mobile-development`; final Android/Foundation CI and pull-request integration remain the merge gate.**
+**Status: complete, CI validated, and integrated into `main` through PR #19.**
 
 ### Q.1 Tree-sitter engine — Complete
 - [x] pinned Tree-sitter runtime
@@ -744,14 +744,14 @@ This roadmap is intentionally staged. A phase is not complete if it only contain
 - [x] mobile file/result/size limits
 - [x] direct result opening
 
-### Q.7 Validation and integration — In progress
+### Q.7 Validation and integration — Complete
 - [x] Native Git CI for Tree-sitter
 - [x] JVM tests added
 - [x] Compose coverage added
 - [x] documentation
-- [ ] final Android CI
-- [ ] final Foundation CI
-- [ ] pull-request integration validation
+- [x] final Android CI
+- [x] final Foundation CI
+- [x] pull-request integration validation
 
 ## Phase R — Production
 
