@@ -30,6 +30,7 @@ import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.FilterChip
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -56,6 +57,7 @@ import com.nexora.git.core.storage.ProjectRisk
 import com.nexora.git.core.storage.ProjectRiskSeverity
 import com.nexora.git.core.storage.Workspace
 import com.nexora.git.core.storage.WorkspaceStrategy
+import com.nexora.git.core.templates.ProjectTemplateSummary
 import java.util.Locale
 
 @Composable
@@ -71,6 +73,9 @@ fun RepositoriesScreen(
         mutableStateOf(false)
     }
     var showCloneDialog by rememberSaveable {
+        mutableStateOf(false)
+    }
+    var showTemplateDialog by rememberSaveable {
         mutableStateOf(false)
     }
 
@@ -95,6 +100,9 @@ fun RepositoriesScreen(
         onOpenFolder = {
             folderPicker.launch(null)
         },
+        onNewTemplate = {
+            showTemplateDialog = true
+        },
         onOpenRepository = onOpenRepository,
         onBrowseWorkspace = onBrowseWorkspace,
         onOpenGitWorkspace = onOpenGitWorkspace,
@@ -113,6 +121,23 @@ fun RepositoriesScreen(
             onCreate = { request ->
                 showCreateDialog = false
                 viewModel.createRepository(request)
+            },
+        )
+    }
+
+    if (showTemplateDialog) {
+        ProjectTemplateDialog(
+            templates = state.templates,
+            operationInProgress = state.operationInProgress,
+            onDismiss = {
+                showTemplateDialog = false
+            },
+            onCreate = { templateId, projectName ->
+                showTemplateDialog = false
+                viewModel.createFromTemplate(
+                    templateId = templateId,
+                    projectName = projectName,
+                )
             },
         )
     }
@@ -181,6 +206,7 @@ internal fun RepositoriesContent(
     onCreate: () -> Unit,
     onCloneUrl: () -> Unit,
     onOpenFolder: () -> Unit,
+    onNewTemplate: () -> Unit,
     onOpenRepository: (String, String) -> Unit,
     onBrowseWorkspace: (String) -> Unit,
     onOpenGitWorkspace: (String) -> Unit,
@@ -259,6 +285,21 @@ internal fun RepositoriesContent(
                     )
                     Text("Folder")
                 }
+            }
+        }
+
+
+        item {
+            OutlinedButton(
+                modifier = Modifier.fillMaxWidth(),
+                enabled = !state.operationInProgress,
+                onClick = onNewTemplate,
+            ) {
+                Icon(
+                    imageVector = Icons.Outlined.Code,
+                    contentDescription = null,
+                )
+                Text("New from template")
             }
         }
 
@@ -663,7 +704,9 @@ private fun WorkspaceCard(
                     Text(
                         if (
                             workspace.strategy ==
-                                WorkspaceStrategy.REMOTE_CLONE
+                                WorkspaceStrategy.REMOTE_CLONE ||
+                            workspace.strategy ==
+                                WorkspaceStrategy.GENERATED
                         ) {
                             "Rescan"
                         } else {
@@ -714,6 +757,90 @@ private fun EmptyCard(
             )
         }
     }
+}
+
+
+@Composable
+private fun ProjectTemplateDialog(
+    templates: List<ProjectTemplateSummary>,
+    operationInProgress: Boolean,
+    onDismiss: () -> Unit,
+    onCreate: (String, String) -> Unit,
+) {
+    var projectName by rememberSaveable {
+        mutableStateOf("")
+    }
+    var selectedId by rememberSaveable {
+        mutableStateOf(templates.firstOrNull()?.id.orEmpty())
+    }
+
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        confirmButton = {
+            TextButton(
+                enabled = !operationInProgress &&
+                    selectedId.isNotBlank() &&
+                    projectName.isNotBlank(),
+                onClick = {
+                    onCreate(selectedId, projectName)
+                },
+            ) {
+                Text("Create project")
+            }
+        },
+        dismissButton = {
+            TextButton(
+                enabled = !operationInProgress,
+                onClick = onDismiss,
+            ) {
+                Text("Cancel")
+            }
+        },
+        title = {
+            Text("New from template")
+        },
+        text = {
+            Column(
+                verticalArrangement = Arrangement.spacedBy(10.dp),
+            ) {
+                OutlinedTextField(
+                    modifier = Modifier.fillMaxWidth(),
+                    value = projectName,
+                    singleLine = true,
+                    onValueChange = {
+                        projectName = it
+                    },
+                    label = {
+                        Text("Project name")
+                    },
+                )
+
+                templates.forEach { template ->
+                    FilterChip(
+                        selected = selectedId == template.id,
+                        onClick = {
+                            selectedId = template.id
+                        },
+                        label = {
+                            Column {
+                                Text(template.name)
+                                Text(
+                                    template.description,
+                                    style = MaterialTheme.typography.bodySmall,
+                                )
+                            }
+                        },
+                    )
+                }
+
+                Text(
+                    "Templates are created locally. Git is initialized only when you choose Init Git.",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
+        },
+    )
 }
 
 @Composable
@@ -951,6 +1078,7 @@ private fun workspaceStrategyLabel(
         WorkspaceStrategy.DIRECT -> "Direct filesystem"
         WorkspaceStrategy.MANAGED -> "Managed Android workspace"
         WorkspaceStrategy.REMOTE_CLONE -> "GitHub clone"
+        WorkspaceStrategy.GENERATED -> "Generated template"
     }
 
 private fun humanBytes(bytes: Long): String =

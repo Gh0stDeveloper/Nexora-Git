@@ -168,6 +168,92 @@ class WorkspaceRegistry @Inject constructor(
         )
     }
 
+
+    suspend fun createGeneratedWorkspace(
+        name: String,
+        files: Map<String, String>,
+    ): WorkspaceImportResult {
+        require(files.isNotEmpty()) {
+            "Project template did not contain files."
+        }
+        require(files.size <= MAX_GENERATED_FILES) {
+            "Project template contains too many files."
+        }
+
+        val workspaceId = UUID.randomUUID().toString()
+        val root = workspacePaths.workspaceRoot(workspaceId)
+            .canonicalFile
+        val totalBytes = files.values.sumOf {
+            it.toByteArray(Charsets.UTF_8).size.toLong()
+        }
+        require(totalBytes <= MAX_GENERATED_BYTES) {
+            "Generated project exceeds the mobile template limit."
+        }
+
+        root.parentFile?.mkdirs()
+        check(root.mkdirs() || root.isDirectory) {
+            "Unable to create generated workspace."
+        }
+
+        try {
+            val rootPrefix = root.path + File.separator
+            files.forEach { (relativePath, content) ->
+                require(
+                    relativePath.isNotBlank() &&
+                        !File(relativePath).isAbsolute &&
+                        relativePath
+                            .replace('\\', '/')
+                            .split('/')
+                            .none { it == ".." },
+                ) {
+                    "Project template contains an unsafe file path."
+                }
+
+                val target = File(root, relativePath).canonicalFile
+                require(target.path.startsWith(rootPrefix)) {
+                    "Project template path escapes the workspace."
+                }
+                target.parentFile?.mkdirs()
+                target.writeText(content, Charsets.UTF_8)
+            }
+
+            val scan = directScanner.scan(root)
+            val now = System.currentTimeMillis()
+            val entity = WorkspaceEntity(
+                id = workspaceId,
+                name = name,
+                sourceTreeUri = null,
+                sourceDisplayName = name,
+                sourceAuthority = null,
+                sourceWritable = true,
+                strategy = WorkspaceStrategy.GENERATED.name,
+                managedWorkspacePath = root.path,
+                repositoryRemote = null,
+                currentBranch = null,
+                accountId = null,
+                syncState = WorkspaceSyncState.READY.name,
+                lastSyncedAtEpochMillis = now,
+                lastScanAtEpochMillis = now,
+                fileCount = scan.fileCount,
+                totalBytes = scan.totalBytes,
+                secretWarningCount = scan.secretWarningCount,
+                largeFileWarningCount = scan.largeFileWarningCount,
+                syncConflictCount = 0,
+                lastOpenedAtEpochMillis = now,
+            )
+            workspaceDao.upsert(entity)
+
+            return WorkspaceImportResult(
+                workspace = entity.toDomain(),
+                scan = scan,
+                sync = null,
+            )
+        } catch (error: Exception) {
+            root.deleteRecursively()
+            throw error
+        }
+    }
+
     suspend fun prepareRemoteClone(
         name: String,
         fullName: String,
@@ -348,6 +434,29 @@ class WorkspaceRegistry @Inject constructor(
                     currentBranch = entity.currentBranch,
                 )
             }
+
+            WorkspaceStrategy.GENERATED -> {
+                val directory = entity.managedWorkspacePath
+                    ?.let(::File)
+                    ?: error("Generated workspace path is missing")
+                val scan = directScanner.scan(directory)
+                val now = System.currentTimeMillis()
+                val updated = entity.copy(
+                    lastSyncedAtEpochMillis = now,
+                    lastScanAtEpochMillis = now,
+                    fileCount = scan.fileCount,
+                    totalBytes = scan.totalBytes,
+                    secretWarningCount = scan.secretWarningCount,
+                    largeFileWarningCount = scan.largeFileWarningCount,
+                    lastOpenedAtEpochMillis = now,
+                )
+                workspaceDao.upsert(updated)
+                WorkspaceImportResult(
+                    workspace = updated.toDomain(),
+                    scan = scan,
+                    sync = null,
+                )
+            }
         }
     }
 
@@ -366,7 +475,8 @@ class WorkspaceRegistry @Inject constructor(
 
         val strategy = WorkspaceStrategy.valueOf(entity.strategy)
         if (strategy == WorkspaceStrategy.MANAGED ||
-            strategy == WorkspaceStrategy.REMOTE_CLONE
+            strategy == WorkspaceStrategy.REMOTE_CLONE ||
+            strategy == WorkspaceStrategy.GENERATED
         ) {
             entity.managedWorkspacePath
                 ?.let(::File)
@@ -383,5 +493,9 @@ class WorkspaceRegistry @Inject constructor(
         }
 
         workspaceDao.deleteById(workspaceId)
+    }
+    private companion object {
+        const val MAX_GENERATED_FILES = 200
+        const val MAX_GENERATED_BYTES = 8L * 1024L * 1024L
     }
 }

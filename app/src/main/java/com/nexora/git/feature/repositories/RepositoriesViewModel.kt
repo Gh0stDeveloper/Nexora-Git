@@ -10,6 +10,8 @@ import com.nexora.git.core.repository.RepositoryGateway
 import com.nexora.git.core.repository.RepositorySummary
 import com.nexora.git.core.repository.RepositoryWorkspaceCoordinator
 import com.nexora.git.core.storage.ProjectRisk
+import com.nexora.git.core.templates.ProjectTemplateManager
+import com.nexora.git.core.templates.ProjectTemplateSummary
 import com.nexora.git.core.storage.Workspace
 import com.nexora.git.core.storage.WorkspaceRegistry
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -23,6 +25,7 @@ import kotlinx.coroutines.launch
 data class RepositoriesUiState(
     val remoteRepositories: List<RepositorySummary> = emptyList(),
     val workspaces: List<Workspace> = emptyList(),
+    val templates: List<ProjectTemplateSummary> = emptyList(),
     val loading: Boolean = true,
     val refreshing: Boolean = false,
     val operationInProgress: Boolean = false,
@@ -38,10 +41,11 @@ class RepositoriesViewModel @Inject constructor(
     private val repositoryGateway: RepositoryGateway,
     private val workspaceCoordinator: RepositoryWorkspaceCoordinator,
     private val urlParser: GitHubRepositoryUrlParser,
+    private val templateManager: ProjectTemplateManager,
 ) : ViewModel() {
 
     private val mutableState = MutableStateFlow(
-        RepositoriesUiState(),
+        RepositoriesUiState(templates = templateManager.templates),
     )
     val state: StateFlow<RepositoriesUiState> =
         mutableState.asStateFlow()
@@ -199,6 +203,26 @@ class RepositoriesViewModel @Inject constructor(
             }.onFailure { error ->
                 failure(
                     error.message ?: "Project import failed.",
+                )
+            }
+        }
+    }
+
+    fun createFromTemplate(
+        templateId: String,
+        projectName: String,
+    ) {
+        runOperation {
+            runCatching {
+                templateManager.create(templateId, projectName)
+            }.onSuccess { workspace ->
+                success(
+                    workspace.name +
+                        " was created from a project template.",
+                )
+            }.onFailure { error ->
+                failure(
+                    error.message ?: "Unable to create project template.",
                 )
             }
         }

@@ -4,6 +4,7 @@ enum class WorkspaceStrategy {
     DIRECT,
     MANAGED,
     REMOTE_CLONE,
+    GENERATED,
 }
 
 enum class WorkspaceSyncState {

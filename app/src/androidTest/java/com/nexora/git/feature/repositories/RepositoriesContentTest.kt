@@ -10,6 +10,7 @@ import com.nexora.git.core.repository.RepositorySummary
 import com.nexora.git.core.storage.Workspace
 import com.nexora.git.core.storage.WorkspaceStrategy
 import com.nexora.git.core.storage.WorkspaceSyncState
+import com.nexora.git.core.templates.ProjectTemplateSummary
 import com.nexora.git.ui.theme.NexoraGitTheme
 import org.junit.Rule
 import org.junit.Test
@@ -26,6 +27,13 @@ class RepositoriesContentTest {
                 RepositoriesContent(
                     state = RepositoriesUiState(
                         loading = false,
+                        templates = listOf(
+                            ProjectTemplateSummary(
+                                id = "kotlin-cli",
+                                name = "Kotlin CLI",
+                                description = "Kotlin project",
+                            ),
+                        ),
                         remoteRepositories = listOf(
                             RepositorySummary(
                                 id = 10L,
@@ -87,6 +95,7 @@ class RepositoriesContentTest {
                     onCreate = {},
                     onCloneUrl = {},
                     onOpenFolder = {},
+                    onNewTemplate = {},
                     onOpenRepository = { _, _ -> },
                     onBrowseWorkspace = {},
                     onOpenGitWorkspace = {},
@@ -99,6 +108,8 @@ class RepositoriesContentTest {
         }
 
         composeRule.onNodeWithText("Create repository")
+            .assertIsDisplayed()
+        composeRule.onNodeWithText("New from template")
             .assertIsDisplayed()
         composeRule.onNodeWithText("Nexora-Git")
             .assertIsDisplayed()
