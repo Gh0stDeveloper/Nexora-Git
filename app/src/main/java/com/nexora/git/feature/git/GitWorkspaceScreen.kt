@@ -303,6 +303,100 @@ fun GitWorkspaceScreen(
         )
     }
 
+    pendingHardReset?.let { target ->
+        AlertDialog(
+            onDismissRequest = { pendingHardReset = null },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        pendingHardReset = null
+                        viewModel.reset(
+                            targetRef = target,
+                            mode = GitResetMode.HARD,
+                        )
+                    },
+                ) {
+                    Text("Reset hard")
+                }
+            },
+            dismissButton = {
+                TextButton(
+                    onClick = { pendingHardReset = null },
+                ) {
+                    Text("Cancel")
+                }
+            },
+            title = { Text("Discard local changes?") },
+            text = {
+                Text(
+                    "Hard reset rewrites the index and working tree to " +
+                        target +
+                        ". Uncommitted changes can be permanently lost.",
+                )
+            },
+        )
+    }
+
+    pendingStashDrop?.let { stash ->
+        AlertDialog(
+            onDismissRequest = { pendingStashDrop = null },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        pendingStashDrop = null
+                        viewModel.dropStash(stash.index)
+                    },
+                ) {
+                    Text("Drop")
+                }
+            },
+            dismissButton = {
+                TextButton(
+                    onClick = { pendingStashDrop = null },
+                ) {
+                    Text("Cancel")
+                }
+            },
+            title = { Text("Drop stash?") },
+            text = {
+                Text(
+                    "stash@{" + stash.index + "} will be removed from " +
+                        "the local stash list.",
+                )
+            },
+        )
+    }
+
+    pendingTagDelete?.let { tag ->
+        AlertDialog(
+            onDismissRequest = { pendingTagDelete = null },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        pendingTagDelete = null
+                        viewModel.deleteTag(tag.name)
+                    },
+                ) {
+                    Text("Delete")
+                }
+            },
+            dismissButton = {
+                TextButton(
+                    onClick = { pendingTagDelete = null },
+                ) {
+                    Text("Cancel")
+                }
+            },
+            title = { Text("Delete local tag?") },
+            text = {
+                Text(
+                    "The local tag " + tag.name +
+                        " will be deleted. This does not delete a remote tag.",
+                )
+            },
+        )
+    }
+
     LazyColumn(
         modifier = Modifier
             .fillMaxSize()
