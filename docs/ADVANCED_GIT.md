@@ -103,20 +103,54 @@ Submodule operations run through libgit2 and do not shell out to an external Git
 
 ## Git LFS
 
-The current Phase P implementation provides a capability-aware LFS foundation:
+Phase P includes local clean/smudge behavior and authenticated GitHub LFS object transfer.
+
+### Tracking and pointer model
+
+Nexora Git can:
 
 - read standard `.gitattributes` LFS tracking rules;
-- add standard `filter=lfs diff=lfs merge=lfs -text` rules;
-- remove LFS tracking rules;
+- add `filter=lfs diff=lfs merge=lfs -text` rules;
+- remove tracking rules;
 - detect and validate standard Git LFS pointer files;
-- display tracked patterns and detected pointers in the Advanced Git UI;
-- bound pointer scanning to protect mobile performance.
+- bound workspace scanning to protect mobile performance.
 
-### Transfer boundary
+### Native clean/smudge filter
 
-Bundled libgit2 does not itself implement the Git LFS clean/smudge object-transfer protocol. Nexora Git therefore **does not claim that an LFS object has been downloaded or uploaded when only its pointer is available**.
+A custom libgit2 filter named `lfs` is registered during Git engine initialization.
 
-Object transfer remains explicitly capability-gated until an embedded, authenticated LFS transport and clean/smudge integration are present and validated. This avoids silently committing large raw files or presenting pointer files as hydrated assets.
+On **clean** (working tree → object database), the filter:
+
+1. computes SHA-256 with Mbed TLS;
+2. stores the raw object under `.git/lfs/objects/aa/bb/<sha256>`;
+3. passes the standard LFS pointer to libgit2.
+
+On **smudge** (object database → working tree), the filter:
+
+1. parses the pointer;
+2. validates the expected size;
+3. restores the cached raw object when present;
+4. leaves the pointer intact when the object is not yet local.
+
+Leaving a missing pointer intact is deliberate: data is never fabricated.
+
+### GitHub LFS transfer
+
+`GitLfsTransport` implements the Git LFS basic transfer protocol for authenticated GitHub HTTPS remotes.
+
+- batch requests use `application/vnd.git-lfs+json`;
+- the active GitHub OAuth token authenticates only the GitHub batch endpoint;
+- server-provided upload/download action headers are honored;
+- the GitHub token is not copied to presigned external object URLs;
+- downloaded data is verified by size and SHA-256 before entering the cache;
+- upload supports optional server verification actions;
+- objects are processed in bounded batches.
+
+Push uploads cached LFS objects before publishing Git refs, preventing a ref from being published before its local LFS objects are offered to the server.
+
+The Advanced Git UI also exposes explicit **Download LFS** and **Upload LFS** actions. Repository clone attempts an immediate hydration pass; if the remote object transfer is temporarily unavailable, the clone remains usable with standard pointer files and can be hydrated later from the Advanced tab.
+
+Current authenticated object transfer is intentionally limited to GitHub HTTPS remotes. Other LFS servers are not given GitHub credentials.
 
 ## Recovery and destructive-action policy
 
