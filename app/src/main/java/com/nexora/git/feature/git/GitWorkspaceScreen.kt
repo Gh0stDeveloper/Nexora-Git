@@ -1007,7 +1007,7 @@ fun GitWorkspaceScreen(
 }
 
 @Composable
-private fun AdvancedGitPanel(
+internal fun AdvancedGitPanel(
     state: GitWorkspaceUiState,
     authorName: String,
     authorEmail: String,
