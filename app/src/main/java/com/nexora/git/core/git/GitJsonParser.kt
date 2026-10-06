@@ -84,6 +84,8 @@ class GitJsonParser @Inject constructor() {
             "none" -> GitRepositoryOperationState.NONE
             "merge" -> GitRepositoryOperationState.MERGE
             "rebase" -> GitRepositoryOperationState.REBASE
+            "cherry_pick" -> GitRepositoryOperationState.CHERRY_PICK
+            "revert" -> GitRepositoryOperationState.REVERT
             else -> GitRepositoryOperationState.OTHER
         }
 
