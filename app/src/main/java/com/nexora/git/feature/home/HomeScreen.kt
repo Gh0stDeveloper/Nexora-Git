@@ -4,124 +4,148 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Code
-import androidx.compose.material.icons.outlined.Security
-import androidx.compose.material.icons.outlined.Source
+import androidx.compose.material.icons.outlined.Explore
+import androidx.compose.material.icons.outlined.History
+import androidx.compose.material3.Button
 import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
 
 @Composable
 fun HomeScreen(
     contentPadding: PaddingValues,
-    viewModel: HomeViewModel = hiltViewModel(),
+    onOpenRepositories: () -> Unit,
+    onOpenExplore: () -> Unit,
+    onOpenActivity: () -> Unit,
 ) {
-    val onboardingCompleted by viewModel.onboardingCompleted.collectAsStateWithLifecycle()
-
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(contentPadding)
-            .padding(horizontal = 20.dp, vertical = 24.dp),
+    LazyColumn(
+        contentPadding = PaddingValues(
+            start = 20.dp,
+            end = 20.dp,
+            top = contentPadding.calculateTopPadding() + 24.dp,
+            bottom = contentPadding.calculateBottomPadding() + 28.dp,
+        ),
         verticalArrangement = Arrangement.spacedBy(16.dp),
     ) {
-        Text(
-            text = "Nexora Git",
-            style = MaterialTheme.typography.headlineSmall,
-        )
-
-        Text(
-            text = "A native Android workspace for real Git and GitHub workflows.",
-            style = MaterialTheme.typography.bodyLarge,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-        )
-
-        FoundationCard(
-            title = "Android foundation",
-            description = "Kotlin, Compose, Navigation, Hilt, Room, DataStore and networking are connected.",
-            icon = {
-                Icon(
-                    imageVector = Icons.Outlined.Code,
-                    contentDescription = null,
+        item {
+            Column(
+                verticalArrangement = Arrangement.spacedBy(6.dp),
+            ) {
+                Text(
+                    text = "Nexora Git",
+                    style = MaterialTheme.typography.headlineSmall,
                 )
-            },
-        )
-
-        FoundationCard(
-            title = "Real Git architecture",
-            description = "The local Git engine boundary is reserved for libgit2 through JNI/NDK.",
-            icon = {
-                Icon(
-                    imageVector = Icons.Outlined.Source,
-                    contentDescription = null,
+                Text(
+                    text = "A complete Android workspace for local Git and GitHub development.",
+                    style = MaterialTheme.typography.bodyLarge,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
-            },
-        )
+            }
+        }
 
-        FoundationCard(
-            title = "Security boundary",
-            description = "GitHub App + OAuth/PKCE will own authentication; passwords and passkeys never enter Nexora Git.",
-            icon = {
-                Icon(
-                    imageVector = Icons.Outlined.Security,
-                    contentDescription = null,
-                )
-            },
-        )
+        item {
+            HomeActionCard(
+                title = "Repositories",
+                description = "Create, clone or import a project, then browse code and use the full local Git workflow.",
+                buttonText = "Open repositories",
+                icon = {
+                    Icon(
+                        imageVector = Icons.Outlined.Code,
+                        contentDescription = null,
+                    )
+                },
+                onClick = onOpenRepositories,
+            )
+        }
 
-        Text(
-            text = if (onboardingCompleted) {
-                "Foundation preference store: ready"
-            } else {
-                "Foundation preference store: initialized"
-            },
-            style = MaterialTheme.typography.labelLarge,
-            color = MaterialTheme.colorScheme.secondary,
-        )
+        item {
+            HomeActionCard(
+                title = "Explore GitHub",
+                description = "Search repositories, users and code using the active GitHub account.",
+                buttonText = "Search GitHub",
+                icon = {
+                    Icon(
+                        imageVector = Icons.Outlined.Explore,
+                        contentDescription = null,
+                    )
+                },
+                onClick = onOpenExplore,
+            )
+        }
+
+        item {
+            HomeActionCard(
+                title = "Activity",
+                description = "Review recent account activity and open the GitHub notification inbox when needed.",
+                buttonText = "View activity",
+                icon = {
+                    Icon(
+                        imageVector = Icons.Outlined.History,
+                        contentDescription = null,
+                    )
+                },
+                onClick = onOpenActivity,
+            )
+        }
+
+        item {
+            Text(
+                text = "GitHub authentication uses the official web flow. Nexora Git never asks for your GitHub password or passkey.",
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+        }
     }
 }
 
 @Composable
-private fun FoundationCard(
+private fun HomeActionCard(
     title: String,
     description: String,
+    buttonText: String,
     icon: @Composable () -> Unit,
+    onClick: () -> Unit,
 ) {
     Card(
         modifier = Modifier.fillMaxWidth(),
-        colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surfaceVariant,
-        ),
     ) {
-        Row(
+        Column(
             modifier = Modifier.padding(18.dp),
-            horizontalArrangement = Arrangement.spacedBy(14.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp),
         ) {
-            icon()
-            Column(
-                verticalArrangement = Arrangement.spacedBy(4.dp),
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(12.dp),
             ) {
-                Text(
-                    text = title,
-                    style = MaterialTheme.typography.titleMedium,
-                )
-                Text(
-                    text = description,
-                    style = MaterialTheme.typography.bodyLarge,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                )
+                icon()
+                Column(
+                    verticalArrangement = Arrangement.spacedBy(4.dp),
+                ) {
+                    Text(
+                        text = title,
+                        style = MaterialTheme.typography.titleMedium,
+                    )
+                    Text(
+                        text = description,
+                        color =
+                            MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
+            }
+
+            Button(
+                modifier = Modifier.fillMaxWidth(),
+                onClick = onClick,
+            ) {
+                Text(buttonText)
             }
         }
     }
