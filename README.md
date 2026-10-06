@@ -99,6 +99,8 @@ See [Git Engine](docs/GIT_ENGINE.md).
 - [Phase L report](docs/PHASE_L_REPORT.md)
 - [Releases](docs/RELEASES.md)
 - [Phase M report](docs/PHASE_M_REPORT.md)
+- [Account and Social](docs/ACCOUNT_SOCIAL.md)
+- [Phase N report](docs/PHASE_N_REPORT.md)
 - [Auth Broker](auth-broker/README.md)
 - [Architecture decisions](docs/adr/)
 
@@ -138,9 +140,9 @@ The project must use its own branding and must not imply that it is an official 
 
 ## Status
 
-**Current stage:** Phase M — Releases is complete and CI validated. Phase N is next.
+**Current stage:** Phase N — Account and Social implementation is complete; CI validation is in progress.
 
-Nexora Git now includes native tags, releases, drafts, prereleases, immutable-release handling, and secure release-asset upload/download management.
+Nexora Git now adds a real GitHub profile, organizations, starred repositories, followers/following, activity, and actionable notifications while preserving secure multi-account switching.
 
 ---
 
