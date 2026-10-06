@@ -6,6 +6,13 @@ SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
 # shellcheck source=lib.sh
 source "$SCRIPT_DIR/lib.sh"
 
+FORCE=0
+case "${1:-}" in
+  "") ;;
+  --force) FORCE=1 ;;
+  *) die "Usage: nexora-git update [--force]" ;;
+esac
+
 require_root
 load_state || die "Nexora Git VPS is not installed. Run the installer first."
 
@@ -28,11 +35,16 @@ log_info "Current revision: $OLD_COMMIT"
 phase 2 5 "Fetch update"
 git fetch --prune origin "$BRANCH"
 REMOTE_COMMIT="$(git rev-parse "origin/$BRANCH")"
-if [[ "$OLD_COMMIT" == "$REMOTE_COMMIT" ]]; then
-  log_ok "Already on the newest $BRANCH revision."
-else
+if [[ "$OLD_COMMIT" == "$REMOTE_COMMIT" && "$FORCE" -eq 0 ]]; then
+  log_ok "Already on the newest $BRANCH revision; no rebuild or restart needed."
+  exit 0
+fi
+
+if [[ "$OLD_COMMIT" != "$REMOTE_COMMIT" ]]; then
   git merge --ff-only "origin/$BRANCH"
   log_ok "Repository advanced to $REMOTE_COMMIT."
+else
+  log_info "Force rebuild requested for current revision."
 fi
 
 phase 3 5 "Build changed service"
@@ -62,7 +74,7 @@ fi
 
 curl -fsS --max-time 10 "https://$DOMAIN/health" >/dev/null || {
   log_warn "Local broker is healthy but public HTTPS health check failed."
-  log_warn "The update is kept because the application itself is healthy; inspect DNS/Nginx/TLS with nexora-git doctor."
+  log_warn "The update is kept because the broker itself is healthy; inspect DNS/Nginx/TLS with nexora-git doctor."
 }
 
 phase 5 5 "Finalize"

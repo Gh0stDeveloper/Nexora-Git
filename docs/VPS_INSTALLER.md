@@ -76,13 +76,13 @@ The confidential GitHub App secret remains only in /opt/nexora-git/auth-broker/.
     nexora-git config
     nexora-git version
 
-The config command intentionally hides confidential values.
+Running `nexora-git` without arguments opens an interactive management menu. The config command intentionally hides confidential values.
 
 ## Updates
 
 The update command does not reinstall Nginx, Docker, Certbot or operating-system packages. It fetches only the configured branch, requires a fast-forward update, rebuilds using Docker cache, restarts only the broker and validates local/public health.
 
-If the new broker fails to build or fails local health, the updater resets the managed repository to the previous commit and rebuilds that known revision automatically.
+If there is no new Git revision, the updater exits without rebuilding or restarting anything. `nexora-git update --force` is available for an intentional rebuild. If a new broker fails to build or fails local health, the updater resets the managed repository to the previous commit and rebuilds that known revision automatically.
 
 ## Doctor
 

@@ -5,6 +5,7 @@ on:
     branches:
       - main
       - "feat/vps-*"
+      - "fix/vps-*"
     paths:
       - "scripts/vps/**"
       - "auth-broker/compose.yaml"
@@ -58,5 +59,8 @@ jobs:
           cp auth-broker/.env.example auth-broker/.env
           (
             cd auth-broker
-            docker compose config --quiet
+            PORT=19091 docker compose config > /tmp/nexora-compose.yml
+            grep -Fq 'host_ip: 127.0.0.1' /tmp/nexora-compose.yml
+            grep -Fq 'published: "19091"' /tmp/nexora-compose.yml
+            grep -Fq 'target: 19091' /tmp/nexora-compose.yml
           )

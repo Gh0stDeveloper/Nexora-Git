@@ -25,4 +25,10 @@ fi
 free="$(find_free_port 25000 25100)"
 [[ "$free" =~ ^[0-9]+$ ]]
 
+grep -Fq "exec \"\$INSTALL_DIR/scripts/vps/update.sh\" \"\$@\"" "$SCRIPT_DIR/nexora-git"
+if grep -Fq "temp=\"\$(mktemp)\"" "$SCRIPT_DIR/nexora-git"; then
+  printf 'Manager must not detach update.sh from lib.sh via a temp copy.\n' >&2
+  exit 1
+fi
+
 printf 'VPS helper tests passed.\n'
