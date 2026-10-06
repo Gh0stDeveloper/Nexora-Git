@@ -1,9 +1,10 @@
 package com.nexora.git.core.advanced
 
+import javax.inject.Inject
 import org.json.JSONArray
 import org.json.JSONObject
 
-class AdvancedGitHubJsonParser {
+class AdvancedGitHubJsonParser @Inject constructor() {
 
     fun discussionHub(dataJson: String?): AdvancedDiscussionHub {
         val repository = data(dataJson).getJSONObject("repository")
