@@ -58,5 +58,8 @@ jobs:
           cp auth-broker/.env.example auth-broker/.env
           (
             cd auth-broker
-            docker compose config --quiet
+            PORT=19091 docker compose config > /tmp/nexora-compose.yml
+            grep -Eq 'host_ip:[[:space:]]*"?127\.0\.0\.1"?' /tmp/nexora-compose.yml
+            grep -Eq 'published:[[:space:]]*"?19091"?' /tmp/nexora-compose.yml
+            grep -Eq 'target:[[:space:]]*19091' /tmp/nexora-compose.yml
           )

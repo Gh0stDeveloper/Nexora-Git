@@ -22,7 +22,31 @@ if valid_email "not-an-email"; then
   exit 1
 fi
 
+nginx_fixture="$(mktemp)"
+trap 'rm -f "$nginx_fixture"' EXIT
+cat > "$nginx_fixture" <<'EOF'
+server {
+    server_name example.com auth.example.com www.example.com;
+}
+EOF
+nginx_file_has_server_name "$nginx_fixture" "auth.example.com"
+nginx_file_has_server_name "$nginx_fixture" "www.example.com"
+if nginx_file_has_server_name "$nginx_fixture" "other.example.com"; then
+  printf 'Expected absent Nginx server_name to fail.\n' >&2
+  exit 1
+fi
+rm -f "$nginx_fixture"
+trap - EXIT
+
 free="$(find_free_port 25000 25100)"
 [[ "$free" =~ ^[0-9]+$ ]]
+
+# shellcheck disable=SC2016
+grep -Fq 'exec "$INSTALL_DIR/scripts/vps/update.sh" "$@"' "$SCRIPT_DIR/nexora-git"
+# shellcheck disable=SC2016
+if grep -Fq 'temp="$(mktemp)"' "$SCRIPT_DIR/nexora-git"; then
+  printf 'Manager must not detach update.sh from lib.sh via a temp copy.\n' >&2
+  exit 1
+fi
 
 printf 'VPS helper tests passed.\n'

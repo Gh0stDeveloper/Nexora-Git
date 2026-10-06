@@ -11,8 +11,10 @@ usage() {
 Nexora Git VPS Manager
 
 Usage:
+  nexora-git menu
   nexora-git status
-  nexora-git update
+  nexora-git update [--force]
+  nexora-git health
   nexora-git doctor
   nexora-git logs
   nexora-git start
@@ -40,6 +42,24 @@ cmd_status() {
   printf 'Docker:     %s\n' "$(systemctl is-active docker 2>/dev/null || true)"
   printf 'TLS:        %s\n' "$(certificate_expiry "$DOMAIN")"
   compose ps
+}
+
+cmd_health() {
+  require_install
+  local failed=0
+  if wait_local_health "$LOCAL_PORT" 3; then
+    log_ok "Local broker healthy: 127.0.0.1:$LOCAL_PORT"
+  else
+    log_error "Local broker health failed."
+    failed=1
+  fi
+  if curl -fsS --max-time 10 "https://$DOMAIN/health" >/dev/null 2>&1; then
+    log_ok "Public HTTPS healthy: https://$DOMAIN/health"
+  else
+    log_error "Public HTTPS health failed."
+    failed=1
+  fi
+  return "$failed"
 }
 
 cmd_doctor() {
@@ -73,12 +93,7 @@ cmd_doctor() {
 
 cmd_update() {
   require_install
-  local temp
-  temp="$(mktemp)"
-  cp "$INSTALL_DIR/scripts/vps/update.sh" "$temp"
-  chmod 700 "$temp"
-  trap 'rm -f "$temp"' EXIT
-  "$temp"
+  exec "$INSTALL_DIR/scripts/vps/update.sh" "$@"
 }
 
 cmd_config() {
@@ -92,10 +107,51 @@ cmd_config() {
   printf 'Secrets: hidden (auth-broker/.env, mode 600)\n'
 }
 
+cmd_menu() {
+  while true; do
+    printf '\n%sNexora Git VPS Manager%s\n' "$C_BOLD$C_BLUE" "$C_RESET"
+    printf '  1) Status\n'
+    printf '  2) Update\n'
+    printf '  3) Health check\n'
+    printf '  4) Doctor\n'
+    printf '  5) Logs\n'
+    printf '  6) Restart broker\n'
+    printf '  7) Renew HTTPS certificate\n'
+    printf '  8) Show configuration\n'
+    printf '  9) Reconfigure installation\n'
+    printf '  0) Exit\n'
+    read -r -p '> ' choice
+    case "$choice" in
+      1) cmd_status || true ;;
+      2) "$INSTALL_DIR/scripts/vps/update.sh" || true ;;
+      3) cmd_health || true ;;
+      4) cmd_doctor || true ;;
+      5) compose logs -f --tail=200 auth-broker || true ;;
+      6)
+        compose restart auth-broker
+        wait_local_health "$LOCAL_PORT" 30 || log_error "Broker failed health after restart."
+        ;;
+      7)
+        certbot renew --cert-name "$DOMAIN"
+        nginx -t && systemctl reload nginx
+        ;;
+      8) cmd_config ;;
+      9) exec "$INSTALL_DIR/scripts/vps/install.sh" --reconfigure ;;
+      0) return 0 ;;
+      *) log_warn "Invalid option." ;;
+    esac
+  done
+}
+
 require_root
-case "${1:-help}" in
+case "${1:-menu}" in
+  menu) cmd_menu ;;
   status) cmd_status ;;
-  update) cmd_update ;;
+  update)
+    shift
+    cmd_update "$@"
+    ;;
+  health) cmd_health ;;
   doctor) cmd_doctor ;;
   logs)
     require_install
