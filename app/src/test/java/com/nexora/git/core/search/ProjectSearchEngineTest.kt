@@ -17,7 +17,7 @@ class ProjectSearchEngineTest {
         try {
             root.resolve("src").mkdirs()
             root.resolve("src/Main.kt").writeText(
-                "val Nexora = 1\\nprintln(Nexora)\\n",
+                "val Nexora = 1\nprintln(Nexora)\n",
             )
             root.resolve("node_modules").mkdirs()
             root.resolve("node_modules/hidden.js").writeText(
@@ -77,10 +77,10 @@ class ProjectSearchEngineTest {
             root.resolve("src").mkdirs()
             root.resolve("docs").mkdirs()
             root.resolve("src/Main.kt").writeText(
-                "cat catalog cat\\n",
+                "cat catalog cat\n",
             )
             root.resolve("docs/readme.md").writeText(
-                "cat\\n",
+                "cat\n",
             )
 
             val result = engine.search(
