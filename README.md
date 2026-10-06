@@ -93,6 +93,8 @@ See [Git Engine](docs/GIT_ENGINE.md).
 - [Phase I report](docs/PHASE_I_REPORT.md)
 - [Issues](docs/ISSUES.md)
 - [Phase J report](docs/PHASE_J_REPORT.md)
+- [Pull Requests](docs/PULL_REQUESTS.md)
+- [Phase K report](docs/PHASE_K_REPORT.md)
 - [Auth Broker](auth-broker/README.md)
 - [Architecture decisions](docs/adr/)
 
@@ -132,9 +134,9 @@ The project must use its own branding and must not imply that it is an official 
 
 ## Status
 
-**Current stage:** Phase J — Issues is complete and CI validated. Phase K — Pull Requests and Review is next.
+**Current stage:** Phase K — Pull Requests and Review implementation is complete; CI validation is in progress.
 
-Nexora Git now includes a native repository Issues workflow with search and filters, issue creation/editing, labels, assignees, milestones, comments, reactions, and close/reopen actions on top of the authenticated GitHub REST platform layer.
+Nexora Git now adds native pull request creation, changed-file review, inline review comments, approvals/change requests, head checks, draft/ready transitions, and repository-aware merge methods.
 
 ---
 
