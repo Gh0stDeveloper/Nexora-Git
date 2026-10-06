@@ -448,12 +448,57 @@ This roadmap is intentionally staged. A phase is not complete if it only contain
 
 ## Phase M — Releases
 
-- tags
-- releases
-- drafts
-- prereleases
-- release assets
-- downloads
+**Status: complete and CI validated.**
+
+### M.1 Tags — Complete
+- [x] list tags
+- [x] commit SHA
+- [x] create lightweight tag
+- [x] delete tag
+- [x] tag/SHA validation
+
+### M.2 Release lifecycle — Complete
+- [x] list releases
+- [x] published/draft/prerelease filters
+- [x] release details
+- [x] create release
+- [x] generated release notes option
+- [x] edit release
+- [x] publish draft
+- [x] convert to draft
+- [x] prerelease state
+- [x] latest-release policy
+- [x] preserve latest policy unless explicitly changed
+- [x] delete release
+- [x] immutable-release protection
+
+### M.3 Release assets — Complete
+- [x] asset metadata
+- [x] upload
+- [x] rename / label update
+- [x] delete
+- [x] download
+- [x] download counts / digest
+
+### M.4 Transfer safety — Complete
+- [x] app-private upload staging
+- [x] streaming binary transfer
+- [x] secure signed-download redirects
+- [x] token stripping on external redirect
+- [x] atomic partial downloads
+- [x] 2 GiB safety limits
+- [x] disk-full handling
+
+### M.5 Validation — Complete
+- [x] typed Releases gateway
+- [x] REST + binary integration
+- [x] navigation and Compose surfaces
+- [x] JVM parser tests
+- [x] Compose tests
+- [x] Releases documentation
+- [x] Android CI validation
+- [x] Foundation CI validation
+- [x] pull-request integration validation
 
 ## Phase N — Account and Social
 

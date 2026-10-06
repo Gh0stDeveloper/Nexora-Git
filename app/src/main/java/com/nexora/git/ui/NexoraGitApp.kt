@@ -47,6 +47,8 @@ import com.nexora.git.feature.pulls.PullRequestDetailScreen
 import com.nexora.git.feature.pulls.PullRequestsScreen
 import com.nexora.git.feature.repositories.RepositoriesScreen
 import com.nexora.git.feature.repositories.RepositoryDetailScreen
+import com.nexora.git.feature.releases.ReleaseDetailScreen
+import com.nexora.git.feature.releases.ReleasesScreen
 import com.nexora.git.ui.navigation.NexoraDestination
 
 @Composable
@@ -302,6 +304,65 @@ private fun AuthenticatedNexoraGitApp(
                         navController.navigate(
                             "actions/" + owner + "/" + name,
                         )
+                    },
+                    onOpenReleases = { owner, name ->
+                        navController.navigate(
+                            "releases/" + owner + "/" + name,
+                        )
+                    },
+                )
+            }
+
+            composable(
+                route = "releases/{owner}/{name}",
+                arguments = listOf(
+                    navArgument("owner") {
+                        type = NavType.StringType
+                    },
+                    navArgument("name") {
+                        type = NavType.StringType
+                    },
+                ),
+            ) { entry ->
+                val owner = entry.arguments
+                    ?.getString("owner")
+                    .orEmpty()
+                val name = entry.arguments
+                    ?.getString("name")
+                    .orEmpty()
+
+                ReleasesScreen(
+                    contentPadding = paddingValues,
+                    onBack = {
+                        navController.popBackStack()
+                    },
+                    onOpenRelease = { releaseId ->
+                        navController.navigate(
+                            "release/" + owner + "/" +
+                                name + "/" + releaseId,
+                        )
+                    },
+                )
+            }
+
+            composable(
+                route = "release/{owner}/{name}/{releaseId}",
+                arguments = listOf(
+                    navArgument("owner") {
+                        type = NavType.StringType
+                    },
+                    navArgument("name") {
+                        type = NavType.StringType
+                    },
+                    navArgument("releaseId") {
+                        type = NavType.LongType
+                    },
+                ),
+            ) {
+                ReleaseDetailScreen(
+                    contentPadding = paddingValues,
+                    onBack = {
+                        navController.popBackStack()
                     },
                 )
             }
