@@ -555,7 +555,7 @@ This roadmap is intentionally staged. A phase is not complete if it only contain
 
 ## Phase O — Advanced GitHub
 
-**Implementation status: complete on the Phase O branch; CI validation pending before merge.**
+**Status: complete, CI validated, and integrated into `main`.**
 
 ### O.1 Discussions — Complete
 - [x] discussion categories
@@ -595,7 +595,7 @@ This roadmap is intentionally staged. A phase is not complete if it only contain
 - [x] delete
 - [x] default-branch aware creation
 
-### O.7 Validation — In progress
+### O.7 Validation — Complete
 - [x] typed Advanced GitHub gateway
 - [x] REST + GraphQL integration
 - [x] repository navigation and Compose surface
@@ -603,20 +603,83 @@ This roadmap is intentionally staged. A phase is not complete if it only contain
 - [x] Compose test
 - [x] permission documentation
 - [x] Advanced GitHub documentation
-- [ ] Android CI validation
-- [ ] Foundation CI validation
-- [ ] pull-request integration validation
+- [x] Android CI validation
+- [x] Foundation CI validation
+- [x] pull-request integration validation
 
 ## Phase P — Advanced Git
 
-- rebase
-- cherry-pick
-- stash
-- reset
-- revert
-- tags
-- submodules
-- Git LFS
+**Implementation status: feature-complete on `phase-p-advanced-git`; final CI and pull-request integration are the remaining merge gate.**
+
+### P.1 Explicit rebase — Complete
+- [x] rebase onto branch / tag / commit
+- [x] clean-working-tree guard
+- [x] conflict preservation
+- [x] continue / abort recovery
+
+### P.2 Cherry-pick — Complete
+- [x] cherry-pick commit
+- [x] preserve original author
+- [x] current-user committer
+- [x] conflict recovery
+- [x] continue / abort
+
+### P.3 Stash — Complete
+- [x] save
+- [x] include untracked
+- [x] list
+- [x] apply
+- [x] pop
+- [x] drop with confirmation
+
+### P.4 Reset and revert — Complete
+- [x] soft reset
+- [x] mixed reset
+- [x] hard reset with confirmation
+- [x] revert commit
+- [x] revert conflict recovery
+- [x] continue / abort revert
+
+### P.5 Local tags — Complete
+- [x] list lightweight and annotated tags
+- [x] create lightweight tag
+- [x] create annotated tag
+- [x] tag metadata
+- [x] delete with confirmation
+
+### P.6 Submodules — Complete
+- [x] enumerate
+- [x] status / initialization metadata
+- [x] sync URL
+- [x] initialize / update
+- [x] eligible GitHub OAuth credential reuse
+
+### P.7 Git LFS — Complete
+- [x] standard `.gitattributes` tracking rules
+- [x] pointer inspection
+- [x] native libgit2 clean filter
+- [x] native libgit2 smudge filter
+- [x] SHA-256 object cache in `.git/lfs/objects`
+- [x] authenticated GitHub LFS batch API
+- [x] basic upload / download transfer
+- [x] server-provided transfer headers
+- [x] credential isolation for presigned object URLs
+- [x] upload-before-push integration
+- [x] manual download / upload controls
+
+### P.8 Mobile UX and validation — In progress
+- [x] Advanced tab in Git Workspace
+- [x] shared conflict workflow
+- [x] recovery state visibility
+- [x] destructive-action confirmations
+- [x] parser unit tests
+- [x] Git LFS unit / protocol tests
+- [x] Compose coverage
+- [x] real-repository native workflow coverage
+- [ ] final Native Git CI
+- [ ] final Android CI
+- [ ] final Foundation CI
+- [ ] pull-request integration validation
 
 ## Phase Q — Advanced Mobile Development
 
