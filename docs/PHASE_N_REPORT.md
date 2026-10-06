@@ -1,5 +1,7 @@
 # Phase N — Account and Social
 
+> **Historical implementation record — Complete.** This report is retained for traceability. For current product behavior and operations, use the [Documentation Hub](README.md).
+
 Date: 2026-10-05
 
 ## Status
@@ -96,3 +98,7 @@ GitHub's authenticated-user Notifications REST API does not support GitHub App u
 ## Result
 
 Phase N is complete within the project's GitHub App authentication contract. The next roadmap milestone is **Phase O — Advanced GitHub**.
+
+---
+
+[← Documentation hub](README.md)
