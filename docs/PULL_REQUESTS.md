@@ -1,6 +1,8 @@
 # Pull Requests and Review
 
-Phase K adds a native GitHub pull request and code review workflow to Nexora Git.
+> **Current reference:** This document describes the implemented Nexora Git system. See the [Documentation Hub](README.md) for navigation.
+
+Nexora Git includes a native GitHub pull request and code review workflow.
 
 ## Pull request discovery
 
@@ -91,7 +93,7 @@ Repository rules and branch protection remain authoritative.
 
 ## Validation
 
-Phase K includes:
+Validation includes:
 
 - JVM parser tests for pull requests/files/reviews/comments/checks/merge results
 - Compose list/creation coverage
@@ -99,3 +101,7 @@ Phase K includes:
 - repository-detail navigation callback coverage
 - Foundation CI
 - Android CI
+
+---
+
+[← Documentation hub](README.md)

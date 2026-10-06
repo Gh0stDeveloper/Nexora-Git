@@ -1,5 +1,7 @@
 # Android Foundation
 
+> **Current reference:** This document describes the implemented Nexora Git system. See the [Documentation Hub](README.md) for navigation.
+
 ## Baseline
 
 Nexora Git uses a native Android application foundation.
@@ -51,7 +53,7 @@ app/src/main/java/com/nexora/git/
     └── theme/
 ```
 
-The physical package layout is intentionally feature-oriented while remaining in a single Android application module during the foundation phase. Separate Gradle feature/core modules can be introduced as implementation size justifies them without changing the domain boundaries.
+The physical package layout is feature-oriented while remaining in a single Android application module. Separate Gradle feature/core modules can be introduced as implementation size justifies them without changing the domain boundaries.
 
 ## Navigation shell
 
@@ -63,7 +65,7 @@ Phone navigation currently exposes:
 - Activity
 - Profile
 
-These screens are architectural shells, not fake completed GitHub features. Real GitHub data is introduced in the authentication/platform phases.
+The navigation shell is backed by the authentication and GitHub platform layers; feature screens must not rely on fake production data.
 
 ## Persistence
 
@@ -71,7 +73,7 @@ Room is initialized with a workspace database and DAO.
 
 DataStore provides preference persistence.
 
-Authentication tokens are intentionally **not** placed in DataStore; their secure storage belongs to the authentication phase and must use Keystore-backed protection.
+Authentication tokens are intentionally **not** placed in DataStore; they use Android Keystore-backed protection.
 
 ## Networking
 
@@ -89,7 +91,7 @@ X-GitHub-Api-Version: 2026-03-10
 User-Agent: Nexora-Git-Android
 ```
 
-No authorization interceptor is implemented during Phase A. Authentication is added in Phase B.
+Authenticated requests are handled by the shared GitHub platform/authentication stack rather than by the Android foundation layer.
 
 Logging is BASIC in debug and disabled in release, with authentication/cookie headers redacted.
 
@@ -117,3 +119,7 @@ gradle/wrapper/gradle-wrapper.properties
 ```
 
 The wrapper distribution is pinned to Gradle 9.6.0 and includes the official SHA-256 checksum. CI executes `./gradlew`, so local clones and GitHub Actions use the same Gradle version.
+
+---
+
+[← Documentation hub](README.md)

@@ -1,10 +1,12 @@
 # Code Browser
 
+> **Current reference:** This document describes the implemented Nexora Git system. See the [Documentation Hub](README.md) for navigation.
+
 ## Purpose
 
-Phase G adds a local, offline-capable code browser on top of the workspaces introduced in Phase E and the real libgit2 engine introduced in Phase D.
+Nexora Git provides a local, offline-capable code browser on top of registered Android workspaces and the real libgit2 engine.
 
-The browser is intentionally read-only. Editing belongs to Phase H.
+Browsing remains non-destructive by default; supported text and Markdown files can be handed off to the integrated mobile editor.
 
 ## Entry point
 
@@ -82,7 +84,7 @@ Recognized language labels include:
 
 ## Syntax highlighting
 
-Phase G uses a lightweight Compose-native tokenizer for common:
+The browser retains a lightweight Compose-native fallback tokenizer for common:
 
 - keywords;
 - strings;
@@ -91,7 +93,7 @@ Phase G uses a lightweight Compose-native tokenizer for common:
 
 It does not claim semantic parsing.
 
-Tree-sitter and richer language intelligence remain in **Phase Q — Advanced Mobile Development**.
+Tree-sitter and richer language intelligence are provided by the advanced mobile development layer.
 
 ## Markdown preview
 
@@ -129,7 +131,7 @@ libgit2 revwalk + tree diff
 
 For a selected path, commits are emitted only when the path differs from at least one relevant parent tree.
 
-History is capped by the Kotlin/native contract to a maximum of 200 entries per request. The Phase G UI requests 100.
+History is capped by the Kotlin/native contract to a maximum of 200 entries per request. The UI requests 100.
 
 Current-path history does not attempt rename-following. Rich rename-aware navigation can be added later without weakening the current read-only contract.
 
@@ -185,7 +187,7 @@ No GitHub API connection is required after the repository/workspace is present o
 
 ## Tests
 
-Phase G adds coverage for:
+Validation covers:
 
 - canonical safe nested paths;
 - parent traversal rejection;
@@ -197,3 +199,7 @@ Phase G adds coverage for:
 - workspace Browse code action;
 - code-browser Compose directory state;
 - code/history/blame tabs.
+
+---
+
+[← Documentation hub](README.md)

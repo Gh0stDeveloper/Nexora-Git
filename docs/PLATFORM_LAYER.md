@@ -1,8 +1,10 @@
 # GitHub Platform Layer
 
+> **Current reference:** This document describes the implemented Nexora Git system. See the [Documentation Hub](README.md) for navigation.
+
 ## Purpose
 
-Phase C provides the shared remote platform used by every GitHub-backed feature in Nexora Git.
+The platform layer provides the shared remote transport used by every GitHub-backed feature in Nexora Git.
 
 It sits above authentication and below feature repositories.
 
@@ -173,7 +175,7 @@ GraphQL permissions are represented through normalized GraphQL error types becau
 
 ## Caching
 
-The Phase C cache is:
+The transport cache is:
 
 - in-memory only;
 - bounded;
@@ -246,3 +248,7 @@ Response bodies are not logged by the shared platform client.
 - never share cache entries between accounts;
 - never retry authentication indefinitely;
 - never reinterpret a permission failure as a rate-limit failure without evidence.
+
+---
+
+[← Documentation hub](README.md)

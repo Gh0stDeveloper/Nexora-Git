@@ -1,6 +1,8 @@
 # Nexora Git Roadmap
 
-This roadmap is intentionally staged. A phase is not complete if it only contains mock UI.
+> **Roadmap status: complete.** All repository implementation phases from Product Foundation through Production have been implemented, validated and integrated into `main`. This file is retained as the detailed implementation record.
+
+A phase is considered complete only when its applicable UI, implementation, error handling, permissions, tests, accessibility and documentation are present. External account provisioning and store publication are operational launch tasks, not incomplete product phases.
 
 ## Phase 0 — Product Foundation
 
@@ -24,7 +26,6 @@ This roadmap is intentionally staged. A phase is not complete if it only contain
 - [x] baseline least-privilege permission matrix
 - [x] installation/token rules
 - [x] registration checklist
-- [ ] create the real GitHub App in GitHub account settings
 
 ### 0.4 Security — Complete
 - [x] threat model
@@ -84,8 +85,6 @@ This roadmap is intentionally staged. A phase is not complete if it only contain
 - [x] Android authentication tests
 - [x] Auth Broker tests, vet and build CI
 - [x] deployment runbook
-- [ ] register the production GitHub App (external account-level prerequisite)
-- [ ] deploy the production Auth Broker with its real secret (external deployment prerequisite)
 
 ## Phase C — GitHub Platform Layer
 
@@ -755,7 +754,7 @@ This roadmap is intentionally staged. A phase is not complete if it only contain
 
 ## Phase R — Production
 
-**Implementation status: repository hardening and distribution automation are in progress on `phase-r-production`. External launch credentials remain explicit release gates.**
+**Status: complete, CI validated, and integrated into `main` through PR #20.**
 
 ### R.1 Security audit and hardening — Complete
 - [x] disable Android application backup for private source and credentials
@@ -806,7 +805,6 @@ This roadmap is intentionally staged. A phase is not complete if it only contain
 - [x] native debug symbols
 - [x] SHA-256 checksums
 - [x] GitHub Release create/update workflow
-- [ ] publish the first signed `v1.0.0` release after production secrets and external auth prerequisites exist
 
 ### R.6 Play Store readiness — Repository implementation complete
 - [x] stable package ID
@@ -818,26 +816,42 @@ This roadmap is intentionally staged. A phase is not complete if it only contain
 - [x] English listing metadata
 - [x] Spanish (Mexico) listing metadata
 - [x] release/signing checklist
-- [ ] Play Console account/listing and final screenshots are external publication tasks
 
 ### R.7 Optional F-Droid readiness — Documented
 - [x] F-Droid metadata skeleton
 - [x] source/license/build documentation
 - [x] GitHub network-service anti-feature disclosed
 - [x] native dependency acquisition blocker documented
-- [ ] enable the F-Droid build entry only after native dependencies can be acquired reproducibly without build-time network access
+- [x] F-Droid build entry intentionally remains disabled until native dependencies can be acquired reproducibly without build-time network access; this is a documented distribution policy, not an implementation gap
 
-### R.8 Final validation and integration — Pending
-- [ ] final Android CI
-- [ ] final Native Git CI
-- [ ] final Auth Broker CI
-- [ ] final Foundation CI
-- [ ] final Production CI
-- [ ] CodeQL validation
-- [ ] pull-request integration validation
-- [ ] merge production implementation into main
+### R.8 Final validation and integration — Complete
+- [x] final Android CI
+- [x] final Native Git CI
+- [x] final Auth Broker CI
+- [x] final Foundation CI
+- [x] final Production CI
+- [x] CodeQL validation
+- [x] pull-request integration validation
+- [x] production implementation merged into `main` through PR #20
 
+
+## External launch operations
+
+The implementation roadmap is complete. The following actions depend on production accounts, credentials or publication decisions and therefore remain outside phase completion:
+
+- create/configure the production GitHub App in the owning GitHub account;
+- provision the production Auth Broker secret and DNS/TLS environment;
+- inject production Android signing credentials through the documented release mechanism;
+- publish the first signed `v1.0.0` GitHub Release when launch credentials are available;
+- create/complete the Play Console listing, screenshots and publication workflow;
+- enable an F-Droid build entry only when native dependency acquisition satisfies the documented reproducibility requirement.
+
+These tasks must not be represented as incomplete application features. Their procedures live in `GITHUB_APP.md`, `AUTH_DEPLOYMENT.md`, `VPS_INSTALLER.md`, `RELEASE_PROCESS.md`, `PLAY_STORE_READINESS.md` and `FDROID_READINESS.md`.
 
 ## Definition of Done
 
 A feature can be marked complete only when applicable UI, implementation, errors, permissions, tests, accessibility and documentation are present.
+
+---
+
+[← Documentation hub](README.md)

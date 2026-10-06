@@ -1,5 +1,7 @@
 # GitHub Authentication Deployment Runbook
 
+> **Current reference:** This document describes the implemented Nexora Git system. See the [Documentation Hub](README.md) for navigation.
+
 ## 1. Register the GitHub App
 
 Create a GitHub App named **Nexora Git** under the intended owner account.
@@ -107,3 +109,7 @@ The broker uses GitHub's application-token revocation endpoint, which requires t
 - [ ] Account switching tested.
 - [ ] Refresh tested after forced/shortened expiry in a test environment.
 - [ ] Logout/revocation tested.
+
+---
+
+[← Documentation hub](README.md)

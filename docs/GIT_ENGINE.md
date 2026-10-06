@@ -1,5 +1,7 @@
 # Real Git Engine
 
+> **Current reference:** This document describes the implemented Nexora Git system. See the [Documentation Hub](README.md) for navigation.
+
 ## Implementation
 
 Nexora Git uses a real local Git engine based on **libgit2**. GitHub REST/GraphQL calls are not used as a substitute for Git operations.
@@ -26,7 +28,7 @@ All Kotlin-facing operations are suspend functions and execute native work on `D
 
 ## Native dependency baseline
 
-Phase D pins native dependencies by immutable commit SHA.
+The native Git stack pins security-sensitive dependencies by immutable commit SHA.
 
 ### libgit2
 
@@ -88,7 +90,7 @@ nexoragit_native_tests
 libgit2 is configured with:
 
 - HTTPS enabled through Mbed TLS;
-- SSH disabled for Phase D;
+- SSH disabled in the native Git transport;
 - GSSAPI disabled;
 - NTLM disabled;
 - bundled zlib;
@@ -264,9 +266,9 @@ MERGED
 CONFLICTS
 ```
 
-A conflicted pull leaves the repository in a conflict state for a later resolution UI. It does not silently discard either side.
+A conflicted pull leaves the repository in a conflict state for the integrated conflict-resolution workflow. It does not silently discard either side.
 
-Phase D does not implement rebase-based pull; that belongs to the advanced Git roadmap.
+Merge-based pull remains the foundational engine primitive; rebase-based pull and explicit rebase workflows are available through the higher-level Git workflow.
 
 ## Push
 
@@ -313,11 +315,11 @@ Conflicts are read from the real index conflict iterator and returned as domain 
 - ours path;
 - theirs path.
 
-Content-level conflict resolution UI is intentionally handled by later Git workflow/editor phases.
+Content-level conflict resolution is handled by the Git workbench and integrated editor.
 
 ## GitHub HTTPS credentials
 
-Nexora Git uses the GitHub user access token produced by the Phase B authentication layer.
+Nexora Git uses the GitHub user access token produced by the authentication layer.
 
 Credentials are injected at runtime:
 
@@ -365,11 +367,11 @@ Non-GitHub hosts, HTTP, SSH, embedded-userinfo URLs and custom ports do not rece
 
 ## SSH
 
-SSH transport is deliberately disabled in Phase D.
+SSH transport is deliberately disabled in the current native Git transport.
 
 This does not affect the primary Nexora Git authentication architecture because GitHub access uses GitHub App OAuth over HTTPS.
 
-A dedicated SSH-key implementation may be added in an advanced Git phase with its own secure key-management model.
+A future SSH-key transport would require its own secure key-management model and explicit credential policy.
 
 ## Native errors
 
@@ -440,20 +442,25 @@ It also validates:
 - Android lint;
 - debug APK packaging.
 
-## Later Git work
+## Extended Git capabilities
 
-The following remain intentionally outside Phase D:
+The foundational libgit2 engine is extended by the higher-level Git workflow with:
 
-- rebase;
+- rebase and rebase-based pull;
 - cherry-pick;
 - stash;
-- reset UX;
-- revert;
-- tags;
+- reset and revert;
+- local tags;
 - submodules;
-- Git LFS;
-- SSH key management;
-- progress/cancellation UI for long network transfers;
-- interactive conflict resolution.
+- Git LFS upload/download and local object hydration;
+- conflict resolution and recovery;
+- guarded force-with-lease;
+- multi-remote and upstream controls.
 
-Those belong to later workflow/advanced Git phases rather than the foundational engine.
+See [DAILY_GIT_WORKFLOW.md](DAILY_GIT_WORKFLOW.md) and [ADVANCED_GIT.md](ADVANCED_GIT.md).
+
+SSH transport remains intentionally disabled until a dedicated secure key-management design is implemented.
+
+---
+
+[← Documentation hub](README.md)

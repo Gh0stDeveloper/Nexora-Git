@@ -1,5 +1,7 @@
 # Release Process
 
+> **Current reference:** This document describes the implemented Nexora Git system. See the [Documentation Hub](README.md) for navigation.
+
 ## 1. External prerequisites
 
 Create/configure:
@@ -54,3 +56,7 @@ Upload the generated AAB as the Play upload artifact. Keep the Play App Signing 
 ## 6. Key rotation/recovery
 
 Store the keystore and passwords in a dedicated password/secret manager outside GitHub source history. Document operational ownership privately. A lost upload/release key cannot be reconstructed from this repository.
+
+---
+
+[← Documentation hub](README.md)

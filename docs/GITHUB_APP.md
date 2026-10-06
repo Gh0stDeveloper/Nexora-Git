@@ -1,5 +1,7 @@
 # GitHub App Configuration
 
+> **Current reference:** This document describes the implemented Nexora Git system. See the [Documentation Hub](README.md) for navigation.
+
 ## Status
 
 The repository-side configuration contract is complete.
@@ -64,7 +66,7 @@ Account permissions should be added only for implemented profile, identity or so
 
 GitHub's REST repository-subscription mutation endpoints do not support GitHub App user access tokens. Nexora Git therefore does not use those endpoints for watch/unwatch.
 
-Phase F queries `viewerCanSubscribe` / `viewerSubscription` and uses the GraphQL `updateSubscription` mutation when GitHub reports the capability is available. The UI disables watch mutations when that capability is not available.
+The repository experience queries `viewerCanSubscribe` / `viewerSubscription` and uses the GraphQL `updateSubscription` mutation when GitHub reports the capability is available. The UI disables watch mutations when that capability is not available.
 
 ## Installation model
 
@@ -88,7 +90,7 @@ The UI should differentiate:
 
 ## Environment contract
 
-Future confidential infrastructure may use:
+Confidential infrastructure may use:
 
 ```text
 GITHUB_APP_CLIENT_ID
@@ -114,3 +116,7 @@ Only the client ID is public configuration. Confidential values remain outside s
 - [ ] Record only non-secret identifiers in deployment configuration.
 
 Unchecked items require the real GitHub App to be created/configured in GitHub account settings.
+
+---
+
+[← Documentation hub](README.md)

@@ -1,8 +1,10 @@
 # Repository Experience
 
+> **Current reference:** This document describes the implemented Nexora Git system. See the [Documentation Hub](README.md) for navigation.
+
 ## Purpose
 
-Phase F turns the platform, Git engine and Android storage foundations into a usable repository workflow.
+The repository experience composes the GitHub platform, native Git engine and Android storage layers into a usable repository workflow.
 
 The feature combines:
 
@@ -35,7 +37,7 @@ Pagination follows the validated GitHub `Link` header and includes a safety cap 
 
 ## Offline metadata
 
-Phase F introduces Room schema v4 with `github_repositories`.
+The repository layer uses Room schema v4 with `github_repositories`.
 
 The cache is isolated by GitHub account ID and stores only normalized metadata:
 
@@ -75,7 +77,7 @@ Administration controls are shown only when the repository reports admin permiss
 
 Personal repositories can be created from the Android UI.
 
-Supported Phase F fields:
+Supported repository fields:
 
 - name;
 - description;
@@ -86,7 +88,7 @@ The resulting repository is immediately normalized into the account cache.
 
 ## Clone
 
-Remote clones use the Phase D libgit2 engine.
+Remote clones use the native libgit2 engine.
 
 ```text
 RepositorySummary
@@ -130,7 +132,7 @@ The OAuth token is never embedded in the remote URL.
 
 ## Import local project
 
-Projects selected in Phase E can be promoted to Git repositories.
+Projects selected through Android storage can be promoted to Git repositories.
 
 If `.git` is absent, Nexora Git runs real `GitEngine.init()`.
 
@@ -168,7 +170,7 @@ If the capability is unavailable, the watch control is disabled rather than pret
 
 ## Repository settings
 
-Phase F exposes a deliberately bounded settings surface:
+The repository experience exposes a deliberately bounded settings surface:
 
 - description;
 - homepage;
@@ -178,7 +180,7 @@ Phase F exposes a deliberately bounded settings surface:
 
 The control is shown only when GitHub reports admin permission.
 
-Destructive repository deletion, visibility migration and ownership transfer are intentionally not included in Phase F.
+Destructive repository deletion, visibility migration and ownership transfer are intentionally excluded from this settings surface.
 
 ## Error behavior
 
@@ -229,11 +231,15 @@ Repository
 - repository metadata cache is scoped to account ID;
 - authentication secrets are never cached with repository metadata;
 - manual clone URLs cannot redirect credentials to another host;
-- Git HTTPS uses the Phase D credential callback;
+- Git HTTPS uses the native Git credential callback;
 - imported user folders are never deleted as part of removing a direct workspace;
 - permission-dependent UI is capability-gated;
 - mutations do not silently fall back to cached success.
 
-## Next phase
+## Related capability
 
-Phase G builds the **Code Browser** on top of repository/workspace selection.
+The integrated [Code Browser](CODE_BROWSER.md) builds on repository/workspace selection and provides local file navigation, history, blame and editor handoff.
+
+---
+
+[← Documentation hub](README.md)

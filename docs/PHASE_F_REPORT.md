@@ -1,5 +1,7 @@
 # Phase F — Repository Experience Report
 
+> **Historical implementation record — Complete.** This report is retained for traceability. For current product behavior and operations, use the [Documentation Hub](README.md).
+
 Date: 2026-10-04
 
 ## Status
@@ -190,3 +192,7 @@ Watch controls are additionally capability-gated through GraphQL.
 ## Next phase
 
 **Phase G — Code Browser**
+
+---
+
+[← Documentation hub](README.md)

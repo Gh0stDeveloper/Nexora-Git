@@ -1,5 +1,7 @@
 # Phase B — GitHub Authentication Report
 
+> **Historical implementation record — Complete.** This report is retained for traceability. For current product behavior and operations, use the [Documentation Hub](README.md).
+
 Date: 2026-10-04
 
 ## Status
@@ -233,3 +235,7 @@ Before real users can authenticate:
 All repository-side Phase B requirements are implemented.
 
 The next development phase is **Phase C — GitHub Platform Layer**.
+
+---
+
+[← Documentation hub](README.md)

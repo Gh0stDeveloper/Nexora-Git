@@ -1,5 +1,7 @@
 # Phase G — Code Browser Report
 
+> **Historical implementation record — Complete.** This report is retained for traceability. For current product behavior and operations, use the [Documentation Hub](README.md).
+
 Date: 2026-10-04
 
 ## Status
@@ -105,3 +107,7 @@ Tree-sitter remains intentionally scheduled for Phase Q.
 After final CI and merge:
 
 **Phase H — Mobile Editor**.
+
+---
+
+[← Documentation hub](README.md)

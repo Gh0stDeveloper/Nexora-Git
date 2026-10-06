@@ -1,5 +1,7 @@
 # Nexora Git — Product Identity
 
+> **Current reference:** This document describes the implemented Nexora Git system. See the [Documentation Hub](README.md) for navigation.
+
 ## Product name
 
 **Nexora Git**
@@ -60,4 +62,8 @@ Nexora Git deliberately uses a GitHub-familiar product language so GitHub develo
 
 ## Icon direction
 
-Use an original abstract source-control symbol with subtle Nexora/N geometry. Do not use an Octocat silhouette. The current Phase H direction uses a violet Nexora background with the white source-control symbol so the launcher identity is immediately distinct from GitHub. The final asset should support adaptive and monochrome Android icons.
+Use an original abstract source-control symbol with subtle Nexora/N geometry. Do not use an Octocat silhouette. The current launcher direction uses a violet Nexora background with the white source-control symbol so the launcher identity is immediately distinct from GitHub. The final asset should support adaptive and monochrome Android icons.
+
+---
+
+[← Documentation hub](README.md)

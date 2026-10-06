@@ -1,5 +1,7 @@
 # Security Architecture
 
+> **Current reference:** This document describes the implemented Nexora Git system. See the [Documentation Hub](README.md) for navigation.
+
 ## Security goals
 
 Nexora Git handles source code, private repositories and authorization credentials. Security is therefore a core product requirement, not a later hardening phase.
@@ -128,3 +130,7 @@ Never send application analytics containing:
 ## Security reporting
 
 The repository should eventually provide a root `SECURITY.md` containing the supported-version and vulnerability-reporting policy before the first public stable release.
+
+---
+
+[← Documentation hub](README.md)

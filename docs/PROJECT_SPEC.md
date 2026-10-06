@@ -1,5 +1,7 @@
 # Nexora Git — Product Specification
 
+> **Current reference:** This document describes the implemented Nexora Git system. See the [Documentation Hub](README.md) for navigation.
+
 ## 1. Objective
 
 Nexora Git is an open-source Android application that combines a feature-rich GitHub client with a real Git workspace.
@@ -66,7 +68,7 @@ Its primary target is developers who program from Android devices and need to ma
 - conflict detection and resolution
 - remotes
 
-Advanced phases add:
+Advanced capabilities include:
 
 - rebase
 - cherry-pick
@@ -222,7 +224,7 @@ Initial:
 
 - GitHub Releases with signed APK.
 
-Later:
+Additional product evolution may include:
 
 - Google Play.
 - F-Droid, if project/dependency policy is compatible.
@@ -232,3 +234,7 @@ Later:
 Nexora Git is an independent project integrating with GitHub.
 
 The application must not present itself as an official GitHub application, and GitHub/Octocat branding must not be used as Nexora Git's own product identity.
+
+---
+
+[← Documentation hub](README.md)

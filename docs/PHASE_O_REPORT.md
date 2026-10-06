@@ -1,5 +1,7 @@
 # Phase O Report — Advanced GitHub
 
+> **Historical implementation record — Complete.** This report is retained for traceability. For current product behavior and operations, use the [Documentation Hub](README.md).
+
 ## Status
 
 **Implementation complete on `phase-o-advanced-github`; CI validation is required before merge.**
@@ -92,3 +94,7 @@ app/src/androidTest/java/com/nexora/git/feature/advanced/
 The production GitHub App registration must request and receive approval for the Phase O permissions documented in `docs/GITHUB_APP.md`.
 
 Repository implementation must remain capability-aware because organization policy and user privileges can still make an API unavailable even after the App requests the corresponding permission.
+
+---
+
+[← Documentation hub](README.md)

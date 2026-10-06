@@ -1,5 +1,7 @@
 # Performance Audit
 
+> **Current reference:** This document describes the implemented Nexora Git system. See the [Documentation Hub](README.md) for navigation.
+
 ## Scope
 
 The audit covers repository browsing, editing, syntax analysis, project search, Git operations and release artifact size.
@@ -37,4 +39,8 @@ These budgets are guardrails, not performance targets. They prevent accidental n
 
 ## Follow-up metrics
 
-After real users exist, measure cold start, editor frame time and repository-search latency on representative low/mid/high Android hardware. No telemetry SDK is added solely for this phase.
+After real users exist, measure cold start, editor frame time and repository-search latency on representative low/mid/high Android hardware. No telemetry SDK is added solely for performance measurement.
+
+---
+
+[← Documentation hub](README.md)

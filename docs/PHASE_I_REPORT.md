@@ -1,5 +1,7 @@
 # Phase I — Complete Daily Git Workflow
 
+> **Historical implementation record — Complete.** This report is retained for traceability. For current product behavior and operations, use the [Documentation Hub](README.md).
+
 Date: 2026-10-05
 
 ## Status
@@ -109,3 +111,7 @@ Final validation results:
 ## Result
 
 Phase I is complete. The next roadmap milestone is **Phase J — Issues**.
+
+---
+
+[← Documentation hub](README.md)

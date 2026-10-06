@@ -1,8 +1,10 @@
 # Nexora Git Threat Model
 
+> **Current reference:** This document describes the implemented Nexora Git system. See the [Documentation Hub](README.md) for navigation.
+
 ## Scope
 
-Covers the Android client, authentication flow, local Git workspace, GitHub API communication and future minimal auth broker.
+Covers the Android client, authentication flow, local Git workspace, GitHub API communication and minimal Auth Broker.
 
 ## Protected assets
 
@@ -94,3 +96,7 @@ Controls: minimal workflow permissions, no secrets for untrusted PRs, dependency
 - plugins
 - AI integrations
 - release signing
+
+---
+
+[← Documentation hub](README.md)

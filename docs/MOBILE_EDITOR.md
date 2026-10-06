@@ -1,8 +1,10 @@
 # Mobile Editor
 
+> **Current reference:** This document describes the implemented Nexora Git system. See the [Documentation Hub](README.md) for navigation.
+
 ## Purpose
 
-Phase H turns the Phase G code browser into a real mobile editing workflow.
+The mobile editor extends the code browser into a real on-device editing workflow.
 
 The editor is designed for developers working directly from Android and keeps all file and Git operations local to the registered workspace.
 
@@ -27,7 +29,7 @@ Nexora Git remains an independent client:
 
 ## Editor entry point
 
-Editable text and Markdown files expose an **Edit** action in the Phase G browser.
+Editable text and Markdown files expose an **Edit** action in the code browser.
 
 ```text
 Repositories
@@ -63,7 +65,7 @@ The initial editor supports files up to **512 KiB**.
 
 This is intentionally lower than the read-only browser limit because editing and undo/redo keep multiple text revisions in memory.
 
-Larger files remain viewable through Phase G when supported, but must not be edited through this editor.
+Larger files remain viewable through the code browser when supported, but must not be edited through this editor.
 
 ## Atomic save
 
@@ -138,7 +140,7 @@ The initial lexical highlighter covers common:
 
 Search matches are layered on top without changing text offsets.
 
-Tree-sitter and richer semantic intelligence remain scheduled for Phase Q.
+Tree-sitter and richer semantic intelligence are integrated through the advanced mobile development layer.
 
 ## Line numbers and status
 
@@ -210,7 +212,7 @@ GitHub network access is not required for these actions.
 
 ## Testing
 
-Phase H adds coverage for:
+Validation covers:
 
 - bounded undo/redo;
 - case-sensitive and insensitive search;
@@ -221,3 +223,7 @@ Phase H adds coverage for:
 - browser Edit action;
 - editor Compose actions;
 - search/replace Compose state.
+
+---
+
+[← Documentation hub](README.md)

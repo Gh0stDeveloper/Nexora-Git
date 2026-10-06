@@ -1,5 +1,7 @@
 # Accessibility Audit
 
+> **Current reference:** This document describes the implemented Nexora Git system. See the [Documentation Hub](README.md) for navigation.
+
 ## Repository-verifiable controls
 
 Nexora Git uses Material 3 components for primary buttons, icon buttons, navigation items, fields, dialogs and chips. These components retain platform semantics and minimum interactive target behavior.
@@ -29,3 +31,7 @@ Before uploading a production build, test the signed APK on at least one physica
 Verify authentication, repositories, code browser, editor, Git workspace, Issues, Pull Requests, Actions, Releases, Profile and destructive confirmation dialogs.
 
 Manual assistive-technology verification is intentionally a release checklist because it cannot be represented faithfully by a source-only CI test.
+
+---
+
+[← Documentation hub](README.md)

@@ -1,5 +1,7 @@
 # Authentication Architecture
 
+> **Current reference:** This document describes the implemented Nexora Git system. See the [Documentation Hub](README.md) for navigation.
+
 ## Decision
 
 Nexora Git uses:
@@ -186,7 +188,7 @@ GitHub passkey:
 If a user signs in with email/password or passkey, that interaction happens on GitHub's official page, not inside a Nexora Git credential form.
 
 
-## Phase B implementation
+## Current implementation
 
 The repository implements the authentication boundary with these concrete components:
 
@@ -286,3 +288,7 @@ APP_CALLBACK_URI
 ```
 
 See `AUTH_DEPLOYMENT.md` and `../auth-broker/README.md`.
+
+---
+
+[← Documentation hub](README.md)

@@ -1,6 +1,8 @@
 # Advanced Mobile Development
 
-Phase Q turns Nexora Git's mobile editor and project browser into a stronger local development environment without changing the Android-first security model.
+> **Current reference:** This document describes the implemented Nexora Git system. See the [Documentation Hub](README.md) for navigation.
+
+Nexora Git extends its mobile editor and project browser with local language intelligence and project tooling without changing the Android-first security model.
 
 ## Embedded Tree-sitter
 
@@ -48,9 +50,9 @@ This is structural language intelligence, not a claim of compiler-level semantic
 
 ## Optional LSP architecture
 
-Phase Q adds a provider-neutral LSP contract and JSON-RPC 2.0 codec. The registry supports multiple future providers selected by language.
+The implementation includes a provider-neutral LSP contract and JSON-RPC 2.0 codec. The registry supports multiple future providers selected by language.
 
-No language-server executable is bundled, downloaded, or started automatically in Phase Q. This is intentional: Nexora Git does not execute arbitrary binaries merely because a repository asks it to. A future language-server provider must explicitly define its lifecycle, trust boundary and installation policy.
+No language-server executable is bundled, downloaded, or started automatically. This is intentional: Nexora Git does not execute arbitrary binaries merely because a repository asks it to. A future language-server provider must explicitly define its lifecycle, trust boundary and installation policy.
 
 The architecture includes document open/change/close operations and formatting capability contracts so a later trusted provider can be integrated without rewriting the editor.
 
@@ -108,4 +110,8 @@ Canonical-path checks and symbolic-link rejection keep search inside the selecte
 
 ## Security boundary
 
-Phase Q remains local-first. Tree-sitter parsing, formatting, templates and search operate on device. The optional LSP layer has no active external provider by default and does not weaken repository or authentication boundaries.
+The advanced mobile development layer remains local-first. Tree-sitter parsing, formatting, templates and search operate on device. The optional LSP layer has no active external provider by default and does not weaken repository or authentication boundaries.
+
+---
+
+[← Documentation hub](README.md)

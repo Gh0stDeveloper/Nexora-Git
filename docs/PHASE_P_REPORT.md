@@ -1,5 +1,7 @@
 # Phase P Report — Advanced Git
 
+> **Historical implementation record — Complete.** This report is retained for traceability. For current product behavior and operations, use the [Documentation Hub](README.md).
+
 ## Scope
 
 Phase P expands the real local Git engine with advanced operations while preserving the safety and recovery guarantees introduced by the daily workflow.
@@ -101,3 +103,7 @@ Git LFS is implemented for GitHub HTTPS remotes. The GitHub credential is used o
 Phase P passed Native Git, Android and Foundation CI, then merged into `main` through PR #18. The post-merge checks on `main` also passed.
 
 See [Advanced Git](ADVANCED_GIT.md) for the implementation details and safety model.
+
+---
+
+[← Documentation hub](README.md)

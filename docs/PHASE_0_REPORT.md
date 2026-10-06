@@ -1,5 +1,7 @@
 # Phase 0 — Foundation Report
 
+> **Historical implementation record — Complete.** This report is retained for traceability. For current product behavior and operations, use the [Documentation Hub](README.md).
+
 Date: 2026-10-04
 
 ## 0.1 Product identity
@@ -68,3 +70,7 @@ The Foundation CI validates repository structure and basic secret hygiene. It al
 Repository-side Phase 0 work is complete when Foundation CI passes.
 
 The only intentionally external item is actual GitHub App registration because it is an account-level GitHub configuration task, not a repository file.
+
+---
+
+[← Documentation hub](README.md)

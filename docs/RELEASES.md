@@ -1,6 +1,8 @@
 # Releases
 
-Phase M adds a native GitHub Releases workflow to Nexora Git.
+> **Current reference:** This document describes the implemented Nexora Git system. See the [Documentation Hub](README.md) for navigation.
+
+Nexora Git includes a native GitHub Releases workflow.
 
 ## Entry point
 
@@ -111,13 +113,13 @@ Release assets are stored in the app-specific downloads directory under:
 
 ## Permissions
 
-For full Phase M authoring, the production GitHub App should grant repository **Contents: read/write**. Read-only access is sufficient for public/private release and tag browsing when the account otherwise has access.
+For full release authoring, the production GitHub App should grant repository **Contents: read/write**. Read-only access is sufficient for public/private release and tag browsing when the account otherwise has access.
 
 If a release target modifies workflow files relative to the default branch, GitHub may additionally require workflow-write authorization for release creation.
 
 ## Validation
 
-Phase M includes:
+Validation includes:
 
 - JVM parser tests for tags, releases and assets
 - Compose tests for Releases
@@ -125,3 +127,7 @@ Phase M includes:
 - repository navigation coverage
 - Android CI
 - Foundation CI
+
+---
+
+[← Documentation hub](README.md)

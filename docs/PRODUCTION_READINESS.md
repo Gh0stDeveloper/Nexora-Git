@@ -1,6 +1,8 @@
 # Production Readiness
 
-Phase R converts Nexora Git from a development-complete application into a repository that can be released safely.
+> **Current reference:** This document describes the implemented Nexora Git system. See the [Documentation Hub](README.md) for navigation.
+
+Nexora Git includes the repository hardening and distribution controls required for a safe production release.
 
 ## Production gates
 
@@ -41,3 +43,7 @@ First stable repository target:
 - versionCode: `10000`
 - min SDK: 26
 - target SDK: 36
+
+---
+
+[← Documentation hub](README.md)

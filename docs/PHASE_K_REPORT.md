@@ -1,5 +1,7 @@
 # Phase K — Pull Requests and Review
 
+> **Historical implementation record — Complete.** This report is retained for traceability. For current product behavior and operations, use the [Documentation Hub](README.md).
+
 Date: 2026-10-05
 
 ## Status
@@ -77,3 +79,7 @@ Implemented:
 ## Result
 
 Phase K is complete. The next roadmap milestone is **Phase L — GitHub Actions**.
+
+---
+
+[← Documentation hub](README.md)

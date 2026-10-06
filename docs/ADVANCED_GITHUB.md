@@ -1,6 +1,8 @@
 # Advanced GitHub
 
-Phase O adds GitHub features that are outside the daily repository, Issues, Pull Requests, Actions and Releases workflow.
+> **Current reference:** This document describes the implemented Nexora Git system. See the [Documentation Hub](README.md) for navigation.
+
+The advanced GitHub layer adds GitHub features outside the daily repository, Issues, Pull Requests, Actions and Releases workflow.
 
 ## Scope
 
@@ -37,7 +39,7 @@ Implemented capabilities:
 
 ## Architecture
 
-Phase O follows the shared platform architecture introduced in Phase C.
+The advanced GitHub layer uses the shared authenticated platform architecture.
 
 ```text
 AdvancedGitHubScreen
@@ -56,7 +58,7 @@ GitHubPlatformClient
 
 Authentication, token refresh, API versioning, caching, rate-limit tracking and GitHub error mapping remain centralized in `GitHubPlatformClient`.
 
-Phase O does not create a second HTTP stack and never stores a second credential.
+The advanced GitHub layer does not create a second HTTP stack and never stores a second credential.
 
 ## API mapping
 
@@ -77,9 +79,9 @@ The REST layer continues to use the repository's centralized GitHub REST version
 
 GitHub App access remains least-privilege. A feature is usable only when both the GitHub App permission and the authenticated user's own GitHub authorization allow the operation.
 
-Phase O may require:
+These capabilities may require:
 
-| Permission | Minimum access used by Phase O |
+| Permission | Minimum access used by Nexora Git |
 |---|---:|
 | Discussions (repository) | Read/Write |
 | Projects (organization/account as applicable) | Read/Write for creation |
@@ -135,7 +137,7 @@ Secret Gists are represented as **Secret**, not as private repositories. GitHub'
 
 ## Security view behavior
 
-The Phase O security surface is intentionally read-only.
+The repository security surface is intentionally read-only.
 
 It aggregates the currently visible open alerts from:
 
@@ -147,7 +149,7 @@ Alert mutation/resolution workflows are not performed implicitly. This prevents 
 
 ## Tests
 
-Phase O includes:
+Validation includes:
 
 - JVM parser coverage for Discussions and Projects GraphQL payloads;
 - JVM parser coverage for Pages, security feeds, Gists and Codespaces REST payloads;
@@ -159,3 +161,7 @@ Phase O includes:
 Repository code can define the permission contract, but it cannot approve GitHub App permission changes on behalf of an installation owner.
 
 Production completion still requires the registered Nexora Git GitHub App to request the permissions documented above and each affected installation to approve them where GitHub requires re-authorization.
+
+---
+
+[← Documentation hub](README.md)

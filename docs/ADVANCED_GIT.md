@@ -1,6 +1,8 @@
 # Advanced Git
 
-Phase P extends Nexora Git from the daily Git workflow into explicit local history-rewriting and repository-maintenance operations.
+> **Current reference:** This document describes the implemented Nexora Git system. See the [Documentation Hub](README.md) for navigation.
+
+Nexora Git extends the daily Git workflow with explicit local history-rewriting and repository-maintenance operations.
 
 ## Architecture
 
@@ -17,7 +19,7 @@ The implementation uses the same pinned libgit2 revision as the rest of the app.
 
 ## Explicit rebase
 
-The existing pull-with-rebase workflow remains unchanged. Phase P adds an explicit local rebase onto any resolvable branch, tag or commit.
+The pull-with-rebase workflow remains available, and the advanced Git layer also provides explicit local rebase onto any resolvable branch, tag or commit.
 
 Safety rules:
 
@@ -75,7 +77,7 @@ This is intentionally separate from reset because revert preserves published his
 
 ## Local tags
 
-Phase P local tag support is independent from the GitHub Release/tag APIs implemented earlier.
+Local tag support is independent from the GitHub Release/tag APIs.
 
 Supported local operations:
 
@@ -103,7 +105,7 @@ Submodule operations run through libgit2 and do not shell out to an external Git
 
 ## Git LFS
 
-Phase P includes local clean/smudge behavior and authenticated GitHub LFS object transfer.
+The implementation includes local clean/smudge behavior and authenticated GitHub LFS object transfer.
 
 ### Tracking and pointer model
 
@@ -172,7 +174,7 @@ Explicit confirmations are required for:
 
 ## Validation
 
-Phase P adds:
+Validation includes:
 
 - native repository workflow coverage for rebase, cherry-pick, stash, reset, revert, tags and submodule enumeration;
 - JVM parsing tests for advanced native payloads;
@@ -180,3 +182,7 @@ Phase P adds:
 - Compose coverage for the Advanced Git surface.
 
 The native test creates real temporary repositories and validates resulting files/history instead of mocking libgit2.
+
+---
+
+[← Documentation hub](README.md)

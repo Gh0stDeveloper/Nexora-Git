@@ -1,6 +1,8 @@
 # Daily Git Workflow
 
-Nexora Git Phase I provides a complete local Git workbench backed by the real libgit2 engine.
+> **Current reference:** This document describes the implemented Nexora Git system. See the [Documentation Hub](README.md) for navigation.
+
+Nexora Git provides a complete local Git workbench backed by the real libgit2 engine.
 
 ## Changes and commits
 
@@ -51,7 +53,7 @@ Fetches first. A clean divergence is replayed with libgit2 rebase operations. If
 
 ## Conflict resolution
 
-Conflicted paths are surfaced in the workbench and open directly in the Phase H mobile editor.
+Conflicted paths are surfaced in the workbench and open directly in the integrated mobile editor.
 
 Before a path can be marked resolved, Nexora Git checks that standard conflict markers are no longer present. Resolution stages the path through libgit2.
 
@@ -98,3 +100,7 @@ Native workflow tests exercise real disposable repositories for:
 - stale lease rejection
 
 Android tests cover the workbench summary, pull strategies and guarded lease-push UI.
+
+---
+
+[← Documentation hub](README.md)

@@ -1,5 +1,7 @@
 # Privacy Policy
 
+> **Current reference:** This document describes the implemented Nexora Git system. See the [Documentation Hub](README.md) for navigation.
+
 **Product:** Nexora Git  
 **Application ID:** `com.nexora.git`
 
@@ -25,7 +27,7 @@ A small Nexora Git Auth Broker may be used for the confidential portion of the G
 
 ## Analytics and advertising
 
-Nexora Git does not include an advertising SDK and does not add analytics/telemetry in the Phase R production baseline.
+Nexora Git does not include an advertising SDK and does not add analytics/telemetry in the production baseline.
 
 ## Source code and local files
 
@@ -42,3 +44,7 @@ Users can sign out to remove locally stored authentication tokens and can remove
 ## Changes
 
 Material privacy changes should be documented in the repository and reflected in store disclosures before a new stable release.
+
+---
+
+[← Documentation hub](README.md)
