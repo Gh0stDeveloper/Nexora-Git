@@ -1,33 +1,48 @@
 # Phase R Report — Production
 
-## R.1 Security
+> **Historical implementation record — Complete.** Production hardening, distribution automation and repository validation were completed and integrated into `main` through PR #20. For current operations, use the [Documentation Hub](README.md).
 
-Repository hardening covers backup, network transport, credential/logging policy, supply-chain pinning, release integrity and static CodeQL analysis.
+## Security
 
-## R.2 Performance
+Repository hardening covers Android backup/network policy, credential and logging boundaries, supply-chain pinning, release integrity and static CodeQL analysis.
 
-Runtime-heavy features are bounded and run off the UI thread. R8/resource shrinking and explicit APK/AAB size budgets protect release payload growth.
+## Performance
 
-## R.3 Accessibility
+Runtime-heavy features are bounded and execute away from the UI thread where applicable. R8/resource shrinking and explicit APK/AAB size budgets protect release payload growth.
 
-Core Compose controls preserve semantics, scalable text and textual state. Release lint is mandatory. A physical-device TalkBack/font-scaling checklist is documented for the final store submission.
+## Accessibility
 
-## R.4 Signing
+Core Compose controls preserve semantics, scalable text and textual state. Release lint is mandatory. Physical-device TalkBack and font-scaling checks remain part of store publication QA.
 
-Release signing is externally injected and never committed. The stable workflow verifies APK signatures and publishes checksums.
+## Signing
 
-## R.5 GitHub Release
+Release signing is externally injected and never committed. The stable release workflow validates signing inputs, verifies APK signatures and publishes SHA-256 checksums.
 
-The repository contains a tag-driven stable release workflow. The first real `v1.0.0` publication remains intentionally gated on production OAuth/broker/signing credentials.
+## GitHub Release pipeline
 
-## R.6 Play Store
+The repository contains a tag-driven stable release workflow with semantic tag/version validation, signed APK/AAB outputs, native debug symbols and checksums.
 
-AAB build, stable versioning, privacy/data-safety guidance and bilingual listing metadata are prepared. Play Console account tasks/screenshots remain external.
+Publishing a real production release requires production credentials and is an operational launch action rather than unfinished repository implementation.
 
-## R.7 F-Droid
+## Store readiness
 
-Metadata is prepared but the build is disabled until CMake native dependencies can be supplied without build-time network access.
+Play Store metadata, privacy/data-safety guidance and bilingual listing content are prepared in the repository. Play Console account operations and screenshots are external publication work.
 
-## R.8 Validation
+F-Droid metadata is documented, with the build entry intentionally disabled until native dependency acquisition meets the documented reproducibility requirement.
 
-Final branch/PR checks are the remaining repository integration gate.
+## Final validation
+
+The production integration head was validated successfully by:
+
+- Android CI;
+- Native Git CI;
+- Auth Broker CI;
+- Foundation CI;
+- Production CI;
+- CodeQL.
+
+PR #20 completed the pull-request integration gate and merged the production implementation into `main`.
+
+---
+
+[← Documentation hub](README.md)
