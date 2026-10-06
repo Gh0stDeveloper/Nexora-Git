@@ -388,15 +388,63 @@ This roadmap is intentionally staged. A phase is not complete if it only contain
 
 ## Phase L — GitHub Actions
 
-- workflows
-- workflow runs
-- jobs
-- steps
-- logs
-- dispatch
-- cancel
-- re-run
-- artifacts
+**Status: implementation complete; CI validation pending on `phase-l-github-actions`.**
+
+### L.1 Workflows — Implemented
+- [x] workflow list
+- [x] active/disabled state
+- [x] workflow selection
+- [x] workflow dispatch
+- [x] Git ref input
+- [x] generic workflow inputs
+
+### L.2 Runs — Implemented
+- [x] repository runs
+- [x] workflow-scoped runs
+- [x] status/conclusion filters
+- [x] run details
+- [x] run number and attempt
+- [x] event / head branch / head SHA / actor
+
+### L.3 Jobs and steps — Implemented
+- [x] jobs
+- [x] runner metadata
+- [x] labels
+- [x] steps
+- [x] status and conclusions
+
+### L.4 Logs — Implemented
+- [x] job logs
+- [x] secure authenticated redirect handling
+- [x] token stripping on signed external URLs
+- [x] 2 MiB memory-safe preview
+- [x] truncation indicator
+
+### L.5 Run controls — Implemented
+- [x] cancel
+- [x] re-run all jobs
+- [x] re-run failed jobs
+- [x] state-aware actions
+
+### L.6 Artifacts — Implemented
+- [x] artifact list
+- [x] expiration metadata
+- [x] streaming ZIP download
+- [x] atomic partial-file handling
+- [x] disk-full handling
+- [x] 2 GiB safety limit
+
+### L.7 Validation — Pending
+- [x] typed Actions gateway
+- [x] secure binary downloader
+- [x] navigation and Compose surfaces
+- [x] JVM parser tests
+- [x] dispatch input tests
+- [x] Compose tests
+- [x] GitHub Actions documentation
+- [ ] Android CI validation
+- [ ] Foundation CI validation
+- [ ] pull-request integration validation
 
 ## Phase M — Releases
 

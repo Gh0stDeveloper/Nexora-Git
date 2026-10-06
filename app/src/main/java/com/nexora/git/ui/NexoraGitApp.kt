@@ -30,6 +30,8 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.nexora.git.feature.activity.ActivityScreen
+import com.nexora.git.feature.actions.ActionsScreen
+import com.nexora.git.feature.actions.WorkflowRunDetailScreen
 import com.nexora.git.feature.auth.AuthUiState
 import com.nexora.git.feature.auth.AuthViewModel
 import com.nexora.git.feature.auth.LoginScreen
@@ -295,6 +297,65 @@ private fun AuthenticatedNexoraGitApp(
                         navController.navigate(
                             "pulls/" + owner + "/" + name,
                         )
+                    },
+                    onOpenActions = { owner, name ->
+                        navController.navigate(
+                            "actions/" + owner + "/" + name,
+                        )
+                    },
+                )
+            }
+
+            composable(
+                route = "actions/{owner}/{name}",
+                arguments = listOf(
+                    navArgument("owner") {
+                        type = NavType.StringType
+                    },
+                    navArgument("name") {
+                        type = NavType.StringType
+                    },
+                ),
+            ) { entry ->
+                val owner = entry.arguments
+                    ?.getString("owner")
+                    .orEmpty()
+                val name = entry.arguments
+                    ?.getString("name")
+                    .orEmpty()
+
+                ActionsScreen(
+                    contentPadding = paddingValues,
+                    onBack = {
+                        navController.popBackStack()
+                    },
+                    onOpenRun = { runId ->
+                        navController.navigate(
+                            "actions-run/" + owner + "/" +
+                                name + "/" + runId,
+                        )
+                    },
+                )
+            }
+
+            composable(
+                route = "actions-run/{owner}/{name}/{runId}",
+                arguments = listOf(
+                    navArgument("owner") {
+                        type = NavType.StringType
+                    },
+                    navArgument("name") {
+                        type = NavType.StringType
+                    },
+                    navArgument("runId") {
+                        type = NavType.LongType
+                    },
+                ),
+            ) {
+                WorkflowRunDetailScreen(
+                    contentPadding = paddingValues,
+                    onBack = {
+                        navController.popBackStack()
                     },
                 )
             }
