@@ -1,0 +1,35 @@
+Categories:
+  - Development
+License: Apache-2.0
+AuthorName: Ghost Developer
+WebSite: https://github.com/Gh0stDeveloper/Nexora-Git
+SourceCode: https://github.com/Gh0stDeveloper/Nexora-Git
+IssueTracker: https://github.com/Gh0stDeveloper/Nexora-Git/issues
+
+AutoName: Nexora Git
+Summary: Advanced Git and GitHub workflows on Android
+Description: |-
+  Nexora Git is an open-source Android-first workspace with a real local
+  libgit2 engine, repository browsing/editing, GitHub collaboration features,
+  Actions, releases, advanced Git and offline development workflows.
+
+AntiFeatures:
+  NonFreeNet:
+    en-US: GitHub account and GitHub-hosted API features depend on the GitHub service.
+
+RepoType: git
+Repo: https://github.com/Gh0stDeveloper/Nexora-Git.git
+
+Builds:
+  - versionName: 1.0.0
+    versionCode: 10000
+    commit: v1.0.0
+    subdir: app
+    gradle:
+      - yes
+    disable: Native CMake dependencies are still acquired with FetchContent during build; migrate them to F-Droid-compatible source acquisition before enabling.
+
+AutoUpdateMode: None
+UpdateCheckMode: Tags
+CurrentVersion: 1.0.0
+CurrentVersionCode: 10000

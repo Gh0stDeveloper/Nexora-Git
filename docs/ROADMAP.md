@@ -755,13 +755,88 @@ This roadmap is intentionally staged. A phase is not complete if it only contain
 
 ## Phase R — Production
 
-- security audit
-- performance audit
-- accessibility audit
-- release signing
-- stable GitHub Release
-- Play Store readiness
-- optional F-Droid readiness
+**Implementation status: repository hardening and distribution automation are in progress on `phase-r-production`. External launch credentials remain explicit release gates.**
+
+### R.1 Security audit and hardening — Complete
+- [x] disable Android application backup for private source and credentials
+- [x] defense-in-depth backup/data-extraction exclusions
+- [x] cleartext traffic disabled
+- [x] system-trust-only production network policy
+- [x] user CA trust limited to debug overrides
+- [x] release HTTP logging disabled
+- [x] release minification/resource shrinking
+- [x] native dependency revisions pinned
+- [x] CI third-party actions pinned to immutable commits
+- [x] production secret policy validator
+- [x] security audit documentation
+
+### R.2 Performance audit — Complete
+- [x] release shrinker enabled
+- [x] native symbol-table generation separated from runtime payload
+- [x] bounded editor/browser/search/Tree-sitter workloads
+- [x] expensive file/native analysis off the main dispatcher
+- [x] AAB/APK artifact size budgets enforced in CI
+- [x] performance audit documentation
+
+### R.3 Accessibility audit — Complete for repository-verifiable controls
+- [x] Material interactive controls preserve minimum touch-target behavior
+- [x] icon-only primary actions expose content descriptions
+- [x] decorative icons remain excluded from duplicate TalkBack output
+- [x] text uses scalable Compose typography
+- [x] state is not represented by color alone in core workflows
+- [x] release lint gate enabled
+- [x] Compose accessibility-oriented coverage retained
+- [x] manual TalkBack/device checklist documented for store submission
+
+### R.4 Release signing — Complete
+- [x] no keystore or signing password committed
+- [x] release signing supplied only through Gradle properties/environment
+- [x] V1/V2/V3 APK signing enabled when production credentials are present
+- [x] signed-release workflow validates required secrets
+- [x] APK signature verification before publication
+- [x] SHA-256 release checksums
+- [x] native debug symbols exported separately
+
+### R.5 Stable GitHub Release pipeline — Repository implementation complete
+- [x] semantic release tag validation
+- [x] tag must match Android versionName
+- [x] tag commit must be contained in main
+- [x] signed APK
+- [x] signed AAB
+- [x] native debug symbols
+- [x] SHA-256 checksums
+- [x] GitHub Release create/update workflow
+- [ ] publish the first signed `v1.0.0` release after production secrets and external auth prerequisites exist
+
+### R.6 Play Store readiness — Repository implementation complete
+- [x] stable package ID
+- [x] versionName 1.0.0 / versionCode 10000
+- [x] target SDK 36
+- [x] release AAB build
+- [x] privacy policy
+- [x] data-safety guidance
+- [x] English listing metadata
+- [x] Spanish (Mexico) listing metadata
+- [x] release/signing checklist
+- [ ] Play Console account/listing and final screenshots are external publication tasks
+
+### R.7 Optional F-Droid readiness — Documented
+- [x] F-Droid metadata skeleton
+- [x] source/license/build documentation
+- [x] GitHub network-service anti-feature disclosed
+- [x] native dependency acquisition blocker documented
+- [ ] enable the F-Droid build entry only after native dependencies can be acquired reproducibly without build-time network access
+
+### R.8 Final validation and integration — Pending
+- [ ] final Android CI
+- [ ] final Native Git CI
+- [ ] final Auth Broker CI
+- [ ] final Foundation CI
+- [ ] final Production CI
+- [ ] CodeQL validation
+- [ ] pull-request integration validation
+- [ ] merge production implementation into main
+
 
 ## Definition of Done
 
