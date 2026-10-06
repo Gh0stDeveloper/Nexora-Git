@@ -10,6 +10,8 @@ import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
 import com.nexora.git.core.editor.EditorIndentStyle
 import com.nexora.git.core.editor.EditorSearchMatch
+import com.nexora.git.core.editor.EditorSyntaxSnapshot
+import com.nexora.git.core.editor.EditorSymbol
 import com.nexora.git.core.files.BrowserFile
 import com.nexora.git.core.files.BrowserFileKind
 import com.nexora.git.ui.theme.NexoraGitTheme
@@ -68,6 +70,9 @@ class MobileEditorContentTest {
                     onReplaceAll = {},
                     onInsertIndent = {},
                     onIndentStyleChange = {},
+                    onToggleIntelligence = {},
+                    onSelectSymbol = {},
+                    onFormat = {},
                     onSave = {},
                     onDiff = {},
                     onCommit = {},
@@ -125,6 +130,9 @@ class MobileEditorContentTest {
                     onReplaceAll = {},
                     onInsertIndent = {},
                     onIndentStyleChange = {},
+                    onToggleIntelligence = {},
+                    onSelectSymbol = {},
+                    onFormat = {},
                     onSave = {},
                     onDiff = {},
                     onCommit = {},
@@ -141,4 +149,70 @@ class MobileEditorContentTest {
         composeRule.onNodeWithText("1 / 2")
             .assertIsDisplayed()
     }
+    @Test
+    fun displaysTreeSitterIntelligenceAndFormatter() {
+        composeRule.setContent {
+            NexoraGitTheme {
+                MobileEditorContent(
+                    state = MobileEditorUiState(
+                        workspaceName = "Nexora-Git",
+                        file = file,
+                        value = TextFieldValue("fun main() {}"),
+                        loading = false,
+                        formatAvailable = true,
+                        intelligenceVisible = true,
+                        syntaxSnapshot = EditorSyntaxSnapshot(
+                            engine = "tree-sitter",
+                            language = "Kotlin",
+                            rootType = "source_file",
+                            hasErrors = false,
+                            truncated = false,
+                            spans = emptyList(),
+                            symbols = listOf(
+                                EditorSymbol(
+                                    name = "main",
+                                    kind = "function",
+                                    start = 4,
+                                    endExclusive = 8,
+                                    line = 1,
+                                ),
+                            ),
+                            diagnostics = emptyList(),
+                        ),
+                    ),
+                    contentPadding = PaddingValues(0.dp),
+                    onBack = {},
+                    onValueChange = {},
+                    onUndo = {},
+                    onRedo = {},
+                    onToggleSearch = {},
+                    onSearchQueryChange = {},
+                    onReplacementChange = {},
+                    onMatchCaseChange = {},
+                    onNextMatch = {},
+                    onPreviousMatch = {},
+                    onReplaceCurrent = {},
+                    onReplaceAll = {},
+                    onInsertIndent = {},
+                    onIndentStyleChange = {},
+                    onToggleIntelligence = {},
+                    onSelectSymbol = {},
+                    onFormat = {},
+                    onSave = {},
+                    onDiff = {},
+                    onCommit = {},
+                )
+            }
+        }
+
+        composeRule.onNodeWithText("Language intelligence")
+            .assertIsDisplayed()
+        composeRule.onNodeWithText("Tree-sitter · source_file")
+            .assertIsDisplayed()
+        composeRule.onNodeWithText("function · main · L1")
+            .assertIsDisplayed()
+        composeRule.onNodeWithContentDescription("Format document")
+            .assertIsDisplayed()
+    }
+
 }

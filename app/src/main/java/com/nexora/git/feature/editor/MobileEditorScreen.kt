@@ -19,10 +19,12 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.AccountTree
 import androidx.compose.material.icons.outlined.ArrowBack
 import androidx.compose.material.icons.outlined.Check
 import androidx.compose.material.icons.outlined.Code
 import androidx.compose.material.icons.outlined.Difference
+import androidx.compose.material.icons.outlined.FormatAlignLeft
 import androidx.compose.material.icons.outlined.FormatIndentIncrease
 import androidx.compose.material.icons.outlined.Redo
 import androidx.compose.material.icons.outlined.Save
@@ -60,6 +62,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.nexora.git.core.auth.AuthAccountSummary
 import com.nexora.git.core.editor.EditorIndentStyle
+import com.nexora.git.core.editor.EditorSymbol
 
 @Composable
 fun MobileEditorScreen(
@@ -125,6 +128,9 @@ fun MobileEditorScreen(
         onReplaceAll = viewModel::replaceAll,
         onInsertIndent = viewModel::insertIndent,
         onIndentStyleChange = viewModel::setIndentStyle,
+        onToggleIntelligence = viewModel::toggleIntelligence,
+        onSelectSymbol = viewModel::selectSymbol,
+        onFormat = viewModel::formatDocument,
         onSave = viewModel::save,
         onDiff = viewModel::loadDiff,
         onCommit = viewModel::prepareCommit,
@@ -261,6 +267,9 @@ internal fun MobileEditorContent(
     onReplaceAll: () -> Unit,
     onInsertIndent: () -> Unit,
     onIndentStyleChange: (EditorIndentStyle) -> Unit,
+    onToggleIntelligence: () -> Unit,
+    onSelectSymbol: (EditorSymbol) -> Unit,
+    onFormat: () -> Unit,
     onSave: () -> Unit,
     onDiff: () -> Unit,
     onCommit: () -> Unit,
@@ -284,9 +293,18 @@ internal fun MobileEditorContent(
             onToggleSearch = onToggleSearch,
             onInsertIndent = onInsertIndent,
             onIndentStyleChange = onIndentStyleChange,
+            onToggleIntelligence = onToggleIntelligence,
+            onFormat = onFormat,
             onDiff = onDiff,
             onCommit = onCommit,
         )
+
+        if (state.intelligenceVisible) {
+            IntelligencePanel(
+                state = state,
+                onSelectSymbol = onSelectSymbol,
+            )
+        }
 
         if (state.searchVisible) {
             SearchReplaceBar(
@@ -410,6 +428,8 @@ private fun EditorToolbar(
     onToggleSearch: () -> Unit,
     onInsertIndent: () -> Unit,
     onIndentStyleChange: (EditorIndentStyle) -> Unit,
+    onToggleIntelligence: () -> Unit,
+    onFormat: () -> Unit,
     onDiff: () -> Unit,
     onCommit: () -> Unit,
 ) {
@@ -503,6 +523,32 @@ private fun EditorToolbar(
             }
         }
 
+        IconButton(
+            onClick = onToggleIntelligence,
+        ) {
+            Icon(
+                imageVector = Icons.Outlined.AccountTree,
+                contentDescription = "Language intelligence",
+            )
+        }
+
+        IconButton(
+            enabled = state.formatAvailable && !state.formatting,
+            onClick = onFormat,
+        ) {
+            if (state.formatting) {
+                CircularProgressIndicator(
+                    modifier = Modifier.width(18.dp),
+                    strokeWidth = 2.dp,
+                )
+            } else {
+                Icon(
+                    imageVector = Icons.Outlined.FormatAlignLeft,
+                    contentDescription = "Format document",
+                )
+            }
+        }
+
         IconButton(onClick = onDiff) {
             Icon(
                 imageVector = Icons.Outlined.Difference,
@@ -521,6 +567,125 @@ private fun EditorToolbar(
     }
 
     HorizontalDivider()
+}
+
+
+@Composable
+private fun IntelligencePanel(
+    state: MobileEditorUiState,
+    onSelectSymbol: (EditorSymbol) -> Unit,
+) {
+    val snapshot = state.syntaxSnapshot
+
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 10.dp, vertical = 6.dp),
+        border = BorderStroke(
+            1.dp,
+            MaterialTheme.colorScheme.outline,
+        ),
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .heightIn(max = 210.dp)
+                .verticalScroll(rememberScrollState())
+                .padding(12.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp),
+        ) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Text(
+                    "Language intelligence",
+                    style = MaterialTheme.typography.titleSmall,
+                )
+                when {
+                    state.syntaxLoading -> {
+                        CircularProgressIndicator(
+                            modifier = Modifier.width(18.dp),
+                            strokeWidth = 2.dp,
+                        )
+                    }
+                    snapshot != null -> {
+                        Text(
+                            "Tree-sitter · " + snapshot.rootType,
+                            style = MaterialTheme.typography.labelMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                    }
+                    else -> {
+                        Text(
+                            "Regex fallback",
+                            style = MaterialTheme.typography.labelMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                    }
+                }
+            }
+
+            if (snapshot == null && !state.syntaxLoading) {
+                Text(
+                    "No bundled Tree-sitter grammar is available for this file. Syntax highlighting continues with the local fallback.",
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            } else if (snapshot != null) {
+                if (snapshot.diagnostics.isNotEmpty()) {
+                    Text(
+                        snapshot.diagnostics.size.toString() +
+                            " syntax diagnostic(s)",
+                        color = MaterialTheme.colorScheme.error,
+                    )
+                    snapshot.diagnostics.take(4).forEach { diagnostic ->
+                        Text(
+                            "L" + diagnostic.line +
+                                ":" + diagnostic.column +
+                                " · " + diagnostic.message,
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.error,
+                        )
+                    }
+                } else {
+                    Text(
+                        "No syntax errors detected.",
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
+
+                if (snapshot.symbols.isNotEmpty()) {
+                    Text(
+                        "Symbols",
+                        style = MaterialTheme.typography.labelLarge,
+                    )
+                    snapshot.symbols.take(12).forEach { symbol ->
+                        TextButton(
+                            onClick = {
+                                onSelectSymbol(symbol)
+                            },
+                        ) {
+                            Text(
+                                symbol.kind + " · " +
+                                    symbol.name +
+                                    " · L" +
+                                    symbol.line,
+                            )
+                        }
+                    }
+                }
+
+                if (snapshot.truncated) {
+                    Text(
+                        "Analysis was capped to protect mobile performance.",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
+            }
+        }
+    }
 }
 
 @Composable
@@ -659,6 +824,7 @@ private fun EditorSurface(
         scheme,
         state.searchMatches,
         state.activeMatchIndex,
+        state.syntaxSnapshot,
     ) {
         EditorSyntaxTransformation(
             language = file.language,
@@ -668,6 +834,7 @@ private fun EditorSurface(
             numberColor = scheme.secondary,
             matchColor = scheme.secondaryContainer,
             activeMatchColor = scheme.tertiaryContainer,
+            syntaxSpans = state.syntaxSnapshot?.spans.orEmpty(),
             matches = state.searchMatches,
             activeMatchIndex = state.activeMatchIndex,
         )
@@ -759,7 +926,17 @@ private fun EditorStatusBar(
         verticalAlignment = Alignment.CenterVertically,
     ) {
         Text(
-            text = state.file?.language ?: "Plain text",
+            text = buildString {
+                append(state.file?.language ?: "Plain text")
+                state.syntaxSnapshot?.let {
+                    append(" · Tree-sitter")
+                    if (it.diagnostics.isNotEmpty()) {
+                        append(" · ")
+                        append(it.diagnostics.size)
+                        append(" issue")
+                    }
+                }
+            },
             style = MaterialTheme.typography.labelMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )

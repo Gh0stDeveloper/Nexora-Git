@@ -7,6 +7,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.nexora.git.core.editor.EditorDiffPreview
 import com.nexora.git.core.editor.EditorFileStore
+import com.nexora.git.core.editor.EditorFormatter
 import com.nexora.git.core.editor.EditorHistory
 import com.nexora.git.core.editor.EditorIndentStyle
 import com.nexora.git.core.editor.EditorRevision
@@ -53,6 +54,8 @@ data class MobileEditorUiState(
     val syntaxSnapshot: EditorSyntaxSnapshot? = null,
     val syntaxLoading: Boolean = false,
     val intelligenceVisible: Boolean = false,
+    val formatAvailable: Boolean = false,
+    val formatting: Boolean = false,
     val diffPreview: EditorDiffPreview? = null,
     val gitDiffPatch: String? = null,
     val diffAdditions: Long = 0,
@@ -72,6 +75,7 @@ class MobileEditorViewModel @Inject constructor(
     private val textOperations: EditorTextOperations,
     private val settingsRepository: SettingsRepository,
     private val syntaxEngine: EditorSyntaxEngine,
+    private val formatter: EditorFormatter,
 ) : ViewModel() {
 
     private val workspaceId =
@@ -270,6 +274,56 @@ class MobileEditorViewModel @Inject constructor(
     fun save() {
         viewModelScope.launch {
             saveInternal()
+        }
+    }
+
+    fun formatDocument() {
+        val current = state.value
+        val file = current.file ?: return
+        if (!current.formatAvailable || current.formatting) return
+
+        viewModelScope.launch {
+            mutableState.update {
+                it.copy(formatting = true, errorMessage = null)
+            }
+
+            runCatching {
+                formatter.format(
+                    fileName = file.name,
+                    language = file.language,
+                    text = current.value.text,
+                    indentStyle = current.indentStyle,
+                    syntax = current.syntaxSnapshot,
+                )
+            }.onSuccess { result ->
+                if (result.changed) {
+                    history.record(current.value.toRevision())
+                    applyRevision(
+                        EditorRevision(
+                            text = result.text,
+                            selectionStart = current.value.selection.start
+                                .coerceAtMost(result.text.length),
+                            selectionEnd = current.value.selection.end
+                                .coerceAtMost(result.text.length),
+                        ),
+                    )
+                }
+                mutableState.update {
+                    it.copy(
+                        formatting = false,
+                        successMessage = if (result.changed) {
+                            "Formatted with " + result.formatter + "."
+                        } else {
+                            "Already formatted."
+                        },
+                    )
+                }
+            }.onFailure { error ->
+                mutableState.update {
+                    it.copy(formatting = false)
+                }
+                showError(error)
+            }
         }
     }
 
@@ -562,6 +616,10 @@ class MobileEditorViewModel @Inject constructor(
                         canUndo = false,
                         canRedo = false,
                         gitAvailable = gitAvailable,
+                        formatAvailable = formatter.supports(
+                            file.name,
+                            file.language,
+                        ),
                         errorMessage = null,
                     )
                 }
