@@ -2,7 +2,6 @@ package com.nexora.git.core.git
 
 import java.nio.file.Files
 import org.junit.Assert.assertEquals
-import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Test
 
@@ -20,7 +19,7 @@ class GitLfsManagerTest {
 
             val tracked = manager.inspect(root.path)
             assertEquals(listOf("*.psd"), tracked.trackedPatterns)
-            assertFalse(tracked.transferSupported)
+            assertTrue(tracked.transferSupported)
 
             val attributes = java.io.File(root, ".gitattributes")
                 .readText()
