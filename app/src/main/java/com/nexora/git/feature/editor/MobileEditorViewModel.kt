@@ -12,6 +12,9 @@ import com.nexora.git.core.editor.EditorIndentStyle
 import com.nexora.git.core.editor.EditorRevision
 import com.nexora.git.core.editor.EditorSearchMatch
 import com.nexora.git.core.editor.EditorTextOperations
+import com.nexora.git.core.editor.EditorSyntaxEngine
+import com.nexora.git.core.editor.EditorSyntaxSnapshot
+import com.nexora.git.core.editor.EditorSymbol
 import com.nexora.git.core.files.BrowserFile
 import com.nexora.git.core.git.GitAuthor
 import com.nexora.git.core.git.GitDiffMode
@@ -21,6 +24,8 @@ import com.nexora.git.core.storage.WorkspaceRegistry
 import dagger.hilt.android.lifecycle.HiltViewModel
 import java.io.File
 import javax.inject.Inject
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -45,6 +50,9 @@ data class MobileEditorUiState(
     val matchCase: Boolean = false,
     val searchMatches: List<EditorSearchMatch> = emptyList(),
     val activeMatchIndex: Int = -1,
+    val syntaxSnapshot: EditorSyntaxSnapshot? = null,
+    val syntaxLoading: Boolean = false,
+    val intelligenceVisible: Boolean = false,
     val diffPreview: EditorDiffPreview? = null,
     val gitDiffPatch: String? = null,
     val diffAdditions: Long = 0,
@@ -63,6 +71,7 @@ class MobileEditorViewModel @Inject constructor(
     private val gitEngine: GitEngine,
     private val textOperations: EditorTextOperations,
     private val settingsRepository: SettingsRepository,
+    private val syntaxEngine: EditorSyntaxEngine,
 ) : ViewModel() {
 
     private val workspaceId =
@@ -74,6 +83,7 @@ class MobileEditorViewModel @Inject constructor(
     private var workspacePath = ""
     private var lastSavedText = ""
     private var expectedLastModified = 0L
+    private var syntaxJob: Job? = null
 
     private val mutableState = MutableStateFlow(
         MobileEditorUiState(),
@@ -107,6 +117,7 @@ class MobileEditorViewModel @Inject constructor(
                 canRedo = history.canRedo,
             ).withSearchResults()
         }
+        scheduleSyntaxAnalysis()
     }
 
     fun undo() {
@@ -483,6 +494,30 @@ class MobileEditorViewModel @Inject constructor(
         }
     }
 
+    fun toggleIntelligence() {
+        mutableState.update {
+            it.copy(intelligenceVisible = !it.intelligenceVisible)
+        }
+    }
+
+    fun selectSymbol(symbol: EditorSymbol) {
+        mutableState.update { current ->
+            val start = symbol.start.coerceIn(
+                0,
+                current.value.text.length,
+            )
+            val end = symbol.endExclusive.coerceIn(
+                start,
+                current.value.text.length,
+            )
+            current.copy(
+                value = current.value.copy(
+                    selection = TextRange(start, end),
+                ),
+            )
+        }
+    }
+
     private fun load() {
         viewModelScope.launch {
             if (workspaceId.isBlank() || relativePath.isBlank()) {
@@ -530,6 +565,7 @@ class MobileEditorViewModel @Inject constructor(
                         errorMessage = null,
                     )
                 }
+                scheduleSyntaxAnalysis(immediate = true)
             }.onFailure { error ->
                 mutableState.update {
                     it.copy(
@@ -622,6 +658,66 @@ class MobileEditorViewModel @Inject constructor(
                 canRedo = history.canRedo,
             ).withSearchResults()
         }
+        scheduleSyntaxAnalysis()
+    }
+
+    private fun scheduleSyntaxAnalysis(
+        immediate: Boolean = false,
+    ) {
+        syntaxJob?.cancel()
+
+        val current = state.value
+        val file = current.file ?: return
+        if (!syntaxEngine.supports(file.name, file.language)) {
+            mutableState.update {
+                it.copy(
+                    syntaxSnapshot = null,
+                    syntaxLoading = false,
+                )
+            }
+            return
+        }
+
+        val source = current.value.text
+        syntaxJob = viewModelScope.launch {
+            if (!immediate) {
+                delay(SYNTAX_DEBOUNCE_MILLIS)
+            }
+
+            mutableState.update {
+                it.copy(syntaxLoading = true)
+            }
+
+            runCatching {
+                syntaxEngine.analyze(
+                    fileName = file.name,
+                    language = file.language,
+                    source = source,
+                )
+            }.onSuccess { snapshot ->
+                mutableState.update { latest ->
+                    if (latest.value.text != source) {
+                        latest
+                    } else {
+                        latest.copy(
+                            syntaxSnapshot = snapshot,
+                            syntaxLoading = false,
+                        )
+                    }
+                }
+            }.onFailure {
+                mutableState.update { latest ->
+                    if (latest.value.text != source) {
+                        latest
+                    } else {
+                        latest.copy(
+                            syntaxSnapshot = null,
+                            syntaxLoading = false,
+                        )
+                    }
+                }
+            }
+        }
     }
 
     private fun selectActiveMatch() {
@@ -675,6 +771,10 @@ class MobileEditorViewModel @Inject constructor(
         } else {
             text.count { it == '\n' } + 1
         }
+
+    private companion object {
+        const val SYNTAX_DEBOUNCE_MILLIS = 160L
+    }
 
     private fun showError(error: Throwable) {
         mutableState.update {

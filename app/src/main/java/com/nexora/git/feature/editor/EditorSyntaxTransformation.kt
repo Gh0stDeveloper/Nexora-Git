@@ -9,6 +9,8 @@ import androidx.compose.ui.text.input.OffsetMapping
 import androidx.compose.ui.text.input.TransformedText
 import androidx.compose.ui.text.input.VisualTransformation
 import com.nexora.git.core.editor.EditorSearchMatch
+import com.nexora.git.core.editor.EditorSyntaxSpan
+import com.nexora.git.core.editor.EditorSyntaxSpanKind
 
 internal class EditorSyntaxTransformation(
     private val language: String?,
@@ -18,6 +20,7 @@ internal class EditorSyntaxTransformation(
     private val numberColor: Color,
     private val matchColor: Color,
     private val activeMatchColor: Color,
+    private val syntaxSpans: List<EditorSyntaxSpan>,
     private val matches: List<EditorSearchMatch>,
     private val activeMatchIndex: Int,
 ) : VisualTransformation {
@@ -32,54 +35,92 @@ internal class EditorSyntaxTransformation(
         buildAnnotatedString {
             append(text)
 
-            STRING_REGEX.findAll(text).forEach { match ->
-                addStyle(
-                    SpanStyle(color = stringColor),
-                    match.range.first,
-                    match.range.last + 1,
-                )
-            }
+            if (syntaxSpans.isNotEmpty()) {
+                syntaxSpans.forEach { span ->
+                    val start = span.start.coerceIn(0, text.length)
+                    val end = span.endExclusive.coerceIn(
+                        start,
+                        text.length,
+                    )
+                    if (end <= start) return@forEach
 
-            NUMBER_REGEX.findAll(text).forEach { match ->
-                addStyle(
-                    SpanStyle(color = numberColor),
-                    match.range.first,
-                    match.range.last + 1,
-                )
-            }
-
-            val keywords = keywordsFor(language)
-            if (keywords.isNotEmpty()) {
-                val pattern = Regex(
-                    "\\b(" +
-                        keywords.joinToString(
-                            separator = "|",
-                            transform = Regex::escape,
-                        ) +
-                        ")\\b",
-                )
-
-                pattern.findAll(text).forEach { match ->
+                    val style = when (span.kind) {
+                        EditorSyntaxSpanKind.KEYWORD ->
+                            SpanStyle(
+                                color = keywordColor,
+                                fontWeight = FontWeight.SemiBold,
+                            )
+                        EditorSyntaxSpanKind.STRING ->
+                            SpanStyle(color = stringColor)
+                        EditorSyntaxSpanKind.COMMENT ->
+                            SpanStyle(color = commentColor)
+                        EditorSyntaxSpanKind.NUMBER ->
+                            SpanStyle(color = numberColor)
+                        EditorSyntaxSpanKind.TYPE ->
+                            SpanStyle(
+                                color = keywordColor,
+                                fontWeight = FontWeight.SemiBold,
+                            )
+                        EditorSyntaxSpanKind.FUNCTION ->
+                            SpanStyle(
+                                color = numberColor,
+                                fontWeight = FontWeight.Medium,
+                            )
+                        EditorSyntaxSpanKind.PROPERTY ->
+                            SpanStyle(color = stringColor)
+                    }
+                    addStyle(style, start, end)
+                }
+            } else {
+                STRING_REGEX.findAll(text).forEach { match ->
                     addStyle(
-                        SpanStyle(
-                            color = keywordColor,
-                            fontWeight = FontWeight.SemiBold,
-                        ),
+                        SpanStyle(color = stringColor),
                         match.range.first,
                         match.range.last + 1,
                     )
                 }
-            }
 
-            commentRegexFor(language)
-                .findAll(text)
-                .forEach { match ->
+                NUMBER_REGEX.findAll(text).forEach { match ->
                     addStyle(
-                        SpanStyle(color = commentColor),
+                        SpanStyle(color = numberColor),
                         match.range.first,
                         match.range.last + 1,
                     )
                 }
+
+                val keywords = keywordsFor(language)
+                if (keywords.isNotEmpty()) {
+                    val pattern = Regex(
+                        "\\b(" +
+                            keywords.joinToString(
+                                separator = "|",
+                                transform = Regex::escape,
+                            ) +
+                            ")\\b",
+                    )
+
+                    pattern.findAll(text).forEach { match ->
+                        addStyle(
+                            SpanStyle(
+                                color = keywordColor,
+                                fontWeight = FontWeight.SemiBold,
+                            ),
+                            match.range.first,
+                            match.range.last + 1,
+                        )
+                    }
+                }
+
+                commentRegexFor(language)
+                    .findAll(text)
+                    .forEach { match ->
+                        addStyle(
+                            SpanStyle(color = commentColor),
+                            match.range.first,
+                            match.range.last + 1,
+                        )
+                    }
+            }
 
             matches.forEachIndexed { index, match ->
                 val start = match.start.coerceIn(0, text.length)
