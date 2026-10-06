@@ -46,11 +46,21 @@ class ProjectSearchEngine @Inject constructor() {
 
         root.walkTopDown()
             .onEnter { directory ->
-                val relative = relative(root, directory)
-                directory == root ||
-                    relative
-                        .split('/')
-                        .none { it in DEFAULT_SKIPPED_DIRECTORIES }
+                if (directory == root) {
+                    true
+                } else {
+                    val canonical = runCatching {
+                        directory.canonicalFile
+                    }.getOrNull()
+                    canonical != null &&
+                        canonical.path.startsWith(rootPrefix) &&
+                        !Files.isSymbolicLink(directory.toPath()) &&
+                        relative(root, canonical)
+                            .split('/')
+                            .none {
+                                it in DEFAULT_SKIPPED_DIRECTORIES
+                            }
+                }
             }
             .forEach { file ->
                 coroutineContext.ensureActive()
@@ -100,29 +110,35 @@ class ProjectSearchEngine @Inject constructor() {
                     return@forEach
                 }
 
+                var lineNumber = 1
+                var lineStart = 0
+                var nextLineBreak = text.indexOf('\n')
+
                 matcher.findAll(text).forEach { match ->
                     if (matches.size >= MAX_MATCHES) {
                         truncated = true
                         return@forEach
                     }
 
-                    val lineStart = text.lastIndexOf(
-                        '\n',
-                        startIndex = (match.range.first - 1)
-                            .coerceAtLeast(0),
-                    ).let {
-                        if (it < 0) 0 else it + 1
+                    while (
+                        nextLineBreak >= 0 &&
+                        nextLineBreak < match.range.first
+                    ) {
+                        lineNumber += 1
+                        lineStart = nextLineBreak + 1
+                        nextLineBreak = text.indexOf(
+                            '\n',
+                            startIndex = lineStart,
+                        )
                     }
-                    val lineEnd = text.indexOf(
-                        '\n',
-                        startIndex = match.range.first,
-                    ).let {
-                        if (it < 0) text.length else it
+
+                    val lineEnd = if (nextLineBreak >= 0) {
+                        nextLineBreak
+                    } else {
+                        text.length
                     }
-                    val line = text
-                        .substring(0, match.range.first)
-                        .count { it == '\n' } + 1
-                    val column = match.range.first - lineStart + 1
+                    val column =
+                        match.range.first - lineStart + 1
                     val preview = text
                         .substring(lineStart, lineEnd)
                         .trim()
@@ -130,7 +146,7 @@ class ProjectSearchEngine @Inject constructor() {
 
                     matches += ProjectSearchMatch(
                         path = path,
-                        line = line,
+                        line = lineNumber,
                         column = column,
                         preview = preview,
                         start = match.range.first,

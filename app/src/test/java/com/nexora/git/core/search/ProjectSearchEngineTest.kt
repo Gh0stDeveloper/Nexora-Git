@@ -38,9 +38,35 @@ class ProjectSearchEngineTest {
                     it.path == "src/Main.kt"
                 },
             )
+            assertEquals(listOf(1, 2), result.matches.map { it.line })
+            assertEquals(listOf(5, 9), result.matches.map { it.column })
             assertFalse(result.truncated)
         } finally {
             root.deleteRecursively()
+        }
+    }
+
+    @Test
+    fun doesNotTraverseSymbolicDirectories() = runBlocking {
+        val root = Files.createTempDirectory("nexora-search-root").toFile()
+        val outside = Files.createTempDirectory("nexora-search-outside").toFile()
+        try {
+            outside.resolve("secret.txt").writeText("Nexora")
+            val link = root.toPath().resolve("linked")
+            val linked = runCatching {
+                Files.createSymbolicLink(link, outside.toPath())
+            }.isSuccess
+            if (!linked) return@runBlocking
+
+            val result = engine.search(
+                workspacePath = root.path,
+                query = ProjectSearchQuery(text = "Nexora"),
+            )
+
+            assertTrue(result.matches.isEmpty())
+        } finally {
+            root.deleteRecursively()
+            outside.deleteRecursively()
         }
     }
 

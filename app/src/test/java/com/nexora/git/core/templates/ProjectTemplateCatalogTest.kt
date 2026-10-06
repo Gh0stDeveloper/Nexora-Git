@@ -38,6 +38,14 @@ class ProjectTemplateCatalogTest {
     }
 
     @Test(expected = IllegalArgumentException::class)
+    fun rejectsSourceBreakingProjectNames() {
+        catalog.render(
+            templateId = "typescript-node",
+            projectName = "Bad\"Name",
+        )
+    }
+
+    @Test(expected = IllegalArgumentException::class)
     fun rejectsPathLikeProjectNames() {
         catalog.render(
             templateId = "kotlin-cli",

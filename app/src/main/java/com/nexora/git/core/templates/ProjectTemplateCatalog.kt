@@ -80,6 +80,20 @@ class ProjectTemplateCatalog @Inject constructor() {
         require(name.none { it == '/' || it == '\\' }) {
             "Project name cannot contain path separators."
         }
+        require(name.first().isLetterOrDigit()) {
+            "Project name must start with a letter or number."
+        }
+        require(
+            name.all {
+                it.isLetterOrDigit() ||
+                    it == ' ' ||
+                    it == '-' ||
+                    it == '_' ||
+                    it == '.'
+            },
+        ) {
+            "Project name contains unsupported characters."
+        }
         require(name != "." && name != "..") {
             "Invalid project name."
         }

@@ -27,6 +27,20 @@ class EditorFormatterTest {
     }
 
     @Test
+    fun formatsPrimitiveJsonRoots() = runBlocking {
+        val result = formatter.format(
+            fileName = "value.json",
+            language = "JSON",
+            text = "\"Nexora\"",
+            indentStyle = EditorIndentStyle.SPACES_2,
+            syntax = null,
+        )
+
+        assertEquals("\"Nexora\"", result.text)
+        assertFalse(result.changed)
+    }
+
+    @Test
     fun structuredFormatterDoesNotReindentProtectedString() = runBlocking {
         val source = "fun main() {\n\"  keep { this }\"\nprintln(1)\n}\n"
         val stringStart = source.indexOf('"')
