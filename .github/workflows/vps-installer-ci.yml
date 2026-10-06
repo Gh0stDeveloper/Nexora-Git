@@ -55,9 +55,22 @@ jobs:
       - name: Validate Compose model
         shell: bash
         run: |
+          set -euo pipefail
           cp auth-broker/.env.example auth-broker/.env
           (
             cd auth-broker
-            PORT=19091 docker compose config > /tmp/nexora-compose.yml
-            grep -Fq '127.0.0.1:19091' /tmp/nexora-compose.yml
+            PORT=19091 docker compose config --format json > /tmp/nexora-compose.json
           )
+          python3 - <<'PY'
+          import json
+
+          with open("/tmp/nexora-compose.json", encoding="utf-8") as handle:
+              model = json.load(handle)
+
+          ports = model["services"]["auth-broker"]["ports"]
+          assert len(ports) == 1, ports
+          binding = ports[0]
+          assert binding["host_ip"] == "127.0.0.1", binding
+          assert int(binding["published"]) == 19091, binding
+          assert int(binding["target"]) == 19091, binding
+          PY
