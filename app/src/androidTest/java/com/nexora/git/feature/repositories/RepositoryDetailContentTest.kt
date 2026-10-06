@@ -87,6 +87,7 @@ class RepositoryDetailContentTest {
                     onOpenIssues = { _, _ -> },
                     onOpenPullRequests = { _, _ -> },
                     onOpenActions = { _, _ -> },
+                    onOpenReleases = { _, _ -> },
                 )
             }
         }
