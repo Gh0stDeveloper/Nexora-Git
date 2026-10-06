@@ -71,10 +71,10 @@ Phase Q upgrades mobile development workflows around the existing code browser a
 - [x] JVM tests added for parser, LSP codec, formatter, templates and search
 - [x] Compose tests extended for language intelligence, formatting, templates and project search
 - [x] documentation
-- [ ] final Android CI
-- [ ] final Foundation CI
-- [ ] pull-request integration validation
+- [x] final Android CI
+- [x] final Foundation CI
+- [x] pull-request integration validation
 
-## Merge gate
+## Integration
 
-Phase Q remains on `phase-q-advanced-mobile-development` until Android and Foundation CI pass on the final implementation and the pull request is validated against `main`.
+Phase Q passed Android, Native Git and Foundation validation in PR #19 and was squash-merged into `main` as `895fdde3757a265659afe387ce92d14378cd03f6`.
