@@ -1,9 +1,10 @@
 package com.nexora.git.core.releases
 
+import javax.inject.Inject
 import org.json.JSONArray
 import org.json.JSONObject
 
-class ReleasesJsonParser {
+class ReleasesJsonParser @Inject constructor() {
 
     fun tags(body: String?): List<GitTag> =
         parseArray(body) { item ->
