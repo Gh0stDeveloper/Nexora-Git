@@ -78,7 +78,12 @@ class EditorFormatter @Inject constructor() {
         val body = when (value) {
             is JSONObject -> value.toString(indent)
             is JSONArray -> value.toString(indent)
-            else -> JSONObject.valueToString(value)
+            is String -> JSONObject.quote(value)
+            is Number, is Boolean -> value.toString()
+            JSONObject.NULL -> "null"
+            else -> throw IllegalArgumentException(
+                "Unsupported JSON root value.",
+            )
         }
         return if (text.endsWith("\n")) {
             body + "\n"
