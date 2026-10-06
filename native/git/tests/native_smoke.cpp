@@ -1049,6 +1049,243 @@ void rebase_recovery_workflow(
     );
 }
 
+
+void advanced_local_workflow(
+    const fs::path& repository
+) {
+    fs::create_directories(repository);
+    nexora::git::init_repository(repository.string());
+
+    write_file(repository / "base.txt", "base\n");
+    nexora::git::stage(repository.string(), {"base.txt"});
+    nexora::git::commit(
+        repository.string(),
+        "Advanced base",
+        kAuthor
+    );
+
+    nexora::git::create_branch(
+        repository.string(),
+        "source",
+        ""
+    );
+    nexora::git::checkout(repository.string(), "source");
+    write_file(repository / "picked.txt", "picked\n");
+    nexora::git::stage(repository.string(), {"picked.txt"});
+    const std::string source_commit =
+        nexora::git::commit(
+            repository.string(),
+            "Pick this commit",
+            kAuthor
+        );
+    const std::string source_oid =
+        json_string(source_commit, "oid");
+    require(
+        !source_oid.empty(),
+        "Cherry-pick source OID missing"
+    );
+
+    nexora::git::checkout(repository.string(), "main");
+    const std::string picked =
+        nexora::git::cherry_pick(
+            repository.string(),
+            source_oid,
+            kAuthor
+        );
+    require(
+        picked.find("\"state\":\"applied\"") !=
+            std::string::npos &&
+            fs::exists(repository / "picked.txt"),
+        "Cherry-pick did not apply source commit"
+    );
+
+    write_file(repository / "stash.txt", "stashed\n");
+    write_file(repository / "untracked-stash.txt", "untracked\n");
+    const std::string stash_oid =
+        nexora::git::save_stash(
+            repository.string(),
+            "Advanced stash",
+            kAuthor,
+            true
+        );
+    require(
+        !stash_oid.empty() &&
+            nexora::git::stashes(repository.string())
+                .find("Advanced stash") != std::string::npos,
+        "Stash was not persisted"
+    );
+    nexora::git::apply_stash(
+        repository.string(),
+        0,
+        false
+    );
+    require(
+        fs::exists(repository / "stash.txt"),
+        "Stash apply did not restore changes"
+    );
+    nexora::git::reset_to(
+        repository.string(),
+        "HEAD",
+        "hard"
+    );
+    if (fs::exists(repository / "untracked-stash.txt")) {
+        fs::remove(repository / "untracked-stash.txt");
+    }
+    nexora::git::drop_stash(repository.string(), 0);
+    require(
+        nexora::git::stashes(repository.string()) == "[]",
+        "Stash drop did not empty stash list"
+    );
+
+    const std::string lightweight =
+        nexora::git::create_tag(
+            repository.string(),
+            "v-local",
+            "HEAD",
+            "",
+            kAuthor,
+            false
+        );
+    const std::string annotated =
+        nexora::git::create_tag(
+            repository.string(),
+            "v-annotated",
+            "HEAD",
+            "Advanced tag",
+            kAuthor,
+            true
+        );
+    const std::string listed_tags =
+        nexora::git::tags(repository.string());
+    require(
+        !lightweight.empty() &&
+            !annotated.empty() &&
+            listed_tags.find("v-local") != std::string::npos &&
+            listed_tags.find("v-annotated") != std::string::npos &&
+            listed_tags.find("\"annotated\":true") !=
+                std::string::npos,
+        "Local tags were not listed"
+    );
+    nexora::git::delete_tag(
+        repository.string(),
+        "v-local"
+    );
+    nexora::git::delete_tag(
+        repository.string(),
+        "v-annotated"
+    );
+
+    write_file(repository / "revert.txt", "remove me\n");
+    nexora::git::stage(repository.string(), {"revert.txt"});
+    const std::string revert_source =
+        nexora::git::commit(
+            repository.string(),
+            "Revert source",
+            kAuthor
+        );
+    const std::string revert_oid =
+        json_string(revert_source, "oid");
+    const std::string reverted =
+        nexora::git::revert_commit(
+            repository.string(),
+            revert_oid,
+            kAuthor
+        );
+    require(
+        reverted.find("\"state\":\"applied\"") !=
+            std::string::npos &&
+            !fs::exists(repository / "revert.txt"),
+        "Revert did not invert source commit"
+    );
+
+    write_file(repository / "reset.txt", "one\n");
+    nexora::git::stage(repository.string(), {"reset.txt"});
+    const std::string reset_base =
+        nexora::git::commit(
+            repository.string(),
+            "Reset base",
+            kAuthor
+        );
+    const std::string reset_base_oid =
+        json_string(reset_base, "oid");
+    write_file(repository / "reset.txt", "two\n");
+    nexora::git::stage(repository.string(), {"reset.txt"});
+    nexora::git::commit(
+        repository.string(),
+        "Reset target",
+        kAuthor
+    );
+    nexora::git::reset_to(
+        repository.string(),
+        reset_base_oid,
+        "soft"
+    );
+    require(
+        nexora::git::diff(
+            repository.string(),
+            "staged"
+        ).find("two") != std::string::npos,
+        "Soft reset did not preserve staged changes"
+    );
+    nexora::git::reset_to(
+        repository.string(),
+        reset_base_oid,
+        "hard"
+    );
+
+    nexora::git::create_branch(
+        repository.string(),
+        "topic-rebase",
+        ""
+    );
+    nexora::git::checkout(
+        repository.string(),
+        "topic-rebase"
+    );
+    write_file(repository / "topic.txt", "topic\n");
+    nexora::git::stage(repository.string(), {"topic.txt"});
+    nexora::git::commit(
+        repository.string(),
+        "Topic before rebase",
+        kAuthor
+    );
+
+    nexora::git::checkout(repository.string(), "main");
+    write_file(repository / "main-advance.txt", "main\n");
+    nexora::git::stage(
+        repository.string(),
+        {"main-advance.txt"}
+    );
+    nexora::git::commit(
+        repository.string(),
+        "Advance main",
+        kAuthor
+    );
+
+    nexora::git::checkout(
+        repository.string(),
+        "topic-rebase"
+    );
+    const std::string rebased =
+        nexora::git::rebase_onto(
+            repository.string(),
+            "main",
+            kAuthor
+        );
+    require(
+        rebased.find("\"state\":\"rebased\"") !=
+            std::string::npos &&
+            fs::exists(repository / "main-advance.txt") &&
+            fs::exists(repository / "topic.txt"),
+        "Explicit rebase did not replay topic onto main"
+    );
+
+    require(
+        nexora::git::submodules(repository.string()) == "[]",
+        "Repository without submodules did not return an empty list"
+    );
+}
+
 }  // namespace
 
 int main() {
@@ -1062,6 +1299,7 @@ int main() {
     const fs::path rebase_remote = root / "rebase-remote.git";
     const fs::path rebase_local = root / "rebase-local";
     const fs::path rebase_peer = root / "rebase-peer";
+    const fs::path advanced_local = root / "advanced-local";
 
     try {
         fs::create_directories(seed);
@@ -1091,6 +1329,7 @@ int main() {
             rebase_local,
             rebase_peer
         );
+        advanced_local_workflow(advanced_local);
 
         fs::remove_all(root);
         std::cout
