@@ -65,6 +65,12 @@ fun AdvancedGitHubScreen(
     var showGistDialog by rememberSaveable {
         mutableStateOf(false)
     }
+    var pendingGistDelete by rememberSaveable {
+        mutableStateOf<String?>(null)
+    }
+    var pendingCodespaceDelete by rememberSaveable {
+        mutableStateOf<String?>(null)
+    }
 
     AdvancedGitHubContent(
         state = state,
@@ -82,11 +88,15 @@ fun AdvancedGitHubScreen(
         onCreateGist = {
             showGistDialog = true
         },
-        onDeleteGist = viewModel::deleteGist,
+        onDeleteGist = { gistId ->
+            pendingGistDelete = gistId
+        },
         onCreateCodespace = viewModel::createCodespace,
         onSetCodespaceRunning =
             viewModel::setCodespaceRunning,
-        onDeleteCodespace = viewModel::deleteCodespace,
+        onDeleteCodespace = { codespaceName ->
+            pendingCodespaceDelete = codespaceName
+        },
     )
 
     if (showDiscussionDialog) {
@@ -139,6 +149,80 @@ fun AdvancedGitHubScreen(
                     content = gistContent,
                     description = description,
                     publicGist = publicGist,
+                )
+            },
+        )
+    }
+
+    pendingGistDelete?.let { gistId ->
+        AlertDialog(
+            onDismissRequest = {
+                pendingGistDelete = null
+            },
+            confirmButton = {
+                Button(
+                    enabled = !state.operationInProgress,
+                    onClick = {
+                        pendingGistDelete = null
+                        viewModel.deleteGist(gistId)
+                    },
+                ) {
+                    Text("Delete")
+                }
+            },
+            dismissButton = {
+                TextButton(
+                    enabled = !state.operationInProgress,
+                    onClick = {
+                        pendingGistDelete = null
+                    },
+                ) {
+                    Text("Cancel")
+                }
+            },
+            title = {
+                Text("Delete Gist?")
+            },
+            text = {
+                Text(
+                    "This permanently deletes the selected Gist from GitHub.",
+                )
+            },
+        )
+    }
+
+    pendingCodespaceDelete?.let { codespaceName ->
+        AlertDialog(
+            onDismissRequest = {
+                pendingCodespaceDelete = null
+            },
+            confirmButton = {
+                Button(
+                    enabled = !state.operationInProgress,
+                    onClick = {
+                        pendingCodespaceDelete = null
+                        viewModel.deleteCodespace(codespaceName)
+                    },
+                ) {
+                    Text("Delete")
+                }
+            },
+            dismissButton = {
+                TextButton(
+                    enabled = !state.operationInProgress,
+                    onClick = {
+                        pendingCodespaceDelete = null
+                    },
+                ) {
+                    Text("Cancel")
+                }
+            },
+            title = {
+                Text("Delete Codespace?")
+            },
+            text = {
+                Text(
+                    "This permanently deletes the Codespace and its uncommitted data.",
                 )
             },
         )
