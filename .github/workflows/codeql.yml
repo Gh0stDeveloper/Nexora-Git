@@ -27,6 +27,10 @@ jobs:
     timeout-minutes: 40
 
     steps:
+      - name: Configure Git default branch
+        shell: bash
+        run: git config --global init.defaultBranch main
+
       - name: Checkout
         uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
 
@@ -63,7 +67,8 @@ jobs:
       - name: Build Kotlin/Java for CodeQL
         shell: bash
         run: |
-          ./gradlew --no-daemon \
+          ./gradlew --no-daemon --no-build-cache --rerun-tasks \
+            :app:clean \
             :app:compileDebugKotlin \
             :app:compileDebugJavaWithJavac
 

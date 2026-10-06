@@ -16,7 +16,6 @@ set(NEXORA_TREE_SITTER_TYPESCRIPT_REF "75b3874edb2dc714fb1fd77a32013d0f8699989f"
 option(NEXORA_BUILD_NATIVE_TESTS "Build host native Git tests" OFF)
 
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
-set(CMAKE_SKIP_INSTALL_RULES TRUE CACHE BOOL "" FORCE)
 set(CMAKE_C_STANDARD 11 CACHE STRING "" FORCE)
 set(CMAKE_C_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_STANDARD 17)
@@ -61,6 +60,13 @@ FetchContent_Declare(
     GIT_SHALLOW TRUE
 )
 FetchContent_MakeAvailable(libgit2)
+
+# llhttp is generated third-party code bundled by libgit2. Its current
+# x86_64 source contains two intentionally unused compatibility locals.
+# Keep project warnings strict while silencing only that upstream target.
+if(TARGET llhttp AND CMAKE_C_COMPILER_ID MATCHES "Clang|GNU")
+    target_compile_options(llhttp PRIVATE -Wno-unused-variable)
+endif()
 
 
 # Tree-sitter is embedded directly in the native engine so syntax parsing is
