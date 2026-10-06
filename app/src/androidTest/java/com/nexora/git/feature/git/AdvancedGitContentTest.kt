@@ -85,6 +85,7 @@ class AdvancedGitContentTest {
                     onAnnotatedTagChange = {},
                     lfsPattern = "*.zip",
                     onLfsPatternChange = {},
+                    lfsRemoteName = "origin",
                     onRebase = {},
                     onCherryPick = {},
                     onContinueCherryPick = {},
@@ -103,6 +104,8 @@ class AdvancedGitContentTest {
                     onUpdateSubmodule = {},
                     onTrackLfs = {},
                     onUntrackLfs = {},
+                    onDownloadLfs = {},
+                    onUploadLfs = {},
                 )
             }
         }
