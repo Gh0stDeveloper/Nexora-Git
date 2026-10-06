@@ -1,5 +1,7 @@
 # Phase H — Mobile Editor Report
 
+> **Historical implementation record — Complete.** This report is retained for traceability. For current product behavior and operations, use the [Documentation Hub](README.md).
+
 Date: 2026-10-04
 
 ## Status
@@ -72,3 +74,7 @@ Date: 2026-10-04
 After final CI and merge:
 
 **Phase I — Complete Daily Git Workflow**.
+
+---
+
+[← Documentation hub](README.md)
