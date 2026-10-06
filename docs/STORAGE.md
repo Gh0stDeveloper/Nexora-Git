@@ -1,5 +1,7 @@
 # Android Storage and Project Import
 
+> **Current reference:** This document describes the implemented Nexora Git system. See the [Documentation Hub](README.md) for navigation.
+
 ## Goal
 
 Nexora Git allows an Android developer to select an existing complete project folder without requesting broad storage access.
@@ -227,8 +229,12 @@ The Repositories surface now provides:
 
 ## Write-back policy
 
-Phase E synchronization is intentionally **source → managed workspace**.
+Workspace synchronization is intentionally **source → managed workspace**.
 
 Nexora Git does not automatically write edited managed files back into an arbitrary SAF provider because that could overwrite external changes without a reliable cross-provider conflict protocol.
 
-Explicit export/write-back can be added with editor workflows later, using the same non-destructive conflict rules.
+A future explicit export/write-back workflow must preserve the same non-destructive conflict rules.
+
+---
+
+[← Documentation hub](README.md)
