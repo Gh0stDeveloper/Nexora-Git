@@ -117,6 +117,7 @@ See [Git Engine](docs/GIT_ENGINE.md).
 - [F-Droid readiness](docs/FDROID_READINESS.md)
 - [Phase R report](docs/PHASE_R_REPORT.md)
 - [Auth Broker](auth-broker/README.md)
+- [VPS installer](docs/VPS_INSTALLER.md)
 - [Architecture decisions](docs/adr/)
 
 ## Initial scope
