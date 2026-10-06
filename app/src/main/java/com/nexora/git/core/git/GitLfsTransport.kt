@@ -4,6 +4,8 @@ import java.io.File
 import java.net.URI
 import java.security.MessageDigest
 import javax.inject.Inject
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import javax.inject.Singleton
 import okhttp3.Credentials
 import okhttp3.MediaType.Companion.toMediaType
@@ -34,7 +36,7 @@ class GitLfsTransport @Inject constructor(
     suspend fun downloadMissing(
         repositoryPath: String,
         remoteUrl: String,
-    ): GitLfsTransferSummary {
+    ): GitLfsTransferSummary = withContext(Dispatchers.IO) {
         val state = manager.inspect(repositoryPath)
         if (state.pointers.isEmpty()) {
             return GitLfsTransferSummary(0, 0, 0)
@@ -134,7 +136,7 @@ class GitLfsTransport @Inject constructor(
     suspend fun uploadPending(
         repositoryPath: String,
         remoteUrl: String,
-    ): GitLfsTransferSummary {
+    ): GitLfsTransferSummary = withContext(Dispatchers.IO) {
         val root = canonicalRepository(repositoryPath)
         val objects = localObjects(root)
         if (objects.isEmpty()) {
