@@ -78,7 +78,7 @@ jobs:
           ./gradlew --no-daemon \
             :app:assembleRelease \
             :app:bundleRelease \
-            :app:testReleaseUnitTest \
+            :app:testDebugUnitTest \
             :app:lintRelease
 
       - name: Enforce artifact size budgets
