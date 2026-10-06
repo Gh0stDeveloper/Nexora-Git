@@ -170,7 +170,7 @@ class ProjectSearchEngine @Inject constructor() {
             Regex.escape(query.text)
         }
         val pattern = if (query.wholeWord) {
-            "(?<![\\\\p{L}\\\\p{N}_])(?:$base)(?![\\\\p{L}\\\\p{N}_])"
+            """(?<![\p{L}\p{N}_])(?:$base)(?![\p{L}\p{N}_])"""
         } else {
             base
         }
