@@ -388,6 +388,247 @@ class Libgit2GitEngine @Inject constructor(
         )
     }
 
+
+    override suspend fun rebase(
+        repositoryPath: String,
+        upstreamRef: String,
+        author: GitAuthor,
+    ): GitMergeResult = native {
+        parser.mergeResult(
+            bridge.nativeRebase(
+                repositoryPath = repositoryPath,
+                upstreamRef = upstreamRef,
+                authorName = author.name,
+                authorEmail = author.email,
+            ),
+        )
+    }
+
+    override suspend fun cherryPick(
+        repositoryPath: String,
+        commitRef: String,
+        author: GitAuthor,
+    ): GitApplyResult = native {
+        parser.applyResult(
+            bridge.nativeCherryPick(
+                repositoryPath = repositoryPath,
+                commitRef = commitRef,
+                authorName = author.name,
+                authorEmail = author.email,
+            ),
+        )
+    }
+
+    override suspend fun continueCherryPick(
+        repositoryPath: String,
+        author: GitAuthor,
+    ): GitApplyResult = native {
+        parser.applyResult(
+            bridge.nativeContinueCherryPick(
+                repositoryPath = repositoryPath,
+                authorName = author.name,
+                authorEmail = author.email,
+            ),
+        )
+    }
+
+    override suspend fun abortCherryPick(
+        repositoryPath: String,
+    ) {
+        native {
+            bridge.nativeAbortCherryPick(repositoryPath)
+        }
+    }
+
+    override suspend fun stashes(
+        repositoryPath: String,
+    ): List<GitStash> = native {
+        parser.stashes(
+            bridge.nativeStashes(repositoryPath),
+        )
+    }
+
+    override suspend fun saveStash(
+        repositoryPath: String,
+        message: String,
+        author: GitAuthor,
+        includeUntracked: Boolean,
+    ): String = native {
+        bridge.nativeSaveStash(
+            repositoryPath = repositoryPath,
+            message = message,
+            authorName = author.name,
+            authorEmail = author.email,
+            includeUntracked = includeUntracked,
+        )
+    }
+
+    override suspend fun applyStash(
+        repositoryPath: String,
+        index: Int,
+        pop: Boolean,
+    ) {
+        native {
+            require(index >= 0) {
+                "Stash index must be non-negative."
+            }
+            bridge.nativeApplyStash(
+                repositoryPath = repositoryPath,
+                index = index,
+                pop = pop,
+            )
+        }
+    }
+
+    override suspend fun dropStash(
+        repositoryPath: String,
+        index: Int,
+    ) {
+        native {
+            require(index >= 0) {
+                "Stash index must be non-negative."
+            }
+            bridge.nativeDropStash(
+                repositoryPath = repositoryPath,
+                index = index,
+            )
+        }
+    }
+
+    override suspend fun reset(
+        repositoryPath: String,
+        targetRef: String,
+        mode: GitResetMode,
+    ) {
+        native {
+            bridge.nativeReset(
+                repositoryPath = repositoryPath,
+                targetRef = targetRef,
+                mode = mode.wireValue,
+            )
+        }
+    }
+
+    override suspend fun revert(
+        repositoryPath: String,
+        commitRef: String,
+        author: GitAuthor,
+    ): GitApplyResult = native {
+        parser.applyResult(
+            bridge.nativeRevert(
+                repositoryPath = repositoryPath,
+                commitRef = commitRef,
+                authorName = author.name,
+                authorEmail = author.email,
+            ),
+        )
+    }
+
+    override suspend fun continueRevert(
+        repositoryPath: String,
+        author: GitAuthor,
+    ): GitApplyResult = native {
+        parser.applyResult(
+            bridge.nativeContinueRevert(
+                repositoryPath = repositoryPath,
+                authorName = author.name,
+                authorEmail = author.email,
+            ),
+        )
+    }
+
+    override suspend fun abortRevert(
+        repositoryPath: String,
+    ) {
+        native {
+            bridge.nativeAbortRevert(repositoryPath)
+        }
+    }
+
+    override suspend fun tags(
+        repositoryPath: String,
+    ): List<GitTag> = native {
+        parser.tags(
+            bridge.nativeTags(repositoryPath),
+        )
+    }
+
+    override suspend fun createTag(
+        repositoryPath: String,
+        name: String,
+        targetRef: String,
+        message: String,
+        author: GitAuthor,
+        annotated: Boolean,
+    ): String = native {
+        bridge.nativeCreateTag(
+            repositoryPath = repositoryPath,
+            name = name,
+            targetRef = targetRef,
+            message = message,
+            authorName = author.name,
+            authorEmail = author.email,
+            annotated = annotated,
+        )
+    }
+
+    override suspend fun deleteTag(
+        repositoryPath: String,
+        name: String,
+    ) {
+        native {
+            bridge.nativeDeleteTag(
+                repositoryPath = repositoryPath,
+                name = name,
+            )
+        }
+    }
+
+    override suspend fun submodules(
+        repositoryPath: String,
+    ): List<GitSubmodule> = native {
+        parser.submodules(
+            bridge.nativeSubmodules(repositoryPath),
+        )
+    }
+
+    override suspend fun syncSubmodule(
+        repositoryPath: String,
+        name: String,
+    ) {
+        native {
+            bridge.nativeSyncSubmodule(
+                repositoryPath = repositoryPath,
+                name = name,
+            )
+        }
+    }
+
+    override suspend fun updateSubmodule(
+        repositoryPath: String,
+        name: String,
+        initialize: Boolean,
+    ) {
+        native {
+            val submodule = parser.submodules(
+                bridge.nativeSubmodules(repositoryPath),
+            ).firstOrNull { it.name == name }
+                ?: error("Submodule not found.")
+
+            val credentials = credentialProvider
+                .credentialsFor(submodule.url)
+                .orEmpty()
+
+            bridge.nativeUpdateSubmodule(
+                repositoryPath = repositoryPath,
+                name = name,
+                initialize = initialize,
+                username = credentials.username,
+                password = credentials.password,
+            )
+        }
+    }
+
     override suspend fun blame(
         repositoryPath: String,
         relativePath: String,
