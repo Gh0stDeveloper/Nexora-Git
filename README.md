@@ -134,9 +134,9 @@ The project must use its own branding and must not imply that it is an official 
 
 ## Status
 
-**Current stage:** Phase K — Pull Requests and Review implementation is complete; CI validation is in progress.
+**Current stage:** Phase K — Pull Requests and Review is complete and CI validated. Phase L — GitHub Actions is next.
 
-Nexora Git now adds native pull request creation, changed-file review, inline review comments, approvals/change requests, head checks, draft/ready transitions, and repository-aware merge methods.
+Nexora Git now includes native pull request creation, changed-file review, inline review comments, approvals/change requests, head checks, draft/ready transitions, and repository-aware merge methods.
 
 ---
 
