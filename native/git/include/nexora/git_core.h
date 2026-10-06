@@ -39,6 +39,8 @@ void initialize(
     const std::string& certificate_directory
 );
 
+void register_lfs_filter();
+
 std::string version();
 std::string init_repository(const std::string& path);
 std::string clone_repository(
