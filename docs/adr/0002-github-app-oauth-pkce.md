@@ -1,5 +1,8 @@
 # ADR-0002: GitHub App with OAuth and PKCE
 
+**Status:** Accepted  
+**Scope:** Architectural decision for the current Nexora Git implementation.
+
 - Status: Accepted
 - Date: 2026-10-04
 
@@ -23,3 +26,7 @@ Use a GitHub App, GitHub web authorization, OAuth Authorization Code flow, PKCE,
 ## Consequences
 
 Password, 2FA, passkey and SSO authentication remain on GitHub-controlled pages. The optional backend remains narrow and is not a general GitHub API proxy.
+
+---
+
+[← Documentation hub](../README.md)
