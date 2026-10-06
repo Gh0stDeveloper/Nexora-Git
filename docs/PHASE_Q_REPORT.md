@@ -1,5 +1,7 @@
 # Phase Q Report — Advanced Mobile Development
 
+> **Historical implementation record — Complete.** This report is retained for traceability. For current product behavior and operations, use the [Documentation Hub](README.md).
+
 ## Scope
 
 Phase Q upgrades mobile development workflows around the existing code browser and editor while preserving offline operation and bounded resource use.
@@ -78,3 +80,7 @@ Phase Q upgrades mobile development workflows around the existing code browser a
 ## Integration
 
 Phase Q passed Android, Native Git and Foundation validation in PR #19 and was squash-merged into `main` as `895fdde3757a265659afe387ce92d14378cd03f6`.
+
+---
+
+[← Documentation hub](README.md)
