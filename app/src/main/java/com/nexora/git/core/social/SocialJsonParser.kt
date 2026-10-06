@@ -214,69 +214,6 @@ class SocialJsonParser @Inject constructor() {
             )
         }
 
-    fun notifications(
-        body: String?,
-    ): List<GitHubNotificationThread> =
-        parseArray(body) { root ->
-            val subject =
-                root.getJSONObject("subject")
-            val repository =
-                root.getJSONObject("repository")
-
-            GitHubNotificationThread(
-                id = root.getString("id"),
-                unread =
-                    root.optBoolean("unread"),
-                reason =
-                    root.optString("reason"),
-                updatedAt =
-                    root.optNullableString(
-                        "updated_at",
-                    ),
-                lastReadAt =
-                    root.optNullableString(
-                        "last_read_at",
-                    ),
-                subjectTitle =
-                    subject.optString("title"),
-                subjectType =
-                    subject.optString("type"),
-                subjectUrl =
-                    subject.optNullableString("url"),
-                latestCommentUrl =
-                    subject.optNullableString(
-                        "latest_comment_url",
-                    ),
-                repositoryFullName =
-                    repository.optString(
-                        "full_name",
-                    ),
-                repositoryHtmlUrl =
-                    repository.optNullableString(
-                        "html_url",
-                    ),
-            )
-        }
-
-    fun subscription(
-        body: String?,
-    ): NotificationThreadSubscription {
-        val root =
-            JSONObject(requireNotNull(body))
-        return NotificationThreadSubscription(
-            subscribed =
-                root.optBoolean("subscribed"),
-            ignored =
-                root.optBoolean("ignored"),
-            reason =
-                root.optNullableString("reason"),
-            createdAt =
-                root.optNullableString(
-                    "created_at",
-                ),
-        )
-    }
-
     private fun <T> parseArray(
         body: String?,
         mapper: (JSONObject) -> T,
