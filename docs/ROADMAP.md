@@ -555,14 +555,57 @@ This roadmap is intentionally staged. A phase is not complete if it only contain
 
 ## Phase O — Advanced GitHub
 
-Where supported by current APIs and permissions:
+**Implementation status: complete on the Phase O branch; CI validation pending before merge.**
 
-- Discussions
-- Projects
-- Pages
-- repository security views
-- Gists
-- Codespaces management
+### O.1 Discussions — Complete
+- [x] discussion categories
+- [x] recent repository discussions
+- [x] create discussion
+- [x] permission/capability errors
+
+### O.2 Projects V2 — Complete
+- [x] repository-linked Projects V2
+- [x] project metadata and item counts
+- [x] create repository-linked Project V2
+- [x] repository/owner node identity handling
+
+### O.3 GitHub Pages — Complete
+- [x] detect Pages state
+- [x] source/build metadata
+- [x] enable Pages from the real default branch
+- [x] request Pages build
+- [x] disabled-site capability state
+
+### O.4 Repository security — Complete
+- [x] Dependabot alerts
+- [x] code-scanning alerts
+- [x] secret-scanning alerts
+- [x] independent feed permission handling
+- [x] read-only security review surface
+
+### O.5 Gists — Complete
+- [x] authenticated-user Gist list
+- [x] create public/secret Gist
+- [x] delete Gist
+
+### O.6 Codespaces — Complete
+- [x] authenticated-user Codespaces list
+- [x] create Codespace for current repository
+- [x] start / stop
+- [x] delete
+- [x] default-branch aware creation
+
+### O.7 Validation — In progress
+- [x] typed Advanced GitHub gateway
+- [x] REST + GraphQL integration
+- [x] repository navigation and Compose surface
+- [x] JVM parser tests
+- [x] Compose test
+- [x] permission documentation
+- [x] Advanced GitHub documentation
+- [ ] Android CI validation
+- [ ] Foundation CI validation
+- [ ] pull-request integration validation
 
 ## Phase P — Advanced Git
 

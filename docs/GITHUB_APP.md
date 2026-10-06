@@ -48,7 +48,14 @@ Start with least privilege and add permissions only when the associated feature 
 | Actions | Read | Workflow/run/job visibility |
 | Workflows | Read/Write only when needed | Dispatch or workflow modification |
 | Commit statuses / Checks | Read | CI state |
-| Discussions | Read/Write only when shipped | Discussions |
+| Discussions | Read/Write | List and create repository Discussions |
+| Projects | Read/Write where applicable | Read/create Projects V2 linked to repositories |
+| Pages | Read/Write | Inspect, enable and rebuild GitHub Pages |
+| Dependabot alerts | Read | Repository Dependabot security view |
+| Code scanning alerts | Read | Repository code-scanning security view |
+| Secret scanning alerts | Read | Repository secret-scanning security view |
+| Codespaces | Read/Write | List/create/start/stop/delete Codespaces |
+| Gists (user permission) | Read/Write | List/create/delete Gists for the authorized user |
 | Starring (user permission) | Read/Write | Read and change the authenticated user's starred repositories |
 
 Account permissions should be added only for implemented profile, identity or social features.

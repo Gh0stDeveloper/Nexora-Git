@@ -32,6 +32,7 @@ import androidx.navigation.compose.rememberNavController
 import com.nexora.git.feature.activity.ActivityScreen
 import com.nexora.git.feature.actions.ActionsScreen
 import com.nexora.git.feature.actions.WorkflowRunDetailScreen
+import com.nexora.git.feature.advanced.AdvancedGitHubScreen
 import com.nexora.git.feature.auth.AuthUiState
 import com.nexora.git.feature.auth.AuthViewModel
 import com.nexora.git.feature.auth.LoginScreen
@@ -305,10 +306,34 @@ private fun AuthenticatedNexoraGitApp(
                             "actions/" + owner + "/" + name,
                         )
                     },
+                    onOpenAdvancedGitHub = { owner, name ->
+                        navController.navigate(
+                            "advanced/" + owner + "/" + name,
+                        )
+                    },
                     onOpenReleases = { owner, name ->
                         navController.navigate(
                             "releases/" + owner + "/" + name,
                         )
+                    },
+                )
+            }
+
+            composable(
+                route = "advanced/{owner}/{name}",
+                arguments = listOf(
+                    navArgument("owner") {
+                        type = NavType.StringType
+                    },
+                    navArgument("name") {
+                        type = NavType.StringType
+                    },
+                ),
+            ) {
+                AdvancedGitHubScreen(
+                    contentPadding = paddingValues,
+                    onBack = {
+                        navController.popBackStack()
                     },
                 )
             }
