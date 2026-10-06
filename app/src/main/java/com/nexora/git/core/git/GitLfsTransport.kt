@@ -26,6 +26,11 @@ class GitLfsTransport @Inject constructor(
     private val credentialProvider: GitCredentialProvider,
     private val manager: GitLfsManager,
 ) {
+    fun supportsRemote(remoteUrl: String): Boolean =
+        runCatching {
+            lfsBatchEndpoint(remoteUrl)
+        }.isSuccess
+
     suspend fun downloadMissing(
         repositoryPath: String,
         remoteUrl: String,
