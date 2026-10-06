@@ -140,9 +140,9 @@ The project must use its own branding and must not imply that it is an official 
 
 ## Status
 
-**Current stage:** Phase N — Account and Social implementation is complete; CI validation is in progress.
+**Current stage:** Phase N — Account and Social is implemented for GitHub App-supported APIs; CI validation is in progress.
 
-Nexora Git now adds a real GitHub profile, organizations, starred repositories, followers/following, activity, and actionable notifications while preserving secure multi-account switching.
+Nexora Git now adds a real GitHub profile, organizations, starred repositories, followers/following, and activity while preserving secure multi-account switching. GitHub's native Notifications REST API is capability-guarded because GitHub does not support it for GitHub App user access tokens; the app provides a browser handoff instead of issuing requests that would fail.
 
 ---
 
