@@ -99,6 +99,8 @@ See [Git Engine](docs/GIT_ENGINE.md).
 - [Phase L report](docs/PHASE_L_REPORT.md)
 - [Releases](docs/RELEASES.md)
 - [Phase M report](docs/PHASE_M_REPORT.md)
+- [Account and Social](docs/ACCOUNT_SOCIAL.md)
+- [Phase N report](docs/PHASE_N_REPORT.md)
 - [Auth Broker](auth-broker/README.md)
 - [Architecture decisions](docs/adr/)
 
@@ -138,9 +140,9 @@ The project must use its own branding and must not imply that it is an official 
 
 ## Status
 
-**Current stage:** Phase M — Releases is complete and CI validated. Phase N is next.
+**Current stage:** Phase N — Account and Social is complete and CI validated for GitHub App-supported APIs. Phase O — Advanced GitHub is next.
 
-Nexora Git now includes native tags, releases, drafts, prereleases, immutable-release handling, and secure release-asset upload/download management.
+Nexora Git now includes a real GitHub profile, organizations, starred repositories, followers/following, and activity while preserving secure multi-account switching. GitHub's native Notifications REST inbox remains capability-guarded because GitHub does not support it for GitHub App user access tokens; Nexora Git provides a browser handoff rather than issuing requests that GitHub would reject.
 
 ---
 

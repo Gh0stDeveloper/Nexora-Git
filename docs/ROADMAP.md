@@ -502,12 +502,56 @@ This roadmap is intentionally staged. A phase is not complete if it only contain
 
 ## Phase N — Account and Social
 
-- profile
-- organizations
-- stars
-- followers/following
-- activity
-- notifications
+**Status: complete and CI validated for GitHub App-supported APIs. GitHub's native Notifications REST inbox remains unavailable under GitHub App user access tokens, so Nexora Git capability-guards it instead of issuing unsupported requests.**
+
+### N.1 Profile — Complete
+- [x] authenticated GitHub profile
+- [x] profile metadata and metrics
+- [x] edit profile
+- [x] hireable state
+- [x] active-account refresh
+- [x] multi-account management preserved
+
+### N.2 Organizations and stars — Complete
+- [x] organizations
+- [x] starred repositories
+- [x] repository navigation
+- [x] star/unstar API
+- [x] unstar from Profile
+
+### N.3 Followers and following — Complete
+- [x] followers
+- [x] following
+- [x] follow
+- [x] unfollow
+- [x] local relationship reconciliation
+
+### N.4 Activity — Complete
+- [x] recent account activity
+- [x] common GitHub event summaries
+- [x] action/ref/number/title metadata
+- [x] public/private state
+- [x] repository navigation
+
+### N.5 Notifications compatibility — Complete within the GitHub App auth contract
+- [x] detect the primary auth model as GitHub App user access token
+- [x] do not call unsupported GitHub Notifications REST endpoints
+- [x] explain the upstream limitation in-app
+- [x] browser handoff to GitHub notification inbox
+- [x] no silent secondary credential
+- [x] document that a native notification inbox would require a separate OAuth-App credential model
+
+### N.6 Validation — Complete
+- [x] typed Social gateway
+- [x] REST integration for supported account/social APIs
+- [x] Profile and Activity ViewModels
+- [x] Profile and Activity Compose surfaces
+- [x] JVM parser tests
+- [x] Compose tests
+- [x] Account and Social documentation
+- [x] Android CI validation
+- [x] Foundation CI validation
+- [x] pull-request integration validation
 
 ## Phase O — Advanced GitHub
 
