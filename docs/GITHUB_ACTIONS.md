@@ -1,6 +1,8 @@
 # GitHub Actions
 
-Phase L adds a native GitHub Actions control surface to Nexora Git.
+> **Current reference:** This document describes the implemented Nexora Git system. See the [Documentation Hub](README.md) for navigation.
+
+Nexora Git includes a native GitHub Actions control surface.
 
 ## Workflows
 
@@ -93,7 +95,7 @@ Artifacts are stored in Nexora Git's app-specific downloads directory under:
 
 ## GitHub App permissions
 
-For the complete Phase L experience, the production GitHub App should grant, as applicable:
+For the complete GitHub Actions experience, the production GitHub App should grant, as applicable:
 
 - Actions: read/write
 - Contents: read
@@ -103,7 +105,7 @@ Repository policy, organization policy, Actions configuration, environment prote
 
 ## Validation
 
-Phase L includes:
+Validation includes:
 
 - JVM parser tests for workflows/runs/jobs/steps/artifacts
 - JVM tests for dispatch input parsing
@@ -112,3 +114,7 @@ Phase L includes:
 - Repository → Actions navigation coverage
 - Android CI
 - Foundation CI
+
+---
+
+[← Documentation hub](README.md)
