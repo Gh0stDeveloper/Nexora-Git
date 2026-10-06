@@ -71,6 +71,60 @@ std::string json_string(
     return payload.substr(value_start, end - value_start);
 }
 
+std::string index_blob_content(
+    const fs::path& repository_path,
+    const std::string& path
+) {
+    git_repository* repository = nullptr;
+    raw_check(
+        git_repository_open(
+            &repository,
+            repository_path.string().c_str()
+        ),
+        "Open repository for index blob"
+    );
+
+    git_index* index = nullptr;
+    const int index_rc =
+        git_repository_index(&index, repository);
+    if (index_rc < 0) {
+        git_repository_free(repository);
+        raw_check(index_rc, "Open index for blob");
+    }
+
+    const git_index_entry* entry =
+        git_index_get_bypath(index, path.c_str(), 0);
+    if (entry == nullptr) {
+        git_index_free(index);
+        git_repository_free(repository);
+        throw std::runtime_error(
+            "Index entry not found: " + path
+        );
+    }
+
+    git_blob* blob = nullptr;
+    const int blob_rc =
+        git_blob_lookup(&blob, repository, &entry->id);
+    if (blob_rc < 0) {
+        git_index_free(index);
+        git_repository_free(repository);
+        raw_check(blob_rc, "Open index blob");
+    }
+
+    const char* data = static_cast<const char*>(
+        git_blob_rawcontent(blob)
+    );
+    const size_t size =
+        static_cast<size_t>(git_blob_rawsize(blob));
+    const std::string content =
+        data != nullptr ? std::string(data, size) : "";
+
+    git_blob_free(blob);
+    git_index_free(index);
+    git_repository_free(repository);
+    return content;
+}
+
 void create_bare_remote(const fs::path& path) {
     git_repository* repository = nullptr;
     raw_check(
@@ -1077,9 +1131,8 @@ void advanced_local_workflow(
     );
 
     const std::string lfs_staged =
-        nexora::git::diff(
-            repository.string(),
-            "staged",
+        index_blob_content(
+            repository,
             "asset.bin"
         );
     require(
