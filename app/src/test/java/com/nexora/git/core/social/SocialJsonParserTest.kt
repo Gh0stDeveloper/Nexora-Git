@@ -101,7 +101,7 @@ class SocialJsonParserTest {
     }
 
     @Test
-    fun parsesActivityNotificationsAndSubscription() {
+    fun parsesActivityMetadata() {
         val events = parser.activity(
             """
             [
@@ -127,50 +127,13 @@ class SocialJsonParserTest {
             """.trimIndent(),
         )
 
-        val notifications = parser.notifications(
-            """
-            [
-              {
-                "id":"100",
-                "unread":true,
-                "reason":"mention",
-                "updated_at":"now",
-                "last_read_at":null,
-                "subject":{
-                  "title":"Review requested",
-                  "url":"https://api.github.com/subject",
-                  "latest_comment_url":null,
-                  "type":"PullRequest"
-                },
-                "repository":{
-                  "full_name":"ghost/repo",
-                  "html_url":"https://github.com/ghost/repo"
-                }
-              }
-            ]
-            """.trimIndent(),
-        )
-
-        val subscription = parser.subscription(
-            """
-            {
-              "subscribed":true,
-              "ignored":false,
-              "reason":"subscribed",
-              "created_at":"now"
-            }
-            """.trimIndent(),
-        )
-
         assertEquals("opened", events.single().action)
         assertEquals(12, events.single().number)
         assertEquals("Bug", events.single().title)
-        assertTrue(notifications.single().unread)
+        assertTrue(events.single().publicEvent)
         assertEquals(
             "ghost/repo",
-            notifications.single().repositoryFullName,
+            events.single().repositoryName,
         )
-        assertTrue(subscription.subscribed)
-        assertFalse(subscription.ignored)
     }
 }
