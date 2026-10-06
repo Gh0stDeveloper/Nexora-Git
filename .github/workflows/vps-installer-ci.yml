@@ -46,7 +46,7 @@ jobs:
 
       - name: ShellCheck
         shell: bash
-        run: shellcheck scripts/vps/*.sh scripts/vps/nexora-git
+        run: shellcheck -x scripts/vps/*.sh scripts/vps/nexora-git
 
       - name: Test helper functions
         shell: bash
