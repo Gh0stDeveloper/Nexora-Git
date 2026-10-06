@@ -1112,12 +1112,13 @@ private fun CheckCard(
                             .orEmpty()
                         ),
                 color = if (
-                    check.conclusion in setOf(
+                    when (check.conclusion?.lowercase()) {
                         "failure",
                         "timed_out",
                         "cancelled",
-                        "action_required",
-                    )
+                        "action_required" -> true
+                        else -> false
+                    }
                 ) {
                     MaterialTheme.colorScheme.error
                 } else {
