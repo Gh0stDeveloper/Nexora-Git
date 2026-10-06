@@ -8,12 +8,19 @@ source "$SCRIPT_DIR/lib.sh"
 
 valid_domain "auth.example.com"
 valid_domain "git-auth.nexora.dev"
-! valid_domain "https://auth.example.com"
-! valid_domain "localhost"
-! valid_domain "bad_domain.example.com"
+
+for invalid_domain in "https://auth.example.com" "localhost" "bad_domain.example.com"; do
+  if valid_domain "$invalid_domain"; then
+    printf 'Expected invalid domain to fail: %s\n' "$invalid_domain" >&2
+    exit 1
+  fi
+done
 
 valid_email "admin@example.com"
-! valid_email "not-an-email"
+if valid_email "not-an-email"; then
+  printf 'Expected invalid email to fail.\n' >&2
+  exit 1
+fi
 
 free="$(find_free_port 25000 25100)"
 [[ "$free" =~ ^[0-9]+$ ]]
