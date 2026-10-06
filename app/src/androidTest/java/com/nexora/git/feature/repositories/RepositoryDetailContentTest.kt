@@ -88,6 +88,7 @@ class RepositoryDetailContentTest {
                     onOpenPullRequests = { _, _ -> },
                     onOpenActions = { _, _ -> },
                     onOpenReleases = { _, _ -> },
+                    onOpenAdvancedGitHub = { _, _ -> },
                 )
             }
         }
@@ -101,6 +102,8 @@ class RepositoryDetailContentTest {
         composeRule.onNodeWithText("Fork")
             .assertIsDisplayed()
         composeRule.onNodeWithText("Clone")
+            .assertIsDisplayed()
+        composeRule.onNodeWithText("Advanced GitHub")
             .assertIsDisplayed()
         composeRule.onNodeWithText("Repository settings")
             .assertIsDisplayed()
