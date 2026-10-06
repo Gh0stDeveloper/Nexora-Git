@@ -146,7 +146,7 @@ The project must use its own branding and must not imply that it is an official 
 
 ## Status
 
-**Current stage:** Phase Q — Advanced Mobile Development is feature-complete on `phase-q-advanced-mobile-development` and is at the final Android/Foundation CI and merge gate.
+**Current stage:** Phase Q — Advanced Mobile Development is complete, CI validated and integrated into `main` through PR #19. Phase R — Production is next.
 
 Phase Q adds an embedded Tree-sitter engine for Kotlin, Java, JavaScript, TypeScript/TSX, Python and JSON; AST-backed highlighting, symbols and syntax diagnostics; an optional LSP provider architecture; safe mobile formatters; local project templates; and bounded project-wide search.
 
