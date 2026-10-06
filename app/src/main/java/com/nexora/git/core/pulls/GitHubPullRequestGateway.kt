@@ -379,9 +379,156 @@ class GitHubPullRequestGateway @Inject constructor(
             "MarkPullRequestReadyForReviewInput!"
         }
 
+        val dollar = '
+        return when (
+            val response = platform.graphQl.execute(
+                GitHubGraphQlRequest(
+                    query = query,
+                    variables = mapOf(
+                        "input" to mapOf(
+                            "pullRequestId" to nodeId,
+                        ),
+                    ),
+                    operation = GitHubGraphQlOperation.MUTATION,
+                    cachePolicy = GitHubCachePolicy.NO_STORE,
+                ),
+            )
+        ) {
+            is AppResult.Failure -> response
+            is AppResult.Success -> {
+                if (response.value.hasErrors) {
+                    AppResult.Failure(
+                        AppError.Validation(
+                            response.value.errors.joinToString("; ") {
+                                it.message
+                            },
+                        ),
+                    )
+                } else {
+                    AppResult.Success(Unit)
+                }
+            }
+        }
+    }
+
+    private suspend fun <T> pullPaged(
+        owner: String,
+        repository: String,
+        number: Int,
+        suffix: String,
+        parser: (String?) -> List<T>,
+        message: String,
+    ): AppResult<List<T>> {
+        val ids = validate(owner, repository)
+            ?: return validation("Repository identifier is invalid.")
+        if (number <= 0) return validation("Pull request number is invalid.")
+
+        return paged(
+            first = GitHubRestRequest(
+                pathOrUrl = repoPath(ids) + "/pulls/" + number + suffix,
+                query = mapOf("per_page" to "100"),
+                cachePolicy = GitHubCachePolicy.NETWORK_FIRST,
+                cacheTtlMillis = 10_000L,
+            ),
+            parse = parser,
+            message = message,
+        )
+    }
+
+    private suspend fun <T> paged(
+        first: GitHubRestRequest,
+        parse: (String?) -> List<T>,
+        message: String,
+    ): AppResult<List<T>> {
+        val values = mutableListOf<T>()
+        val seen = linkedSetOf<String>()
+        var request = first
+
+        repeat(MAX_PAGES) {
+            when (val response = platform.rest.execute(request)) {
+                is AppResult.Failure -> return response
+                is AppResult.Success -> {
+                    val page = runCatching {
+                        parse(response.value.body)
+                    }.getOrElse {
+                        return AppResult.Failure(AppError.Parsing(message, it))
+                    }
+                    values += page
+                    val next = response.value.pagination.nextUrl
+                        ?: return AppResult.Success(values)
+                    if (!seen.add(next)) {
+                        return validation("Repeated GitHub pagination URL.")
+                    }
+                    request = GitHubRestRequest(
+                        pathOrUrl = next,
+                        cachePolicy = GitHubCachePolicy.NETWORK_FIRST,
+                        cacheTtlMillis = first.cacheTtlMillis,
+                    )
+                }
+            }
+        }
+
+        return validation("GitHub pull request pagination exceeded the safety limit.")
+    }
+
+    private fun <T> parse(
+        result: AppResult<com.nexora.git.core.platform.GitHubRestResponse>,
+        parser: (String?) -> T,
+        message: String,
+    ): AppResult<T> =
+        when (result) {
+            is AppResult.Failure -> result
+            is AppResult.Success ->
+                runCatching { parser(result.value.body) }.fold(
+                    onSuccess = { AppResult.Success(it) },
+                    onFailure = {
+                        AppResult.Failure(AppError.Parsing(message, it))
+                    },
+                )
+        }
+
+    private fun unit(
+        result: AppResult<com.nexora.git.core.platform.GitHubRestResponse>,
+    ): AppResult<Unit> =
+        when (result) {
+            is AppResult.Failure -> result
+            is AppResult.Success -> AppResult.Success(Unit)
+        }
+
+    private fun validate(
+        owner: String,
+        repository: String,
+    ): Pair<String, String>? {
+        val safeOwner = owner.trim()
+        val safeRepo = repository.trim()
+        if (!OWNER.matches(safeOwner) || !REPOSITORY.matches(safeRepo)) {
+            return null
+        }
+        return safeOwner to safeRepo
+    }
+
+    private fun repoPath(ids: Pair<String, String>): String =
+        "/repos/" + ids.first + "/" + ids.second
+
+    private fun validation(message: String): AppResult.Failure =
+        AppResult.Failure(AppError.Validation(message))
+
+    companion object {
+        private val OWNER =
+            Regex("^[A-Za-z0-9](?:[A-Za-z0-9-]{0,38})$")
+        private val REPOSITORY =
+            Regex("^[A-Za-z0-9._-]{1,100}$")
+        private val REF =
+            Regex("^[A-Za-z0-9._/-]{1,255}$")
+        private val SHA =
+            Regex("^[a-fA-F0-9]{7,64}$")
+        private const val MAX_PAGES = 10
+    }
+}
+
         val query = """
-            mutation NexoraDraft($input: $inputType) {
-              $mutationName(input: $input) {
+            mutation NexoraDraft(${dollar}input: $inputType) {
+              $mutationName(input: ${dollar}input) {
                 pullRequest {
                   id
                   isDraft
