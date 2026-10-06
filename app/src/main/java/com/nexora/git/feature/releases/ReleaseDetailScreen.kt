@@ -15,7 +15,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.ArrowBack
+import androidx.compose.material.icons.automirrored.outlined.ArrowBack
 import androidx.compose.material.icons.outlined.Delete
 import androidx.compose.material.icons.outlined.Download
 import androidx.compose.material.icons.outlined.Edit
@@ -45,7 +45,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.unit.dp
-import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.nexora.git.core.releases.GitHubRelease
 import com.nexora.git.core.releases.ReleaseAsset
@@ -330,7 +330,7 @@ internal fun ReleaseDetailContent(
             ) {
                 IconButton(onClick = onBack) {
                     Icon(
-                        imageVector = Icons.Outlined.ArrowBack,
+                        imageVector = Icons.AutoMirrored.Outlined.ArrowBack,
                         contentDescription = "Back",
                     )
                 }
