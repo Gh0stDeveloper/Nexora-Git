@@ -1,0 +1,62 @@
+name: VPS Installer CI
+
+on:
+  push:
+    branches:
+      - main
+      - "feat/vps-*"
+    paths:
+      - "scripts/vps/**"
+      - "auth-broker/compose.yaml"
+      - ".github/workflows/vps-installer-ci.yml"
+  pull_request:
+    branches:
+      - main
+    paths:
+      - "scripts/vps/**"
+      - "auth-broker/compose.yaml"
+      - ".github/workflows/vps-installer-ci.yml"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: vps-installer-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  validate:
+    name: Validate VPS installer
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
+
+      - name: Validate Bash syntax
+        shell: bash
+        run: bash -n scripts/vps/*.sh scripts/vps/nexora-git
+
+      - name: Install ShellCheck
+        shell: bash
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y shellcheck
+
+      - name: ShellCheck
+        shell: bash
+        run: shellcheck -x -P scripts/vps scripts/vps/*.sh scripts/vps/nexora-git
+
+      - name: Test helper functions
+        shell: bash
+        run: bash scripts/vps/test-lib.sh
+
+      - name: Validate Compose model
+        shell: bash
+        run: |
+          cp auth-broker/.env.example auth-broker/.env
+          (
+            cd auth-broker
+            docker compose config --quiet
+          )

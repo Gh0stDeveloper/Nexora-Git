@@ -1,0 +1,137 @@
+#!/usr/bin/env bash
+
+set -Eeuo pipefail
+
+SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
+# shellcheck source=lib.sh
+source "$SCRIPT_DIR/lib.sh"
+
+usage() {
+  cat <<'EOF'
+Nexora Git VPS Manager
+
+Usage:
+  nexora-git status
+  nexora-git update
+  nexora-git doctor
+  nexora-git logs
+  nexora-git start
+  nexora-git stop
+  nexora-git restart
+  nexora-git renew-cert
+  nexora-git reconfigure
+  nexora-git config
+  nexora-git version
+  nexora-git help
+EOF
+}
+
+require_install() {
+  load_state || die "Nexora Git VPS is not installed."
+}
+
+cmd_status() {
+  require_install
+  printf 'Domain:     https://%s\n' "$DOMAIN"
+  printf 'Local port: 127.0.0.1:%s\n' "$LOCAL_PORT"
+  printf 'Branch:     %s\n' "$BRANCH"
+  printf 'Revision:   %s\n' "$(git -C "$INSTALL_DIR" rev-parse --short HEAD 2>/dev/null || printf unknown)"
+  printf 'Nginx:      %s\n' "$(systemctl is-active nginx 2>/dev/null || true)"
+  printf 'Docker:     %s\n' "$(systemctl is-active docker 2>/dev/null || true)"
+  printf 'TLS:        %s\n' "$(certificate_expiry "$DOMAIN")"
+  compose ps
+}
+
+cmd_doctor() {
+  require_install
+  local failed=0
+
+  for command in git curl docker nginx certbot ss openssl; do
+    if command -v "$command" >/dev/null 2>&1; then
+      log_ok "$command available"
+    else
+      log_error "$command missing"
+      failed=1
+    fi
+  done
+
+  if docker info >/dev/null 2>&1; then log_ok "Docker daemon healthy"; else log_error "Docker daemon unavailable"; failed=1; fi
+  if nginx -t >/dev/null 2>&1; then log_ok "Nginx config valid"; else log_error "Nginx config invalid"; failed=1; fi
+  if wait_local_health "$LOCAL_PORT" 3; then log_ok "Local broker health OK"; else log_error "Local broker health failed"; failed=1; fi
+  if curl -fsS --max-time 10 "https://$DOMAIN/health" >/dev/null 2>&1; then log_ok "Public HTTPS health OK"; else log_error "Public HTTPS health failed"; failed=1; fi
+
+  local cert="/etc/letsencrypt/live/$DOMAIN/fullchain.pem"
+  if [[ -r "$cert" ]] && openssl x509 -in "$cert" -checkend 604800 -noout >/dev/null 2>&1; then
+    log_ok "TLS certificate valid for more than 7 days"
+  else
+    log_warn "TLS certificate missing or expires within 7 days"
+  fi
+
+  compose ps
+  return "$failed"
+}
+
+cmd_update() {
+  require_install
+  local temp
+  temp="$(mktemp)"
+  cp "$INSTALL_DIR/scripts/vps/update.sh" "$temp"
+  chmod 700 "$temp"
+  trap 'rm -f "$temp"' EXIT
+  "$temp"
+}
+
+cmd_config() {
+  require_install
+  printf 'INSTALL_DIR=%s\n' "$INSTALL_DIR"
+  printf 'DOMAIN=%s\n' "$DOMAIN"
+  printf 'EMAIL=%s\n' "$EMAIL"
+  printf 'LOCAL_PORT=%s\n' "$LOCAL_PORT"
+  printf 'REPO_URL=%s\n' "$REPO_URL"
+  printf 'BRANCH=%s\n' "$BRANCH"
+  printf 'Secrets: hidden (auth-broker/.env, mode 600)\n'
+}
+
+require_root
+case "${1:-help}" in
+  status) cmd_status ;;
+  update) cmd_update ;;
+  doctor) cmd_doctor ;;
+  logs)
+    require_install
+    compose logs -f --tail=200 auth-broker
+    ;;
+  start)
+    require_install
+    compose up -d auth-broker
+    ;;
+  stop)
+    require_install
+    compose stop auth-broker
+    ;;
+  restart)
+    require_install
+    compose restart auth-broker
+    wait_local_health "$LOCAL_PORT" 30 || die "Broker failed health check after restart."
+    ;;
+  renew-cert)
+    require_install
+    certbot renew --cert-name "$DOMAIN"
+    nginx -t
+    systemctl reload nginx
+    ;;
+  reconfigure)
+    require_install
+    exec "$INSTALL_DIR/scripts/vps/install.sh" --reconfigure
+    ;;
+  config) cmd_config ;;
+  version)
+    require_install
+    git -C "$INSTALL_DIR" rev-parse HEAD
+    ;;
+  help|-h|--help) usage ;;
+  *)
+    usage
+    die "Unknown command: $1"
+    ;;
+esac

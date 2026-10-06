@@ -159,3 +159,14 @@ go vet ./...
 go test ./...
 go build ./...
 ```
+
+
+## VPS installer
+
+For a production Debian/Ubuntu VPS with Nginx + automatic HTTPS, use the managed installer instead of configuring Docker/Nginx manually:
+
+    sudo bash scripts/vps/install.sh
+
+The installer preserves existing Nginx sites, selects a free loopback port, obtains/reuses a Let's Encrypt certificate, and installs the nexora-git management command.
+
+See docs/VPS_INSTALLER.md.
