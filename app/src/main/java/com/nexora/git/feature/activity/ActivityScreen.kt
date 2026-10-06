@@ -245,7 +245,7 @@ private fun NotificationCapabilityCard(
                     MaterialTheme.colorScheme.onSurfaceVariant,
             )
             Text(
-                text = "The rest of Phase N continues to use GitHub App user access tokens. A second OAuth credential is not silently requested or stored just to bypass this API restriction.",
+                text = "Nexora Git continues to use the primary GitHub App session. A second OAuth credential is not silently requested or stored just to bypass this API restriction.",
                 color =
                     MaterialTheme.colorScheme.onSurfaceVariant,
                 style =
