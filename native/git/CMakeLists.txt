@@ -88,6 +88,11 @@ target_include_directories(
     PRIVATE
     "${tree_sitter_SOURCE_DIR}/lib/src"
 )
+target_compile_definitions(
+    nexora_tree_sitter
+    PRIVATE
+    _DEFAULT_SOURCE
+)
 
 function(nexora_fetch_grammar target repository ref)
     FetchContent_Declare(
