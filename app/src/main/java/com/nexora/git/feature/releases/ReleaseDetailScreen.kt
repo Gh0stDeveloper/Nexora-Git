@@ -800,9 +800,12 @@ private fun EditReleaseDialog(
     var prerelease by rememberSaveable(release.id) {
         mutableStateOf(release.prerelease)
     }
-    var latestPolicy by rememberSaveable(release.id) {
-        mutableStateOf(ReleaseLatestPolicy.AUTO)
+    var latestPolicyName by rememberSaveable(release.id) {
+        mutableStateOf<String?>(null)
     }
+    val latestPolicy = latestPolicyName?.let(
+        ReleaseLatestPolicy::valueOf,
+    )
 
     AlertDialog(
         onDismissRequest = onDismiss,
@@ -912,6 +915,18 @@ private fun EditReleaseDialog(
                                 MaterialTheme.typography.labelLarge,
                         )
                     }
+                    item {
+                        FilterChip(
+                            selected =
+                                latestPolicy == null,
+                            onClick = {
+                                latestPolicyName = null
+                            },
+                            label = {
+                                Text("Keep current")
+                            },
+                        )
+                    }
                     items(
                         items =
                             ReleaseLatestPolicy.entries,
@@ -921,7 +936,8 @@ private fun EditReleaseDialog(
                             selected =
                                 latestPolicy == policy,
                             onClick = {
-                                latestPolicy = policy
+                                latestPolicyName =
+                                    policy.name
                             },
                             label = {
                                 Text(
