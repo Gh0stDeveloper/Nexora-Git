@@ -38,24 +38,4 @@ interface SocialGateway {
         username: String,
     ): AppResult<List<GitHubActivityEvent>>
 
-    suspend fun listNotifications(
-        scope: NotificationScope,
-    ): AppResult<List<GitHubNotificationThread>>
-
-    suspend fun markNotificationRead(
-        threadId: String,
-    ): AppResult<Unit>
-
-    suspend fun markAllNotificationsRead():
-        AppResult<Unit>
-
-    suspend fun getThreadSubscription(
-        threadId: String,
-    ): AppResult<NotificationThreadSubscription>
-
-    suspend fun setThreadSubscription(
-        threadId: String,
-        subscribed: Boolean,
-        ignored: Boolean,
-    ): AppResult<NotificationThreadSubscription>
 }
