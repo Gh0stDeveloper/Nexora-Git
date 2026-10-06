@@ -1,54 +1,54 @@
 # Nexora Git Auth Broker
 
-The Auth Broker is a deliberately small confidential component used by Nexora Git's GitHub App OAuth flow.
+> [Project README](../README.md) · [Authentication](../docs/AUTH.md) · [Deployment runbook](../docs/AUTH_DEPLOYMENT.md) · [VPS installer](../docs/VPS_INSTALLER.md)
 
-It is **not** a GitHub API proxy.
+<p align="center">
 
-## Why it exists
+![Go](https://img.shields.io/badge/Go-1.24-00ADD8?logo=go&logoColor=white)
+![Docker](https://img.shields.io/badge/Docker-Compose-2496ED?logo=docker&logoColor=white)
+![GitHub](https://img.shields.io/badge/GitHub%20App-OAuth%20%2B%20PKCE-181717?logo=github&logoColor=white)
+![Nginx](https://img.shields.io/badge/Nginx-recommended%20TLS%20proxy-009639?logo=nginx&logoColor=white)
 
-A public Android APK cannot protect a GitHub App `client_secret`.
+</p>
 
-GitHub's web application flow supports PKCE, but exchanging the authorization code for a GitHub App user access token still requires the GitHub App client secret. The broker keeps that secret server-side while the Android app owns the PKCE verifier and OAuth state.
+The Auth Broker is a deliberately small confidential service used by Nexora Git's GitHub App OAuth flow. Its job is to keep the GitHub App `client_secret` out of the public Android APK.
 
-## Flow
+It is **not a GitHub API proxy** and it does not store user repositories.
 
-```text
-Android
-  │ generates state + verifier/challenge
-  ▼
-github.com/login/oauth/authorize
-  │
-  ▼
-GET https://auth.example.com/oauth/callback?code=...&state=...
-  │ fixed redirect; no dynamic return URL
-  ▼
-nexoragit://oauth/callback?code=...&state=...
-  │
-  │ Android validates state
-  │ sends code + original verifier
-  ▼
-POST /v1/oauth/exchange
-  │ broker adds client_secret
-  ▼
-github.com/login/oauth/access_token
-  │
-  ▼
-Android Keystore-backed encrypted token storage
+## Why the broker exists
+
+A public Android application cannot safely protect a permanent GitHub App client secret. The Android client owns the PKCE verifier and OAuth state, while the broker adds the confidential application credential only when GitHub requires it for token exchange, refresh or revocation.
+
+```mermaid
+sequenceDiagram
+    participant A as Android app
+    participant G as GitHub
+    participant N as Nginx/TLS
+    participant B as Auth Broker
+
+    A->>A: state + PKCE verifier/challenge
+    A->>G: official authorization page
+    G-->>N: HTTPS OAuth callback
+    N->>B: reverse proxy
+    B-->>A: fixed nexoragit:// callback
+    A->>A: validate state
+    A->>B: code + PKCE verifier
+    B->>G: exchange with client secret
+    G-->>B: access/refresh token bundle
+    B-->>A: token bundle
 ```
 
-## Endpoints
+## HTTP API
 
-### `GET /health`
+| Method | Endpoint | Purpose |
+| --- | --- | --- |
+| `GET` | `/health` | health probe |
+| `GET` | `/oauth/callback` | GitHub callback; forwards expected parameters to the fixed native URI |
+| `POST` | `/v1/oauth/exchange` | exchange authorization code + PKCE verifier |
+| `POST` | `/v1/oauth/refresh` | rotate an expiring GitHub token bundle |
+| `POST` | `/v1/oauth/revoke` | revoke an individual user access token |
 
-Returns broker health.
-
-### `GET /oauth/callback`
-
-GitHub App callback URL. It forwards only the expected OAuth response parameters to the fixed native callback URI configured on the server.
-
-### `POST /v1/oauth/exchange`
-
-Input:
+### Exchange request
 
 ```json
 {
@@ -57,11 +57,7 @@ Input:
 }
 ```
 
-The broker adds the confidential GitHub App credentials and exchanges the code with GitHub.
-
-### `POST /v1/oauth/refresh`
-
-Input:
+### Refresh request
 
 ```json
 {
@@ -69,11 +65,7 @@ Input:
 }
 ```
 
-Refresh tokens are rotated by GitHub; clients must replace both tokens with the returned bundle.
-
-### `POST /v1/oauth/revoke`
-
-Input:
+### Revoke request
 
 ```json
 {
@@ -81,11 +73,9 @@ Input:
 }
 ```
 
-Revokes the individual user access token through GitHub's app authorization API.
+## Configuration
 
-## Environment
-
-Copy `.env.example` to a non-committed `.env`:
+Copy the example environment file:
 
 ```bash
 cp .env.example .env
@@ -101,7 +91,7 @@ APP_CALLBACK_URI=nexoragit://oauth/callback
 PORT=8080
 ```
 
-The GitHub App callback setting must contain exactly the same `GITHUB_CALLBACK_URL`.
+The GitHub App callback setting must exactly match `GITHUB_CALLBACK_URL`.
 
 ## Docker Compose
 
@@ -109,49 +99,44 @@ The GitHub App callback setting must contain exactly the same `GITHUB_CALLBACK_U
 docker compose up -d --build
 ```
 
-The service binds only to:
+The repository Compose configuration binds the broker to loopback only:
 
 ```text
-127.0.0.1:8080
+127.0.0.1:PORT
 ```
 
-Place Nginx/Caddy/another TLS reverse proxy in front of it.
+Use Nginx or another trusted TLS reverse proxy for public HTTPS termination.
 
-## Nginx example
-
-```nginx
-server {
-    listen 443 ssl http2;
-    server_name auth.example.com;
-
-    location / {
-        proxy_pass http://127.0.0.1:8080;
-        proxy_http_version 1.1;
-        proxy_set_header Host $host;
-        proxy_set_header X-Forwarded-Proto https;
-        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-    }
-}
-```
-
-Use a valid TLS certificate. Do not expose the broker over plain HTTP.
+For Debian/Ubuntu production hosts, prefer the managed [VPS installer](../docs/VPS_INSTALLER.md), which configures Docker, Nginx, Certbot, health checks and the `nexora-git` administration command.
 
 ## Security properties
 
-- client secret exists only in the broker environment;
-- request bodies are never logged by the application;
+- the client secret exists only in server configuration;
 - OAuth callback destination is fixed server-side;
-- JSON bodies are size-limited;
+- request bodies are bounded and are not intentionally logged;
 - PKCE verifier format is validated;
-- token prefixes are validated for refresh/revoke operations;
-- responses use `Cache-Control: no-store`;
-- per-IP rate limiting is enabled;
-- container runs non-root with a read-only filesystem;
+- refresh/revoke token formats are validated;
+- sensitive responses use `Cache-Control: no-store`;
+- per-IP rate limiting protects sensitive endpoints;
+- the container runs non-root;
+- the container filesystem is read-only;
+- Linux capabilities are dropped;
+- `no-new-privileges` is enabled;
 - no general-purpose GitHub proxy endpoint exists.
+
+## Local development
+
+```bash
+go test ./...
+go vet ./...
+go build ./...
+```
+
+Never commit a real `.env`, access token, refresh token or GitHub App client secret.
 
 ## CI
 
-`Auth Broker CI` runs:
+`Auth Broker CI` validates formatting, static analysis, tests and compilation:
 
 ```text
 gofmt check
@@ -160,13 +145,16 @@ go test ./...
 go build ./...
 ```
 
+## Production operations
 
-## VPS installer
+The managed VPS deployment provides:
 
-For a production Debian/Ubuntu VPS with Nginx + automatic HTTPS, use the managed installer instead of configuring Docker/Nginx manually:
+```bash
+sudo nexora-git status
+sudo nexora-git doctor
+sudo nexora-git logs
+sudo nexora-git update
+sudo nexora-git restart
+```
 
-    sudo bash scripts/vps/install.sh
-
-The installer preserves existing Nginx sites, selects a free loopback port, obtains/reuses a Let's Encrypt certificate, and installs the nexora-git management command.
-
-See docs/VPS_INSTALLER.md.
+See [VPS Installer & Operations](../docs/VPS_INSTALLER.md) for the full lifecycle, TLS, rollback and shared-Nginx behavior.
