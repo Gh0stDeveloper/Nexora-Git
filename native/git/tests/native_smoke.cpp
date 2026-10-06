@@ -1156,10 +1156,10 @@ void advanced_local_workflow(
         repository / "asset.bin",
         std::ios::binary
     );
-    const std::string restored(
+    const std::string restored{
         std::istreambuf_iterator<char>(restored_input),
         std::istreambuf_iterator<char>()
-    );
+    };
     require(
         restored == lfs_content,
         "LFS smudge filter did not restore the local object"
