@@ -851,3 +851,7 @@ These tasks must not be represented as incomplete application features. Their pr
 ## Definition of Done
 
 A feature can be marked complete only when applicable UI, implementation, errors, permissions, tests, accessibility and documentation are present.
+
+---
+
+[← Documentation hub](README.md)
