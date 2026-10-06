@@ -52,9 +52,11 @@ fun ActionsScreen(
     viewModel: ActionsViewModel = hiltViewModel(),
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
-    var dispatchWorkflow by rememberSaveable {
-        mutableStateOf<GitHubWorkflow?>(null)
+    var dispatchWorkflowId by rememberSaveable {
+        mutableStateOf<Long?>(null)
     }
+    val dispatchWorkflow = state.workflows
+        .firstOrNull { it.id == dispatchWorkflowId }
 
     ActionsContent(
         state = state,
@@ -65,7 +67,7 @@ fun ActionsScreen(
         onSetStatus = viewModel::setStatusFilter,
         onOpenRun = onOpenRun,
         onDispatch = {
-            dispatchWorkflow = it
+            dispatchWorkflowId = it.id
         },
     )
 
@@ -75,10 +77,10 @@ fun ActionsScreen(
             defaultRef = state.defaultBranch,
             busy = state.operationInProgress,
             onDismiss = {
-                dispatchWorkflow = null
+                dispatchWorkflowId = null
             },
             onDispatch = { ref, inputs ->
-                dispatchWorkflow = null
+                dispatchWorkflowId = null
                 viewModel.dispatch(
                     workflowId = workflow.id,
                     ref = ref,
