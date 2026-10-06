@@ -64,12 +64,13 @@ data class PullRequestDetailUiState(
 
     val failedChecks: Int
         get() = checks.count {
-            it.conclusion in setOf(
+            when (it.conclusion?.lowercase()) {
                 "failure",
                 "timed_out",
                 "cancelled",
-                "action_required",
-            )
+                "action_required" -> true
+                else -> false
+            }
         }
 }
 
