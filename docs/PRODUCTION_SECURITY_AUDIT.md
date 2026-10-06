@@ -1,8 +1,10 @@
 # Production Security Audit
 
+> **Current reference:** This document describes the implemented Nexora Git system. See the [Documentation Hub](README.md) for navigation.
+
 ## Result
 
-Repository-level controls for Phase R are implemented. External credential provisioning and deployment remain release gates.
+Repository-level production security controls are implemented. External credential provisioning and deployment are operational launch requirements rather than application implementation gaps.
 
 ## Findings remediated
 
@@ -52,3 +54,7 @@ Remediation:
 - production key custody is operational and cannot be solved in source control.
 
 No credential, source-code telemetry or trust-all TLS mechanism was introduced.
+
+---
+
+[← Documentation hub](README.md)
