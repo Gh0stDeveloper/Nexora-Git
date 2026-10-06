@@ -1,5 +1,7 @@
 # Phase E — Android Project Storage Report
 
+> **Historical implementation record — Complete.** This report is retained for traceability. For current product behavior and operations, use the [Documentation Hub](README.md).
+
 Date: 2026-10-04
 
 ## Status
@@ -209,3 +211,7 @@ Foundation CI also passed on the same final code revision.
 After final CI and merge, the next roadmap stage is:
 
 **Phase F — Repository Experience**.
+
+---
+
+[← Documentation hub](README.md)
