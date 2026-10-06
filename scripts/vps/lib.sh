@@ -162,6 +162,30 @@ valid_email() {
   [[ "$value" =~ ^[^[:space:]@]+@[^[:space:]@]+\.[^[:space:]@]+$ ]]
 }
 
+nginx_file_has_server_name() {
+  local file="$1"
+  local domain="$2"
+  awk -v domain="$domain" '
+    {
+      line = $0
+      sub(/#.*/, "", line)
+      while (match(line, /server_name[[:space:]]+[^;]+;/)) {
+        directive = substr(line, RSTART, RLENGTH)
+        sub(/^server_name[[:space:]]+/, "", directive)
+        sub(/;$/, "", directive)
+        count = split(directive, names, /[[:space:]]+/)
+        for (i = 1; i <= count; i++) {
+          if (names[i] == domain) {
+            found = 1
+          }
+        }
+        line = substr(line, RSTART + RLENGTH)
+      }
+    }
+    END { exit found ? 0 : 1 }
+  ' "$file"
+}
+
 load_state() {
   [[ -r "$NEXORA_STATE_FILE" ]] || return 1
   # shellcheck disable=SC1090
