@@ -95,6 +95,8 @@ See [Git Engine](docs/GIT_ENGINE.md).
 - [Phase J report](docs/PHASE_J_REPORT.md)
 - [Pull Requests](docs/PULL_REQUESTS.md)
 - [Phase K report](docs/PHASE_K_REPORT.md)
+- [GitHub Actions](docs/GITHUB_ACTIONS.md)
+- [Phase L report](docs/PHASE_L_REPORT.md)
 - [Auth Broker](auth-broker/README.md)
 - [Architecture decisions](docs/adr/)
 
@@ -134,9 +136,9 @@ The project must use its own branding and must not imply that it is an official 
 
 ## Status
 
-**Current stage:** Phase K — Pull Requests and Review is complete and CI validated. Phase L — GitHub Actions is next.
+**Current stage:** Phase L — GitHub Actions implementation is complete; CI validation is in progress.
 
-Nexora Git now includes native pull request creation, changed-file review, inline review comments, approvals/change requests, head checks, draft/ready transitions, and repository-aware merge methods.
+Nexora Git now includes native workflow browsing and dispatch, workflow runs, jobs and steps, secure job-log viewing, run cancellation/re-runs, and streaming artifact downloads.
 
 ---
 
