@@ -270,7 +270,7 @@ int lfs_filter_apply(
                     input->ptr,
                     input->size
                 )) {
-                git_error_set_str(
+                giterr_set_str(
                     GIT_ERROR_FILTER,
                     "Nexora Git could not store the LFS object locally"
                 );
@@ -318,7 +318,7 @@ int lfs_filter_apply(
 
         return GIT_PASSTHROUGH;
     } catch (const std::exception& error) {
-        git_error_set_str(
+        giterr_set_str(
             GIT_ERROR_FILTER,
             error.what()
         );
