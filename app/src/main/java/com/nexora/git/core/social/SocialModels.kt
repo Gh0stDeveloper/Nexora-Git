@@ -80,30 +80,3 @@ data class GitHubActivityEvent(
     val number: Int?,
     val title: String?,
 )
-
-data class GitHubNotificationThread(
-    val id: String,
-    val unread: Boolean,
-    val reason: String,
-    val updatedAt: String?,
-    val lastReadAt: String?,
-    val subjectTitle: String,
-    val subjectType: String,
-    val subjectUrl: String?,
-    val latestCommentUrl: String?,
-    val repositoryFullName: String,
-    val repositoryHtmlUrl: String?,
-)
-
-data class NotificationThreadSubscription(
-    val subscribed: Boolean,
-    val ignored: Boolean,
-    val reason: String?,
-    val createdAt: String?,
-)
-
-enum class NotificationScope {
-    UNREAD,
-    ALL,
-    PARTICIPATING,
-}
