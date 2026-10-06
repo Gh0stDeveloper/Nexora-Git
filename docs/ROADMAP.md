@@ -502,7 +502,7 @@ This roadmap is intentionally staged. A phase is not complete if it only contain
 
 ## Phase N — Account and Social
 
-**Status: implementation complete; CI validation pending on `phase-n-account-social`.**
+**Status: implementation complete for GitHub App-supported APIs; CI validation pending on `phase-n-account-social`.**
 
 ### N.1 Profile — Implemented
 - [x] authenticated GitHub profile
@@ -533,20 +533,17 @@ This roadmap is intentionally staged. A phase is not complete if it only contain
 - [x] public/private state
 - [x] repository navigation
 
-### N.5 Notifications — Implemented
-- [x] unread/all/participating filters
-- [x] unread count
-- [x] mark thread read
-- [x] mark all read
-- [x] thread subscription state
-- [x] subscribe
-- [x] ignore
-- [x] default subscription state
-- [x] repository navigation
+### N.5 Notifications — GitHub App compatibility guard implemented
+- [x] detect the primary auth model as GitHub App user access token
+- [x] do not call unsupported GitHub Notifications REST endpoints
+- [x] explain the upstream limitation in-app
+- [x] browser handoff to GitHub notification inbox
+- [x] no silent secondary credential
+- [ ] native notification inbox requires a separate OAuth-App credential model because GitHub does not support these endpoints for GitHub App user access tokens
 
 ### N.6 Validation — Pending
 - [x] typed Social gateway
-- [x] REST integration
+- [x] REST integration for supported account/social APIs
 - [x] Profile and Activity ViewModels
 - [x] Profile and Activity Compose surfaces
 - [x] JVM parser tests
