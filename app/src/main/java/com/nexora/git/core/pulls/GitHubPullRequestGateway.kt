@@ -379,23 +379,17 @@ class GitHubPullRequestGateway @Inject constructor(
             "MarkPullRequestReadyForReviewInput!"
         }
 
-        val query =
-            "mutation NexoraDraft(" +
-                36.toChar() +
-                "input: " +
-                inputType +
-                ") {\\n" +
-                "  " +
-                mutationName +
-                "(input: " +
-                36.toChar() +
-                "input) {\\n" +
-                "    pullRequest {\\n" +
-                "      id\\n" +
-                "      isDraft\\n" +
-                "    }\\n" +
-                "  }\\n" +
-                "}"
+        val variable = 36.toChar().toString() + "input"
+        val query = listOf(
+            "mutation NexoraDraft(" + variable + ": " + inputType + ") {",
+            "  " + mutationName + "(input: " + variable + ") {",
+            "    pullRequest {",
+            "      id",
+            "      isDraft",
+            "    }",
+            "  }",
+            "}",
+        ).joinToString(10.toChar().toString())
 
         return when (
             val response = platform.graphQl.execute(
