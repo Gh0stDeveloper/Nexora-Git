@@ -1,5 +1,7 @@
 # Phase D — Real Git Engine Report
 
+> **Historical implementation record — Complete.** This report is retained for traceability. For current product behavior and operations, use the [Documentation Hub](README.md).
+
 Date: 2026-10-04
 
 ## Status
@@ -237,3 +239,7 @@ Later phases retain:
 The Real Git Engine is implemented and validated.
 
 The next development phase is **Phase E — Android Project Storage**, where Nexora Git will connect this engine to user-selected Android project folders through SAF and managed workspaces.
+
+---
+
+[← Documentation hub](README.md)
