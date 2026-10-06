@@ -85,8 +85,16 @@ else
     log_warn "Enter a valid email address."
   done
 
-  if [[ -z "${LOCAL_PORT:-}" ]] || (( RECONFIGURE == 1 && EXISTING == 0 )); then
+  if [[ -z "${LOCAL_PORT:-}" ]]; then
     LOCAL_PORT="$(find_free_port 18080 18180)" || die "No free local broker port found in 18080-18180."
+  elif (( RECONFIGURE == 1 )) && port_busy "$LOCAL_PORT"; then
+    if compose ps 2>/dev/null | grep -Eq 'auth-broker.*(Up|running)'; then
+      log_info "Keeping current broker port $LOCAL_PORT because the existing Nexora container owns it."
+    else
+      previous_port="$LOCAL_PORT"
+      LOCAL_PORT="$(find_free_port 18080 18180)" || die "No free local broker port found in 18080-18180."
+      log_warn "Port $previous_port is now owned by another process; automatically moved broker to $LOCAL_PORT."
+    fi
   fi
   log_ok "Local broker port: 127.0.0.1:$LOCAL_PORT"
 
@@ -143,7 +151,14 @@ while IFS= read -r candidate; do
   [[ -z "$candidate" ]] && continue
   [[ "$(readlink -f "$candidate" 2>/dev/null || printf '%s' "$candidate")" == "$(readlink -f "$NGINX_AVAILABLE" 2>/dev/null || printf '%s' "$NGINX_AVAILABLE")" ]] && continue
   conflicts+="$candidate"$'\n'
-done < <(grep -RslF "server_name $DOMAIN;" /etc/nginx/sites-enabled 2>/dev/null || true)
+done < <(
+  for candidate in /etc/nginx/sites-enabled/*; do
+    [[ -e "$candidate" ]] || continue
+    if nginx_file_has_server_name "$candidate" "$DOMAIN"; then
+      printf '%s\n' "$candidate"
+    fi
+  done
+)
 
 if [[ -n "$conflicts" ]]; then
   printf '%s' "$conflicts" >&2
