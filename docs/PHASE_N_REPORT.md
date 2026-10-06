@@ -49,19 +49,20 @@ Implemented:
 - public/private indicator
 - repository navigation
 
-## N.5 Notifications
+## N.5 Notifications compatibility
 
 Implemented:
 
-- unread/all/participating filters
-- unread count
-- mark thread read
-- mark all read
-- get thread subscription
-- subscribe
-- ignore
-- default subscription state
-- repository navigation
+- capability-aware Notifications tab
+- explicit GitHub App token compatibility guard
+- no unsupported `/notifications` REST requests
+- browser handoff to GitHub notification inbox
+- no hidden secondary OAuth credential
+
+Upstream limitation:
+
+- GitHub documents the Notifications REST API and notification-thread subscription endpoints as unsupported for GitHub App user access tokens
+- native GitHub notification inbox synchronization therefore requires a different credential model and is not falsely reported as available
 
 ## N.6 Architecture and validation
 
@@ -77,7 +78,8 @@ Implemented:
 - real Activity UI
 - JVM parser tests
 - Compose Profile tests
-- Compose Activity tests
+- Compose Activity/feed tests
+- notification capability fallback tests
 - Phase N documentation
 
 Pending before completion:
