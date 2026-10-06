@@ -344,9 +344,9 @@ This roadmap is intentionally staged. A phase is not complete if it only contain
 
 ## Phase K — Pull Requests and Review
 
-**Status: implementation complete; CI validation pending on `phase-k-pull-requests-review`.**
+**Status: complete and CI validated.**
 
-### K.1 Pull request lifecycle — Implemented
+### K.1 Pull request lifecycle — Complete
 - [x] list/details
 - [x] create
 - [x] edit title/body/base
@@ -354,13 +354,13 @@ This roadmap is intentionally staged. A phase is not complete if it only contain
 - [x] draft creation
 - [x] draft ↔ ready-for-review state
 
-### K.2 Files and review comments — Implemented
+### K.2 Files and review comments — Complete
 - [x] changed files
 - [x] patch hunks
 - [x] inline review comments
 - [x] edit/delete own inline comments
 
-### K.3 Review and checks — Implemented
+### K.3 Review and checks — Complete
 - [x] submitted reviews
 - [x] approve
 - [x] request changes
@@ -368,23 +368,23 @@ This roadmap is intentionally staged. A phase is not complete if it only contain
 - [x] check runs for head SHA
 - [x] check-state summary
 
-### K.4 Merge — Implemented
+### K.4 Merge — Complete
 - [x] repository-aware merge methods
 - [x] merge commit
 - [x] squash merge
 - [x] rebase merge
 - [x] expected head SHA guard
 
-### K.5 Validation — Pending
+### K.5 Validation — Complete
 - [x] typed Pull Request gateway
 - [x] REST + GraphQL integration
 - [x] navigation and Compose surfaces
 - [x] JVM parser tests
 - [x] Compose tests
 - [x] Pull Requests documentation
-- [ ] Android CI validation
-- [ ] Foundation CI validation
-- [ ] final Phase K completion update
+- [x] Android CI validation
+- [x] Foundation CI validation
+- [x] pull-request integration validation
 
 ## Phase L — GitHub Actions
 
