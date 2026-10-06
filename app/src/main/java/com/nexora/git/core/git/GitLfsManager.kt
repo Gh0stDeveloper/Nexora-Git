@@ -13,11 +13,10 @@ data class GitLfsPointer(
 data class GitLfsState(
     val trackedPatterns: List<String>,
     val pointers: List<GitLfsPointer>,
-    val transferSupported: Boolean = false,
+    val transferSupported: Boolean = true,
     val transferMessage: String =
-        "Git LFS tracking and pointer inspection are available. " +
-            "Object transfer is not silently emulated because bundled libgit2 " +
-            "does not provide the Git LFS clean/smudge transport.",
+        "Native clean/smudge is active. Authenticated basic LFS object " +
+            "transfer is available for GitHub HTTPS remotes.",
 )
 
 @Singleton
