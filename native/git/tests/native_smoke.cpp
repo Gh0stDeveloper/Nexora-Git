@@ -1064,6 +1064,54 @@ void advanced_local_workflow(
         kAuthor
     );
 
+    write_file(
+        repository / ".gitattributes",
+        "*.bin filter=lfs diff=lfs merge=lfs -text\n"
+    );
+    const std::string lfs_content =
+        "Nexora LFS native clean and smudge payload\n";
+    write_file(repository / "asset.bin", lfs_content);
+    nexora::git::stage(
+        repository.string(),
+        {".gitattributes", "asset.bin"}
+    );
+
+    const std::string lfs_staged =
+        nexora::git::diff(
+            repository.string(),
+            "staged",
+            "asset.bin"
+        );
+    require(
+        lfs_staged.find(
+            "version https://git-lfs.github.com/spec/v1"
+        ) != std::string::npos &&
+            lfs_staged.find("oid sha256:") !=
+                std::string::npos,
+        "LFS clean filter did not stage a pointer"
+    );
+
+    nexora::git::commit(
+        repository.string(),
+        "Add LFS asset",
+        kAuthor
+    );
+
+    fs::remove(repository / "asset.bin");
+    nexora::git::checkout(repository.string(), "main");
+    std::ifstream restored_input(
+        repository / "asset.bin",
+        std::ios::binary
+    );
+    const std::string restored(
+        std::istreambuf_iterator<char>(restored_input),
+        std::istreambuf_iterator<char>()
+    );
+    require(
+        restored == lfs_content,
+        "LFS smudge filter did not restore the local object"
+    );
+
     nexora::git::create_branch(
         repository.string(),
         "source",
