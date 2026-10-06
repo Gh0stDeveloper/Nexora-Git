@@ -77,23 +77,10 @@ GitHub remains authoritative for account-level follower permissions and restrict
 
 ## Activity
 
-The Activity destination now contains two real sections:
+The Activity destination contains:
 
-### Notifications
-
-Supports:
-
-- unread notifications
-- all notifications
-- participating notifications
-- unread count
-- mark one thread read
-- mark all notifications read
-- inspect thread subscription
-- subscribe to a thread
-- ignore a thread
-- return a thread to the non-subscribed/non-ignored state
-- open the notification repository in Nexora Git
+- a native GitHub activity feed
+- a notification capability surface
 
 ### Activity feed
 
@@ -120,6 +107,27 @@ Where GitHub provides them, Nexora Git displays:
 - repository
 
 Repository events can open the related repository directly.
+
+### Notifications compatibility
+
+Nexora Git authenticates with **GitHub App user access tokens** (`ghu_`).
+
+GitHub's current REST documentation states that the authenticated-user Notifications API and notification-thread subscription endpoints **do not work with GitHub App user access tokens**.
+
+For that reason, Nexora Git deliberately does not send requests to:
+
+- `GET /notifications`
+- `PUT /notifications`
+- `PATCH /notifications/threads/{thread_id}`
+- notification thread subscription endpoints
+
+The Notifications tab instead:
+
+- explains the upstream compatibility limitation
+- provides a direct action to open GitHub's notification inbox in the browser
+- never asks for or silently stores a second OAuth credential
+
+A future optional OAuth-App companion authorization could provide a native inbox without weakening the primary GitHub App permission model, but it is intentionally outside the current authentication contract.
 
 ## API safety
 
@@ -151,9 +159,9 @@ The exact availability of organization memberships, private activity, email, not
 
 Phase N includes:
 
-- JVM parser coverage for profile/orgs/users/stars/activity/notifications/subscriptions
+- JVM parser coverage for profile/orgs/users/stars/activity
 - Compose Profile coverage
-- Compose Activity/Notifications coverage
+- Compose Activity and notification-capability fallback coverage
 - account-switch refresh behavior
 - navigation integration
 - Android CI
