@@ -1637,6 +1637,22 @@ internal fun RepositorySummaryCard(
                     style = MaterialTheme.typography.titleSmall,
                 )
             }
+
+            if (state.cherryPickInProgress) {
+                Text(
+                    text = "Cherry-pick in progress",
+                    color = MaterialTheme.colorScheme.error,
+                    style = MaterialTheme.typography.titleSmall,
+                )
+            }
+
+            if (state.revertInProgress) {
+                Text(
+                    text = "Revert in progress",
+                    color = MaterialTheme.colorScheme.error,
+                    style = MaterialTheme.typography.titleSmall,
+                )
+            }
         }
     }
 }
