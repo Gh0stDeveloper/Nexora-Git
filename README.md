@@ -1,168 +1,179 @@
+<div align="center">
+
 # Nexora Git
 
-> Advanced open-source Git and GitHub client for Android. Code, commit, branch, push, review and manage complete repositories directly from your phone.
+**Advanced open-source Git and GitHub workspace for Android**
 
-Nexora Git is an Android-first Git workspace designed for developers who work from mobile devices. It combines a full GitHub client with a real local Git engine, project-folder import, code browsing and editing, repository management, collaboration tools, GitHub Actions and offline Git workflows.
+Build, edit, version, review, automate and release complete repositories directly from your phone — with a real local Git engine and native GitHub integrations.
 
-## Product vision
+[![Android CI](https://github.com/Gh0stDeveloper/Nexora-Git/actions/workflows/android-ci.yml/badge.svg?branch=main)](https://github.com/Gh0stDeveloper/Nexora-Git/actions/workflows/android-ci.yml)
+[![Native Git CI](https://github.com/Gh0stDeveloper/Nexora-Git/actions/workflows/native-git-ci.yml/badge.svg?branch=main)](https://github.com/Gh0stDeveloper/Nexora-Git/actions/workflows/native-git-ci.yml)
+[![CodeQL](https://github.com/Gh0stDeveloper/Nexora-Git/actions/workflows/codeql.yml/badge.svg?branch=main)](https://github.com/Gh0stDeveloper/Nexora-Git/actions/workflows/codeql.yml)
+[![License](https://img.shields.io/github/license/Gh0stDeveloper/Nexora-Git)](LICENSE)
 
-Nexora Git is not a WebView wrapper and is not intended to visually clone GitHub Mobile. The goal is to provide a professional Android experience that combines:
+![Android](https://img.shields.io/badge/Android-26%2B-3DDC84?logo=android&logoColor=white)
+![Kotlin](https://img.shields.io/badge/Kotlin-2.2.10-7F52FF?logo=kotlin&logoColor=white)
+![Jetpack Compose](https://img.shields.io/badge/Jetpack%20Compose-Material%203-4285F4?logo=jetpackcompose&logoColor=white)
+![C++](https://img.shields.io/badge/C%2B%2B-17-00599C?logo=cplusplus&logoColor=white)
+![libgit2](https://img.shields.io/badge/libgit2-1.9.7-F05032?logo=git&logoColor=white)
+![Go](https://img.shields.io/badge/Go-1.24-00ADD8?logo=go&logoColor=white)
+![Docker](https://img.shields.io/badge/Docker-supported-2496ED?logo=docker&logoColor=white)
+![Nginx](https://img.shields.io/badge/Nginx-reverse%20proxy-009639?logo=nginx&logoColor=white)
 
-- GitHub account and repository management.
-- Real local Git operations.
-- Importing a complete Android folder as a Git project.
-- Clone, fetch, pull, push, commit, branch, merge, diff and conflict workflows.
-- Code browsing and editing.
-- Issues, pull requests, reviews, Actions, releases and notifications.
-- Offline work on cloned repositories.
-- A mobile-first UI built for developers.
-
-## Core architecture decisions
-
-The project starts with two non-negotiable technical decisions:
-
-### GitHub authentication
-
-Nexora Git uses a **GitHub App + OAuth web flow + PKCE** architecture.
-
-The app must never ask for or store a user's GitHub password or passkey. Authentication credentials, 2FA and passkeys are handled only by GitHub's official sign-in pages. Nexora Git receives authorized tokens after the OAuth flow.
-
-A minimal authentication broker may be used to keep the GitHub App client secret outside the public APK.
-
-See [Authentication](docs/AUTH.md).
-
-### Real Git engine
-
-Nexora Git performs Git operations through a real local Git engine based on **libgit2**, integrated into Android through the **NDK/C++ and JNI**.
-
-The GitHub REST/GraphQL APIs are used for GitHub platform features; they do not replace local Git.
-
-See [Git Engine](docs/GIT_ENGINE.md).
-
-## Recommended technology stack
-
-- Kotlin
-- Jetpack Compose
-- Material 3
-- Coroutines + Flow
-- Hilt
-- Room
-- DataStore
-- Android Keystore
-- OkHttp / Retrofit
-- GitHub REST API
-- GitHub GraphQL API
-- GitHub App
-- OAuth Authorization Code flow
-- PKCE
-- Android Storage Access Framework
-- libgit2
-- Android NDK / C++ / JNI
-- WorkManager
-- Coil
-- Paging 3
-
-## Documentation
-
-- [Project specification](docs/PROJECT_SPEC.md)
-- [Architecture](docs/ARCHITECTURE.md)
-- [Authentication](docs/AUTH.md)
-- [Git engine](docs/GIT_ENGINE.md)
-- [Android storage](docs/STORAGE.md)
-- [Security](docs/SECURITY.md)
-- [UI/UX](docs/UI_UX.md)
-- [Roadmap](docs/ROADMAP.md)
-- [Product identity](docs/BRANDING.md)
-- [GitHub App configuration](docs/GITHUB_APP.md)
-- [Threat model](docs/THREAT_MODEL.md)
-- [Phase 0 report](docs/PHASE_0_REPORT.md)
-- [Android foundation](docs/ANDROID_FOUNDATION.md)
-- [Phase A report](docs/PHASE_A_REPORT.md)
-- [Authentication deployment](docs/AUTH_DEPLOYMENT.md)
-- [Phase B report](docs/PHASE_B_REPORT.md)
-- [GitHub platform layer](docs/PLATFORM_LAYER.md)
-- [Phase C report](docs/PHASE_C_REPORT.md)
-- [Phase D report](docs/PHASE_D_REPORT.md)
-- [Phase E report](docs/PHASE_E_REPORT.md)
-- [Repository experience](docs/REPOSITORY_EXPERIENCE.md)
-- [Phase F report](docs/PHASE_F_REPORT.md)
-- [Code browser](docs/CODE_BROWSER.md)
-- [Phase G report](docs/PHASE_G_REPORT.md)
-- [Mobile editor](docs/MOBILE_EDITOR.md)
-- [Phase H report](docs/PHASE_H_REPORT.md)
-- [Phase I report](docs/PHASE_I_REPORT.md)
-- [Issues](docs/ISSUES.md)
-- [Phase J report](docs/PHASE_J_REPORT.md)
-- [Pull Requests](docs/PULL_REQUESTS.md)
-- [Phase K report](docs/PHASE_K_REPORT.md)
-- [GitHub Actions](docs/GITHUB_ACTIONS.md)
-- [Phase L report](docs/PHASE_L_REPORT.md)
-- [Releases](docs/RELEASES.md)
-- [Phase M report](docs/PHASE_M_REPORT.md)
-- [Account and Social](docs/ACCOUNT_SOCIAL.md)
-- [Phase N report](docs/PHASE_N_REPORT.md)
-- [Advanced GitHub](docs/ADVANCED_GITHUB.md)
-- [Phase O report](docs/PHASE_O_REPORT.md)
-- [Advanced Git](docs/ADVANCED_GIT.md)
-- [Phase P report](docs/PHASE_P_REPORT.md)
-- [Advanced mobile development](docs/ADVANCED_MOBILE_DEVELOPMENT.md)
-- [Phase Q report](docs/PHASE_Q_REPORT.md)
-- [Production readiness](docs/PRODUCTION_READINESS.md)
-- [Security audit](docs/PRODUCTION_SECURITY_AUDIT.md)
-- [Performance audit](docs/PERFORMANCE_AUDIT.md)
-- [Accessibility audit](docs/ACCESSIBILITY_AUDIT.md)
-- [Release process](docs/RELEASE_PROCESS.md)
-- [Privacy](docs/PRIVACY.md)
-- [Play Store readiness](docs/PLAY_STORE_READINESS.md)
-- [F-Droid readiness](docs/FDROID_READINESS.md)
-- [Phase R report](docs/PHASE_R_REPORT.md)
-- [Auth Broker](auth-broker/README.md)
-- [VPS installer](docs/VPS_INSTALLER.md)
-- [Architecture decisions](docs/adr/)
-
-## Initial scope
-
-The first usable release should allow a developer to complete this workflow entirely from Android:
-
-```text
-Sign in with GitHub
-        ↓
-Create / clone / import repository
-        ↓
-Browse and edit files
-        ↓
-Stage changes
-        ↓
-Commit
-        ↓
-Create / switch branch
-        ↓
-Fetch / pull / push
-        ↓
-Create pull request
-        ↓
-Review / merge
-        ↓
-Inspect GitHub Actions
-        ↓
-Download release artifacts
-```
-
-## Open source
-
-Nexora Git is intended to be developed publicly so the community can inspect the source code, contribute improvements, audit security-sensitive components and download official releases.
-
-The project must use its own branding and must not imply that it is an official GitHub application.
-
-## Status
-
-**Current stage:** Phase R — Production is in final repository validation on `phase-r-production`.
-
-The production branch hardens backup/network policy, defines release signing without committed secrets, validates release APK/AAB builds, pins CI actions to immutable revisions, enforces artifact-size budgets, documents privacy/store requirements, and provides a signed tag-release pipeline for `v1.0.0`.
-
-Phase Q — Advanced Mobile Development is complete, CI validated and integrated into `main` through PR #19.
-
+</div>
 
 ---
 
-Built for developers who want a complete Git workflow from Android.
+## Overview
+
+Nexora Git is an Android-first development workspace for people who need a serious Git and GitHub workflow away from a desktop. It is **not a WebView wrapper** and it does not depend on Termux or an external Git installation.
+
+The Android application combines a native Kotlin/Jetpack Compose interface, GitHub REST and GraphQL integrations, secure GitHub App authentication, Android project storage, an on-device editor and a real **libgit2** engine compiled through the Android NDK.
+
+### What you can do
+
+| Area | Capabilities |
+| --- | --- |
+| **Repositories** | Create, clone, import, browse, fork, star, watch and manage repository settings |
+| **Local Git** | Status, stage, commit, branches, fetch, pull, push, merge, rebase, cherry-pick, stash, reset, revert, tags, submodules and Git LFS |
+| **Code** | Browse files, history and blame; edit text/Markdown; search/replace; undo/redo; project-wide search |
+| **Language intelligence** | Tree-sitter parsing, highlighting, symbols, diagnostics, formatting and a provider-neutral LSP architecture |
+| **Collaboration** | Issues, comments, reactions, pull requests, reviews, checks and merge workflows |
+| **Automation** | GitHub Actions workflows, runs, jobs, logs, reruns, cancellation and artifact downloads |
+| **Releases** | Tags, release lifecycle, generated notes and release asset upload/download |
+| **Account** | Multiple GitHub accounts, profile editing, organizations, stars, followers/following and activity |
+| **Advanced GitHub** | Discussions, Projects V2, Pages, security feeds, Gists and Codespaces |
+| **Offline workflow** | Local repositories, editing and Git operations continue without GitHub connectivity |
+
+## System architecture
+
+```mermaid
+flowchart LR
+    U[Android developer] --> UI[Nexora Git\nKotlin + Compose]
+
+    UI --> AUTH[GitHub App OAuth + PKCE]
+    AUTH --> B[Auth Broker\nGo + Docker]
+    B --> OAUTH[GitHub OAuth endpoints]
+
+    UI --> API[GitHub Platform Client\nREST + GraphQL]
+    API --> GH[GitHub]
+
+    UI --> STORE[Room + DataStore + SAF]
+    UI --> GE[GitEngine]
+    GE --> JNI[JNI / C++17]
+    JNI --> LG[libgit2 + Mbed TLS]
+    LG --> REPO[(Local Git repositories)]
+
+    UI --> TS[Tree-sitter]
+    TS --> CODE[Editor / search / symbols]
+
+    VPS[VPS] --> NG[Nginx + TLS]
+    NG --> B
+```
+
+For detailed runtime, authentication, Git and VPS diagrams, see **[System Map](docs/SYSTEM_MAP.md)**.
+
+## Technology stack
+
+| Layer | Technology |
+| --- | --- |
+| Android | Kotlin 2.2.10, Jetpack Compose, Material 3, Navigation Compose |
+| Architecture | Coroutines/Flow, Hilt, Room, DataStore |
+| GitHub transport | Retrofit 3, OkHttp 5, GitHub REST + GraphQL |
+| Local Git | libgit2 1.9.7, C++17, JNI, Android NDK 27.2 |
+| TLS for native Git | Mbed TLS 3.6.7 LTS |
+| Code intelligence | Tree-sitter runtime + bundled language grammars |
+| Auth Broker | Go 1.24 |
+| Deployment | Docker Compose, Nginx, Certbot / Let's Encrypt |
+| CI / security | GitHub Actions, CodeQL, pinned third-party actions |
+
+The complete versioned dependency inventory is in **[Dependencies](docs/DEPENDENCIES.md)**.
+
+## Authentication and security
+
+Nexora Git never asks users to type a GitHub password or passkey into the application. Authentication happens on GitHub's official authorization surface using a **GitHub App + OAuth Authorization Code + PKCE** flow.
+
+The public APK does not contain the GitHub App client secret. A deliberately small Auth Broker performs confidential token exchange and refresh operations. On Android, access and refresh tokens are encrypted using an Android Keystore-backed AES-GCM key.
+
+Security boundaries include:
+
+- strict OAuth state and callback validation;
+- PKCE for every authorization attempt;
+- no secrets in Git remote URLs;
+- GitHub token host isolation for native Git;
+- cleartext traffic disabled in production;
+- Android backups disabled for sensitive application data;
+- release signing supplied externally;
+- pinned native dependencies and CI actions;
+- CodeQL and production security validation.
+
+See **[Security](SECURITY.md)**, **[Threat Model](docs/THREAT_MODEL.md)** and **[Authentication](docs/AUTH.md)**.
+
+## Build from source
+
+### Requirements
+
+- JDK 17
+- Android SDK
+- Android NDK `27.2.12479018`
+- CMake `3.22.1`
+
+The project pins its Gradle wrapper and Android/native dependency revisions.
+
+```bash
+git clone https://github.com/Gh0stDeveloper/Nexora-Git.git
+cd Nexora-Git
+./gradlew :app:assembleDebug
+```
+
+A functional GitHub login build also requires the public authentication configuration described in **[Authentication Deployment](docs/AUTH_DEPLOYMENT.md)**.
+
+## Self-host the Auth Broker
+
+Production deployments can use the included Debian/Ubuntu VPS installer. It preserves existing Nginx sites, installs only missing system dependencies, runs the broker in Docker on loopback, configures a dedicated Nginx virtual host and obtains/reuses a Let's Encrypt certificate.
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/Gh0stDeveloper/Nexora-Git/main/scripts/vps/bootstrap.sh -o /tmp/nexora-git-bootstrap.sh
+less /tmp/nexora-git-bootstrap.sh
+sudo bash /tmp/nexora-git-bootstrap.sh
+```
+
+After installation, administration is performed through the `nexora-git` command.
+
+See **[VPS Installer & Operations](docs/VPS_INSTALLER.md)** and **[Auth Broker](auth-broker/README.md)**.
+
+## Documentation
+
+Start with the **[Documentation Hub](docs/README.md)**.
+
+Key references:
+
+- [Architecture](docs/ARCHITECTURE.md)
+- [Project specification](docs/PROJECT_SPEC.md)
+- [Authentication](docs/AUTH.md)
+- [Git engine](docs/GIT_ENGINE.md)
+- [Android storage](docs/STORAGE.md)
+- [Daily Git workflow](docs/DAILY_GIT_WORKFLOW.md)
+- [Advanced Git](docs/ADVANCED_GIT.md)
+- [GitHub platform layer](docs/PLATFORM_LAYER.md)
+- [Release process](docs/RELEASE_PROCESS.md)
+- [VPS installer](docs/VPS_INSTALLER.md)
+- [Roadmap and implementation history](docs/ROADMAP.md)
+
+## Contributing
+
+Contributions are welcome when they preserve the project's security boundaries, native Git architecture and mobile-first goals. Read **[CONTRIBUTING.md](CONTRIBUTING.md)** before opening a pull request.
+
+For security issues, follow **[SECURITY.md](SECURITY.md)** and do not publish secrets or working exploits in public issues.
+
+## License
+
+Nexora Git is licensed under the **Apache License 2.0**. See [LICENSE](LICENSE) and [NOTICE](NOTICE).
+
+---
+
+<div align="center">
+
+**Nexora Git — a complete Git workflow built for Android developers.**
+
+</div>
