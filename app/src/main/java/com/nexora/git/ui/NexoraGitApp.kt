@@ -531,7 +531,15 @@ private fun AuthenticatedNexoraGitApp(
                 )
             }
             composable(NexoraDestination.ACTIVITY.route) {
-                ActivityScreen(contentPadding = paddingValues)
+                ActivityScreen(
+                    contentPadding = paddingValues,
+                    activeLogin = activeAccount.login,
+                    onOpenRepository = { owner, name ->
+                        navController.navigate(
+                            "repository/" + owner + "/" + name,
+                        )
+                    },
+                )
             }
             composable(NexoraDestination.PROFILE.route) {
                 ProfileScreen(
@@ -542,6 +550,11 @@ private fun AuthenticatedNexoraGitApp(
                     onSwitchAccount = onSwitchAccount,
                     onAddAccount = onAddAccount,
                     onSignOut = onSignOut,
+                    onOpenRepository = { owner, name ->
+                        navController.navigate(
+                            "repository/" + owner + "/" + name,
+                        )
+                    },
                 )
             }
         }
