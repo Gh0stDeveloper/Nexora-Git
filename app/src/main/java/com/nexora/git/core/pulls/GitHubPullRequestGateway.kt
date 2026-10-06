@@ -379,8 +379,7 @@ class GitHubPullRequestGateway @Inject constructor(
             "MarkPullRequestReadyForReviewInput!"
         }
 
-        val dollar = '
-        return when (
+        val query = "mutation NexoraDraft(" +\n            36.toChar() + "input: " + inputType + ") {\\n" +\n            "  " + mutationName + "(input: " +\n            36.toChar() + "input) {\\n" +\n            "    pullRequest {\\n" +\n            "      id\\n" +\n            "      isDraft\\n" +\n            "    }\\n" +\n            "  }\\n" +\n            "}"\n\n        return when (
             val response = platform.graphQl.execute(
                 GitHubGraphQlRequest(
                     query = query,
