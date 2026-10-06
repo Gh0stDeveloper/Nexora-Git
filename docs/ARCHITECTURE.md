@@ -1,5 +1,7 @@
 # Architecture
 
+> **Current reference:** This document describes the implemented Nexora Git system. See the [Documentation Hub](README.md) for navigation.
+
 ## Overview
 
 Nexora Git uses a native Android, feature-modular architecture.
@@ -168,7 +170,7 @@ Examples:
 
 The transport layer and the feature-data layer have different cache responsibilities.
 
-### Phase C transport cache
+### Platform transport cache
 
 The shared GitHub platform layer uses a bounded, account-scoped **in-memory** cache.
 
@@ -218,7 +220,7 @@ The UI should convert low-level errors into actionable user messages instead of 
 
 ## GitHub platform layer
 
-Phase C introduces a reusable authenticated transport layer:
+The platform layer provides a reusable authenticated transport:
 
 ```text
 Feature / repository
@@ -252,7 +254,7 @@ Feature code should consume `GitHubPlatformClient` rather than building ad-hoc O
 
 ## Native Git engine
 
-Phase D provides the real local Git implementation:
+The native Git layer provides the real local Git implementation:
 
 ```text
 Feature domain
@@ -297,7 +299,7 @@ The Android build produces native libraries for:
 
 ## Android project storage
 
-Phase E bridges Android document storage with the POSIX filesystem expected by libgit2.
+The Android storage layer bridges document-provider storage with the POSIX filesystem expected by libgit2.
 
 ```text
 OpenDocumentTree
@@ -333,7 +335,7 @@ The project scanner records path/size/ignore metadata and warnings. It never sto
 
 ## Repository experience
 
-Phase F composes GitHub platform data, persistent normalized metadata and local Git workspaces behind a feature-level gateway.
+The repository layer composes GitHub platform data, persistent normalized metadata and local Git workspaces behind a feature-level gateway.
 
 ```text
 Repositories / Repository Detail
@@ -355,7 +357,7 @@ RepositoryWorkspaceCoordinator
 
 ### Remote repository cache
 
-The generic transport cache from Phase C remains memory-only. Phase F adds a separate normalized Room cache specifically for repository-list metadata, keyed by GitHub account ID.
+The generic transport cache remains memory-only. The repository layer adds a separate normalized Room cache for repository-list metadata keyed by GitHub account ID.
 
 It stores repository metadata and permission flags, never access tokens or refresh tokens.
 
@@ -376,14 +378,14 @@ Repository UI uses the permissions returned by GitHub to gate administration con
 - repository creation/settings are remote API operations;
 - star/unstar is a GitHub user action;
 - watch/unwatch uses GraphQL capability checks and subscription state;
-- clone credentials continue to cross into libgit2 only through the Phase D credential callback boundary.
+- clone credentials continue to cross into libgit2 only through the native Git credential callback boundary.
 
 The feature layer does not embed tokens in clone URLs or persist them in Room.
 
 
 ## Code browser
 
-Phase G adds a read-only local browsing layer over registered workspaces.
+The code browser provides a local browsing layer over registered workspaces.
 
 ```text
 Workspace card
@@ -415,7 +417,7 @@ The browser does not mutate project files.
 
 Text rendering is bounded to 2 MiB per selected file. Binary content is not coerced into text. Image previews use sampled bitmap decoding. Markdown rendering does not execute embedded HTML or scripts.
 
-Syntax highlighting in Phase G is intentionally lexical and lightweight; Tree-sitter remains a Phase Q concern.
+The code browser keeps a lightweight fallback tokenizer, while Tree-sitter provides richer semantic analysis in the advanced editor stack.
 
 ### Git metadata
 
@@ -424,3 +426,7 @@ History and blame are computed locally through libgit2, not through GitHub APIs.
 ### Android file actions
 
 Sharing copies one selected file into a narrowly scoped cache directory exposed by FileProvider. Saving a copy uses Android's document destination flow. Neither operation requires broad filesystem permission.
+
+---
+
+[← Documentation hub](README.md)
