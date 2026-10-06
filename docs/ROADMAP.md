@@ -502,12 +502,59 @@ This roadmap is intentionally staged. A phase is not complete if it only contain
 
 ## Phase N — Account and Social
 
-- profile
-- organizations
-- stars
-- followers/following
-- activity
-- notifications
+**Status: implementation complete; CI validation pending on `phase-n-account-social`.**
+
+### N.1 Profile — Implemented
+- [x] authenticated GitHub profile
+- [x] profile metadata and metrics
+- [x] edit profile
+- [x] hireable state
+- [x] active-account refresh
+- [x] multi-account management preserved
+
+### N.2 Organizations and stars — Implemented
+- [x] organizations
+- [x] starred repositories
+- [x] repository navigation
+- [x] star/unstar API
+- [x] unstar from Profile
+
+### N.3 Followers and following — Implemented
+- [x] followers
+- [x] following
+- [x] follow
+- [x] unfollow
+- [x] local relationship reconciliation
+
+### N.4 Activity — Implemented
+- [x] recent account activity
+- [x] common GitHub event summaries
+- [x] action/ref/number/title metadata
+- [x] public/private state
+- [x] repository navigation
+
+### N.5 Notifications — Implemented
+- [x] unread/all/participating filters
+- [x] unread count
+- [x] mark thread read
+- [x] mark all read
+- [x] thread subscription state
+- [x] subscribe
+- [x] ignore
+- [x] default subscription state
+- [x] repository navigation
+
+### N.6 Validation — Pending
+- [x] typed Social gateway
+- [x] REST integration
+- [x] Profile and Activity ViewModels
+- [x] Profile and Activity Compose surfaces
+- [x] JVM parser tests
+- [x] Compose tests
+- [x] Account and Social documentation
+- [ ] Android CI validation
+- [ ] Foundation CI validation
+- [ ] pull-request integration validation
 
 ## Phase O — Advanced GitHub
 
