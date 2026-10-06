@@ -1,5 +1,7 @@
 # Phase M — Releases
 
+> **Historical implementation record — Complete.** This report is retained for traceability. For current product behavior and operations, use the [Documentation Hub](README.md).
+
 Date: 2026-10-05
 
 ## Status
@@ -86,3 +88,7 @@ Implemented:
 ## Result
 
 Phase M is complete. The next roadmap milestone is **Phase N**.
+
+---
+
+[← Documentation hub](README.md)
