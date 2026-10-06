@@ -87,7 +87,9 @@ class GitHubExploreGateway @Inject constructor(
                 runCatching {
                     parse(result.value.body)
                 }.fold(
-                    onSuccess = AppResult<List<T>>::Success,
+                    onSuccess = { value ->
+                        AppResult.Success(value)
+                    },
                     onFailure = { error ->
                         AppResult.Failure(
                             AppError.Parsing(
