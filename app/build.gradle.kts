@@ -17,6 +17,33 @@ val githubCallbackUrl = providers.gradleProperty("nexora.githubCallbackUrl")
     .orElse(providers.environmentVariable("NEXORA_GITHUB_CALLBACK_URL"))
     .getOrElse("")
 
+val releaseStoreFile = providers
+    .gradleProperty("nexora.signing.storeFile")
+    .orElse(providers.environmentVariable("NEXORA_SIGNING_STORE_FILE"))
+    .orNull
+
+val releaseStorePassword = providers
+    .gradleProperty("nexora.signing.storePassword")
+    .orElse(providers.environmentVariable("NEXORA_SIGNING_STORE_PASSWORD"))
+    .orNull
+
+val releaseKeyAlias = providers
+    .gradleProperty("nexora.signing.keyAlias")
+    .orElse(providers.environmentVariable("NEXORA_SIGNING_KEY_ALIAS"))
+    .orNull
+
+val releaseKeyPassword = providers
+    .gradleProperty("nexora.signing.keyPassword")
+    .orElse(providers.environmentVariable("NEXORA_SIGNING_KEY_PASSWORD"))
+    .orNull
+
+val releaseSigningConfigured = listOf(
+    releaseStoreFile,
+    releaseStorePassword,
+    releaseKeyAlias,
+    releaseKeyPassword,
+).all { !it.isNullOrBlank() }
+
 android {
     namespace = "com.nexora.git"
     compileSdk {
@@ -29,8 +56,8 @@ android {
         applicationId = "com.nexora.git"
         minSdk = 26
         targetSdk = 36
-        versionCode = 1
-        versionName = "0.1.0-dev"
+        versionCode = 10000
+        versionName = "1.0.0"
 
         buildConfigField("String", "GITHUB_CLIENT_ID", "\"$githubClientId\"")
         buildConfigField("String", "AUTH_BROKER_BASE_URL", "\"$authBrokerBaseUrl\"")
@@ -65,6 +92,20 @@ android {
         }
     }
 
+    signingConfigs {
+        if (releaseSigningConfigured) {
+            create("release") {
+                storeFile = file(requireNotNull(releaseStoreFile))
+                storePassword = requireNotNull(releaseStorePassword)
+                keyAlias = requireNotNull(releaseKeyAlias)
+                keyPassword = requireNotNull(releaseKeyPassword)
+                enableV1Signing = true
+                enableV2Signing = true
+                enableV3Signing = true
+            }
+        }
+    }
+
     buildTypes {
         debug {
             applicationIdSuffix = ".debug"
@@ -72,8 +113,15 @@ android {
         }
 
         release {
+            isDebuggable = false
             isMinifyEnabled = true
             isShrinkResources = true
+            if (releaseSigningConfigured) {
+                signingConfig = signingConfigs.getByName("release")
+            }
+            ndk {
+                debugSymbolLevel = "SYMBOL_TABLE"
+            }
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro",
@@ -84,6 +132,11 @@ android {
     buildFeatures {
         compose = true
         buildConfig = true
+    }
+
+    lint {
+        abortOnError = true
+        checkReleaseBuilds = true
     }
 
     ndkVersion = "27.2.12479018"
