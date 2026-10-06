@@ -167,3 +167,48 @@ data class GitBlameHunk(
     val timezoneOffsetMinutes: Int,
     val boundary: Boolean,
 )
+
+
+enum class GitApplyState {
+    APPLIED,
+    CONFLICTS,
+}
+
+data class GitApplyResult(
+    val state: GitApplyState,
+    val commitOid: String,
+    val conflicts: List<GitConflict>,
+)
+
+data class GitStash(
+    val index: Int,
+    val oid: String,
+    val message: String,
+)
+
+enum class GitResetMode(
+    internal val wireValue: String,
+) {
+    SOFT("soft"),
+    MIXED("mixed"),
+    HARD("hard"),
+}
+
+data class GitTag(
+    val name: String,
+    val targetOid: String,
+    val annotated: Boolean,
+    val message: String,
+    val taggerName: String,
+    val taggerEmail: String,
+)
+
+data class GitSubmodule(
+    val name: String,
+    val path: String,
+    val url: String,
+    val headOid: String,
+    val workdirOid: String,
+    val status: Long,
+    val initialized: Boolean,
+)
