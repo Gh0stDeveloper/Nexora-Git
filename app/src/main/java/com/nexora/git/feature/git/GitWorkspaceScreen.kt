@@ -58,6 +58,10 @@ import com.nexora.git.core.git.GitConflictResolution
 import com.nexora.git.core.git.GitHistoryEntry
 import com.nexora.git.core.git.GitPullStrategy
 import com.nexora.git.core.git.GitRemote
+import com.nexora.git.core.git.GitResetMode
+import com.nexora.git.core.git.GitStash
+import com.nexora.git.core.git.GitSubmodule
+import com.nexora.git.core.git.GitTag
 import com.nexora.git.core.git.GitStatusEntry
 
 private enum class GitWorkspaceTab(
@@ -67,6 +71,7 @@ private enum class GitWorkspaceTab(
     HISTORY("History"),
     BRANCHES("Branches"),
     SYNC("Sync"),
+    ADVANCED("Advanced"),
 }
 
 @Composable
@@ -96,6 +101,48 @@ fun GitWorkspaceScreen(
     }
     var pullStrategy by rememberSaveable {
         mutableStateOf(GitPullStrategy.MERGE)
+    }
+    var advancedRebaseRef by rememberSaveable {
+        mutableStateOf("")
+    }
+    var advancedCommitRef by rememberSaveable {
+        mutableStateOf("")
+    }
+    var stashMessage by rememberSaveable {
+        mutableStateOf("")
+    }
+    var stashIncludeUntracked by rememberSaveable {
+        mutableStateOf(true)
+    }
+    var resetRef by rememberSaveable {
+        mutableStateOf("HEAD~1")
+    }
+    var resetMode by rememberSaveable {
+        mutableStateOf(GitResetMode.MIXED)
+    }
+    var tagName by rememberSaveable {
+        mutableStateOf("")
+    }
+    var tagTarget by rememberSaveable {
+        mutableStateOf("HEAD")
+    }
+    var tagMessage by rememberSaveable {
+        mutableStateOf("")
+    }
+    var annotatedTag by rememberSaveable {
+        mutableStateOf(true)
+    }
+    var lfsPattern by rememberSaveable {
+        mutableStateOf("")
+    }
+    var pendingHardReset by remember {
+        mutableStateOf<String?>(null)
+    }
+    var pendingStashDrop by remember {
+        mutableStateOf<GitStash?>(null)
+    }
+    var pendingTagDelete by remember {
+        mutableStateOf<GitTag?>(null)
     }
 
     var showAddRemote by rememberSaveable {
