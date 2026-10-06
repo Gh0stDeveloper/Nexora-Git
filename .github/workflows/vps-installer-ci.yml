@@ -58,5 +58,6 @@ jobs:
           cp auth-broker/.env.example auth-broker/.env
           (
             cd auth-broker
-            docker compose config --quiet
+            PORT=19091 docker compose config > /tmp/nexora-compose.yml
+            grep -Fq '127.0.0.1:19091' /tmp/nexora-compose.yml
           )
