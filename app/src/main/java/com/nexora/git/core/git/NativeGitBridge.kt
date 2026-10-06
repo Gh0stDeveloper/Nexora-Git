@@ -7,7 +7,7 @@ import javax.inject.Singleton
 
 @Singleton
 class NativeGitBridge @Inject constructor(
-    @ApplicationContext private val context: Context,
+    @param:ApplicationContext private val context: Context,
 ) {
     @Volatile
     private var initialized = false

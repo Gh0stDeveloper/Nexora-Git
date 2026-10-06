@@ -19,7 +19,7 @@ private val Context.nexoraSettingsDataStore by preferencesDataStore(
 
 @Singleton
 class SettingsRepository @Inject constructor(
-    @ApplicationContext private val context: Context,
+    @param:ApplicationContext private val context: Context,
 ) {
     private object Keys {
         val onboardingCompleted = booleanPreferencesKey("onboarding_completed")

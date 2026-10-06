@@ -8,7 +8,7 @@ import javax.inject.Singleton
 
 @Singleton
 class WorkspacePaths @Inject constructor(
-    @ApplicationContext private val context: Context,
+    @param:ApplicationContext private val context: Context,
 ) {
     fun workspaceRoot(workspaceId: String): File =
         File(context.filesDir, "workspaces/$workspaceId/repo")
