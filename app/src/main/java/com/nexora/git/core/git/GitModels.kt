@@ -56,6 +56,8 @@ enum class GitRepositoryOperationState {
     NONE,
     MERGE,
     REBASE,
+    CHERRY_PICK,
+    REVERT,
     OTHER,
 }
 
