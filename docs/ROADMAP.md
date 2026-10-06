@@ -388,9 +388,9 @@ This roadmap is intentionally staged. A phase is not complete if it only contain
 
 ## Phase L — GitHub Actions
 
-**Status: implementation complete; CI validation pending on `phase-l-github-actions`.**
+**Status: complete and CI validated.**
 
-### L.1 Workflows — Implemented
+### L.1 Workflows — Complete
 - [x] workflow list
 - [x] active/disabled state
 - [x] workflow selection
@@ -398,7 +398,7 @@ This roadmap is intentionally staged. A phase is not complete if it only contain
 - [x] Git ref input
 - [x] generic workflow inputs
 
-### L.2 Runs — Implemented
+### L.2 Runs — Complete
 - [x] repository runs
 - [x] workflow-scoped runs
 - [x] status/conclusion filters
@@ -406,27 +406,27 @@ This roadmap is intentionally staged. A phase is not complete if it only contain
 - [x] run number and attempt
 - [x] event / head branch / head SHA / actor
 
-### L.3 Jobs and steps — Implemented
+### L.3 Jobs and steps — Complete
 - [x] jobs
 - [x] runner metadata
 - [x] labels
 - [x] steps
 - [x] status and conclusions
 
-### L.4 Logs — Implemented
+### L.4 Logs — Complete
 - [x] job logs
 - [x] secure authenticated redirect handling
 - [x] token stripping on signed external URLs
 - [x] 2 MiB memory-safe preview
 - [x] truncation indicator
 
-### L.5 Run controls — Implemented
+### L.5 Run controls — Complete
 - [x] cancel
 - [x] re-run all jobs
 - [x] re-run failed jobs
 - [x] state-aware actions
 
-### L.6 Artifacts — Implemented
+### L.6 Artifacts — Complete
 - [x] artifact list
 - [x] expiration metadata
 - [x] streaming ZIP download
@@ -434,7 +434,7 @@ This roadmap is intentionally staged. A phase is not complete if it only contain
 - [x] disk-full handling
 - [x] 2 GiB safety limit
 
-### L.7 Validation — Pending
+### L.7 Validation — Complete
 - [x] typed Actions gateway
 - [x] secure binary downloader
 - [x] navigation and Compose surfaces
@@ -442,9 +442,9 @@ This roadmap is intentionally staged. A phase is not complete if it only contain
 - [x] dispatch input tests
 - [x] Compose tests
 - [x] GitHub Actions documentation
-- [ ] Android CI validation
-- [ ] Foundation CI validation
-- [ ] pull-request integration validation
+- [x] Android CI validation
+- [x] Foundation CI validation
+- [x] pull-request integration validation
 
 ## Phase M — Releases
 
