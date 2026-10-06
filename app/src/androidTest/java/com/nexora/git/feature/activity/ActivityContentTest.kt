@@ -6,7 +6,6 @@ import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.unit.dp
 import com.nexora.git.core.social.GitHubActivityEvent
-import com.nexora.git.core.social.GitHubNotificationThread
 import com.nexora.git.ui.theme.NexoraGitTheme
 import org.junit.Rule
 import org.junit.Test
@@ -17,55 +16,30 @@ class ActivityContentTest {
     val composeRule = createComposeRule()
 
     @Test
-    fun showsNotificationControls() {
-        val notification =
-            GitHubNotificationThread(
-                id = "100",
-                unread = true,
-                reason = "mention",
-                updatedAt = "now",
-                lastReadAt = null,
-                subjectTitle = "Review requested",
-                subjectType = "PullRequest",
-                subjectUrl = null,
-                latestCommentUrl = null,
-                repositoryFullName =
-                    "ghost/repo",
-                repositoryHtmlUrl = null,
-            )
-
+    fun showsNotificationCapabilityFallback() {
         composeRule.setContent {
             NexoraGitTheme {
                 ActivityContent(
                     state = ActivityUiState(
                         login = "ghost",
-                        notifications =
-                            listOf(notification),
                         loading = false,
                     ),
                     contentPadding =
                         PaddingValues(0.dp),
                     onRefresh = {},
                     onSetSection = {},
-                    onSetNotificationScope = {},
-                    onMarkRead = {},
-                    onMarkAllRead = {},
-                    onManageSubscription = {},
+                    onOpenGitHubNotifications = {},
                     onOpenRepository = { _, _ -> },
                 )
             }
         }
 
-        composeRule.onNodeWithText("Notifications")
-            .assertIsDisplayed()
-        composeRule.onNodeWithText("Review requested")
-            .assertIsDisplayed()
-        composeRule.onNodeWithText("Mark read")
-            .assertIsDisplayed()
-        composeRule.onNodeWithText("Mark all read")
-            .assertIsDisplayed()
-        composeRule.onNodeWithText("Subscription")
-            .assertIsDisplayed()
+        composeRule.onNodeWithText(
+            "GitHub notification inbox",
+        ).assertIsDisplayed()
+        composeRule.onNodeWithText(
+            "Open GitHub notifications",
+        ).assertIsDisplayed()
     }
 
     @Test
@@ -99,18 +73,17 @@ class ActivityContentTest {
                         PaddingValues(0.dp),
                     onRefresh = {},
                     onSetSection = {},
-                    onSetNotificationScope = {},
-                    onMarkRead = {},
-                    onMarkAllRead = {},
-                    onManageSubscription = {},
+                    onOpenGitHubNotifications = {},
                     onOpenRepository = { _, _ -> },
                 )
             }
         }
 
-        composeRule.onNodeWithText("Pushed commits")
-            .assertIsDisplayed()
-        composeRule.onNodeWithText("ghost/repo")
-            .assertIsDisplayed()
+        composeRule.onNodeWithText(
+            "Pushed commits",
+        ).assertIsDisplayed()
+        composeRule.onNodeWithText(
+            "ghost/repo",
+        ).assertIsDisplayed()
     }
 }
