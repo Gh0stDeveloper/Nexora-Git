@@ -4,7 +4,7 @@ Date: 2026-10-05
 
 ## Status
 
-**Implementation complete; CI validation pending.**
+**Complete and CI validated for GitHub App-supported APIs.**
 
 ## N.1 Profile
 
@@ -82,8 +82,17 @@ Implemented:
 - notification capability fallback tests
 - Phase N documentation
 
-Pending before completion:
+## Validation results
 
-- Android CI validation
-- Foundation CI validation
-- pull-request integration validation
+- **Android CI — success**
+- **Foundation CI — success**
+- pull-request integration validation — success
+- build, lint, JVM tests and Android test APK assembly passed
+
+## Upstream Notifications limitation
+
+GitHub's authenticated-user Notifications REST API does not support GitHub App user access tokens. Nexora Git therefore does not issue those requests and provides an explicit browser handoff instead. A native inbox would require a separate OAuth-App credential model.
+
+## Result
+
+Phase N is complete within the project's GitHub App authentication contract. The next roadmap milestone is **Phase O — Advanced GitHub**.
