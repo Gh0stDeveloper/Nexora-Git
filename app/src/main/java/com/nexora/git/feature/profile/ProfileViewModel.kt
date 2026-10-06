@@ -57,10 +57,6 @@ class ProfileViewModel @Inject constructor(
     val state: StateFlow<ProfileUiState> =
         mutableState.asStateFlow()
 
-    init {
-        refresh()
-    }
-
     fun refresh() {
         viewModelScope.launch {
             mutableState.update {
