@@ -103,6 +103,8 @@ See [Git Engine](docs/GIT_ENGINE.md).
 - [Phase N report](docs/PHASE_N_REPORT.md)
 - [Advanced GitHub](docs/ADVANCED_GITHUB.md)
 - [Phase O report](docs/PHASE_O_REPORT.md)
+- [Advanced Git](docs/ADVANCED_GIT.md)
+- [Phase P report](docs/PHASE_P_REPORT.md)
 - [Auth Broker](auth-broker/README.md)
 - [Architecture decisions](docs/adr/)
 
@@ -142,9 +144,11 @@ The project must use its own branding and must not imply that it is an official 
 
 ## Status
 
-**Current stage:** Phase O — Advanced GitHub is implemented on its feature branch and is undergoing CI validation before merge.
+**Current stage:** Phase P — Advanced Git is feature-complete on `phase-p-advanced-git` and is at the final CI/merge gate.
 
-Nexora Git now extends repository workflows with Discussions, Projects V2, GitHub Pages, repository security views, Gists and Codespaces management. Every Phase O surface uses the existing GitHub App user token and shared platform client, with runtime capability handling when an installation, organization policy or user permission does not authorize an operation.
+Phase P adds explicit rebase, cherry-pick, stash, reset, revert, local tags, submodule management and Git LFS. The LFS path includes a native libgit2 clean/smudge filter, SHA-256 local object cache, authenticated GitHub basic-transfer support, upload-before-push and manual hydration controls.
+
+Phase O — Advanced GitHub is already CI validated and integrated into `main`.
 
 ---
 
