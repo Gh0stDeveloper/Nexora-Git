@@ -138,9 +138,9 @@ The project must use its own branding and must not imply that it is an official 
 
 ## Status
 
-**Current stage:** Phase M — Releases implementation is complete; CI validation is in progress.
+**Current stage:** Phase M — Releases is complete and CI validated. Phase N is next.
 
-Nexora Git now adds native tags, releases, drafts, prereleases, immutable-release handling, and secure release-asset upload/download management.
+Nexora Git now includes native tags, releases, drafts, prereleases, immutable-release handling, and secure release-asset upload/download management.
 
 ---
 
