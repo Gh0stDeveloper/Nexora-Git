@@ -851,7 +851,700 @@ fun GitWorkspaceScreen(
                         }
                     }
                 }
+
+                GitWorkspaceTab.ADVANCED -> {
+                    item {
+                        AdvancedGitPanel(
+                            state = state,
+                            authorName = authorName,
+                            authorEmail = authorEmail,
+                            rebaseRef = advancedRebaseRef,
+                            onRebaseRefChange = {
+                                advancedRebaseRef = it
+                            },
+                            commitRef = advancedCommitRef,
+                            onCommitRefChange = {
+                                advancedCommitRef = it
+                            },
+                            stashMessage = stashMessage,
+                            onStashMessageChange = {
+                                stashMessage = it
+                            },
+                            stashIncludeUntracked =
+                                stashIncludeUntracked,
+                            onStashIncludeUntrackedChange = {
+                                stashIncludeUntracked = it
+                            },
+                            resetRef = resetRef,
+                            onResetRefChange = {
+                                resetRef = it
+                            },
+                            resetMode = resetMode,
+                            onResetModeChange = {
+                                resetMode = it
+                            },
+                            tagName = tagName,
+                            onTagNameChange = {
+                                tagName = it
+                            },
+                            tagTarget = tagTarget,
+                            onTagTargetChange = {
+                                tagTarget = it
+                            },
+                            tagMessage = tagMessage,
+                            onTagMessageChange = {
+                                tagMessage = it
+                            },
+                            annotatedTag = annotatedTag,
+                            onAnnotatedTagChange = {
+                                annotatedTag = it
+                            },
+                            lfsPattern = lfsPattern,
+                            onLfsPatternChange = {
+                                lfsPattern = it
+                            },
+                            onRebase = {
+                                viewModel.rebase(
+                                    upstreamRef = advancedRebaseRef,
+                                    authorName = authorName,
+                                    authorEmail = authorEmail,
+                                )
+                            },
+                            onCherryPick = {
+                                viewModel.cherryPick(
+                                    commitRef = advancedCommitRef,
+                                    authorName = authorName,
+                                    authorEmail = authorEmail,
+                                )
+                            },
+                            onContinueCherryPick = {
+                                viewModel.continueCherryPick(
+                                    authorName = authorName,
+                                    authorEmail = authorEmail,
+                                )
+                            },
+                            onAbortCherryPick =
+                                viewModel::abortCherryPick,
+                            onSaveStash = {
+                                viewModel.saveStash(
+                                    message = stashMessage,
+                                    authorName = authorName,
+                                    authorEmail = authorEmail,
+                                    includeUntracked =
+                                        stashIncludeUntracked,
+                                )
+                                stashMessage = ""
+                            },
+                            onApplyStash = { index ->
+                                viewModel.applyStash(
+                                    index = index,
+                                    pop = false,
+                                )
+                            },
+                            onPopStash = { index ->
+                                viewModel.applyStash(
+                                    index = index,
+                                    pop = true,
+                                )
+                            },
+                            onDropStash = { stash ->
+                                pendingStashDrop = stash
+                            },
+                            onReset = {
+                                val target = resetRef.trim()
+                                if (resetMode == GitResetMode.HARD) {
+                                    pendingHardReset = target
+                                } else {
+                                    viewModel.reset(
+                                        targetRef = target,
+                                        mode = resetMode,
+                                    )
+                                }
+                            },
+                            onRevert = {
+                                viewModel.revert(
+                                    commitRef = advancedCommitRef,
+                                    authorName = authorName,
+                                    authorEmail = authorEmail,
+                                )
+                            },
+                            onContinueRevert = {
+                                viewModel.continueRevert(
+                                    authorName = authorName,
+                                    authorEmail = authorEmail,
+                                )
+                            },
+                            onAbortRevert = viewModel::abortRevert,
+                            onCreateTag = {
+                                viewModel.createTag(
+                                    name = tagName,
+                                    targetRef = tagTarget,
+                                    message = tagMessage,
+                                    annotated = annotatedTag,
+                                    authorName = authorName,
+                                    authorEmail = authorEmail,
+                                )
+                            },
+                            onDeleteTag = { tag ->
+                                pendingTagDelete = tag
+                            },
+                            onSyncSubmodule =
+                                viewModel::syncSubmodule,
+                            onUpdateSubmodule =
+                                viewModel::updateSubmodule,
+                            onTrackLfs = {
+                                viewModel.trackLfs(lfsPattern)
+                                lfsPattern = ""
+                            },
+                            onUntrackLfs =
+                                viewModel::untrackLfs,
+                        )
+                    }
+                }
             }
+        }
+    }
+}
+
+@Composable
+private fun AdvancedGitPanel(
+    state: GitWorkspaceUiState,
+    authorName: String,
+    authorEmail: String,
+    rebaseRef: String,
+    onRebaseRefChange: (String) -> Unit,
+    commitRef: String,
+    onCommitRefChange: (String) -> Unit,
+    stashMessage: String,
+    onStashMessageChange: (String) -> Unit,
+    stashIncludeUntracked: Boolean,
+    onStashIncludeUntrackedChange: (Boolean) -> Unit,
+    resetRef: String,
+    onResetRefChange: (String) -> Unit,
+    resetMode: GitResetMode,
+    onResetModeChange: (GitResetMode) -> Unit,
+    tagName: String,
+    onTagNameChange: (String) -> Unit,
+    tagTarget: String,
+    onTagTargetChange: (String) -> Unit,
+    tagMessage: String,
+    onTagMessageChange: (String) -> Unit,
+    annotatedTag: Boolean,
+    onAnnotatedTagChange: (Boolean) -> Unit,
+    lfsPattern: String,
+    onLfsPatternChange: (String) -> Unit,
+    onRebase: () -> Unit,
+    onCherryPick: () -> Unit,
+    onContinueCherryPick: () -> Unit,
+    onAbortCherryPick: () -> Unit,
+    onSaveStash: () -> Unit,
+    onApplyStash: (Int) -> Unit,
+    onPopStash: (Int) -> Unit,
+    onDropStash: (GitStash) -> Unit,
+    onReset: () -> Unit,
+    onRevert: () -> Unit,
+    onContinueRevert: () -> Unit,
+    onAbortRevert: () -> Unit,
+    onCreateTag: () -> Unit,
+    onDeleteTag: (GitTag) -> Unit,
+    onSyncSubmodule: (String) -> Unit,
+    onUpdateSubmodule: (String) -> Unit,
+    onTrackLfs: () -> Unit,
+    onUntrackLfs: (String) -> Unit,
+) {
+    Column(
+        verticalArrangement = Arrangement.spacedBy(12.dp),
+    ) {
+        Text(
+            "Advanced Git",
+            style = MaterialTheme.typography.titleLarge,
+        )
+        Text(
+            "Local libgit2 operations. Destructive actions require explicit confirmation.",
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
+
+        Card(modifier = Modifier.fillMaxWidth()) {
+            Column(
+                modifier = Modifier.padding(16.dp),
+                verticalArrangement = Arrangement.spacedBy(10.dp),
+            ) {
+                Text("Rebase", style = MaterialTheme.typography.titleMedium)
+                OutlinedTextField(
+                    value = rebaseRef,
+                    onValueChange = onRebaseRefChange,
+                    modifier = Modifier.fillMaxWidth(),
+                    label = { Text("Rebase onto branch / tag / commit") },
+                    singleLine = true,
+                )
+                Button(
+                    enabled =
+                        !state.operationInProgress &&
+                            state.repositoryState.name == "NONE" &&
+                            rebaseRef.isNotBlank(),
+                    onClick = onRebase,
+                ) {
+                    Text("Start rebase")
+                }
+                if (state.rebaseInProgress) {
+                    Text(
+                        "Rebase is in progress. Resolve conflicts from Changes, then continue or abort there.",
+                        color = MaterialTheme.colorScheme.error,
+                    )
+                }
+            }
+        }
+
+        Card(modifier = Modifier.fillMaxWidth()) {
+            Column(
+                modifier = Modifier.padding(16.dp),
+                verticalArrangement = Arrangement.spacedBy(10.dp),
+            ) {
+                Text(
+                    "Cherry-pick / Revert",
+                    style = MaterialTheme.typography.titleMedium,
+                )
+                OutlinedTextField(
+                    value = commitRef,
+                    onValueChange = onCommitRefChange,
+                    modifier = Modifier.fillMaxWidth(),
+                    label = { Text("Commit SHA or ref") },
+                    singleLine = true,
+                )
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .horizontalScroll(rememberScrollState()),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                ) {
+                    Button(
+                        enabled =
+                            !state.operationInProgress &&
+                                state.repositoryState.name == "NONE" &&
+                                commitRef.isNotBlank(),
+                        onClick = onCherryPick,
+                    ) {
+                        Text("Cherry-pick")
+                    }
+                    OutlinedButton(
+                        enabled =
+                            !state.operationInProgress &&
+                                state.repositoryState.name == "NONE" &&
+                                commitRef.isNotBlank(),
+                        onClick = onRevert,
+                    ) {
+                        Text("Revert")
+                    }
+                }
+                if (state.cherryPickInProgress) {
+                    Text(
+                        "Cherry-pick conflict state is preserved until you continue or abort.",
+                        color = MaterialTheme.colorScheme.error,
+                    )
+                    Row(
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    ) {
+                        Button(
+                            enabled =
+                                !state.operationInProgress &&
+                                    state.conflicts.isEmpty(),
+                            onClick = onContinueCherryPick,
+                        ) {
+                            Text("Continue")
+                        }
+                        OutlinedButton(
+                            enabled = !state.operationInProgress,
+                            onClick = onAbortCherryPick,
+                        ) {
+                            Text("Abort")
+                        }
+                    }
+                }
+                if (state.revertInProgress) {
+                    Text(
+                        "Revert conflict state is preserved until you continue or abort.",
+                        color = MaterialTheme.colorScheme.error,
+                    )
+                    Row(
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    ) {
+                        Button(
+                            enabled =
+                                !state.operationInProgress &&
+                                    state.conflicts.isEmpty(),
+                            onClick = onContinueRevert,
+                        ) {
+                            Text("Continue")
+                        }
+                        OutlinedButton(
+                            enabled = !state.operationInProgress,
+                            onClick = onAbortRevert,
+                        ) {
+                            Text("Abort")
+                        }
+                    }
+                }
+                Text(
+                    "Commit author: $authorName <$authorEmail>",
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    style = MaterialTheme.typography.bodySmall,
+                )
+            }
+        }
+
+        Card(modifier = Modifier.fillMaxWidth()) {
+            Column(
+                modifier = Modifier.padding(16.dp),
+                verticalArrangement = Arrangement.spacedBy(10.dp),
+            ) {
+                Text("Stash", style = MaterialTheme.typography.titleMedium)
+                OutlinedTextField(
+                    value = stashMessage,
+                    onValueChange = onStashMessageChange,
+                    modifier = Modifier.fillMaxWidth(),
+                    label = { Text("Message (optional)") },
+                    singleLine = true,
+                )
+                FilterChip(
+                    selected = stashIncludeUntracked,
+                    onClick = {
+                        onStashIncludeUntrackedChange(
+                            !stashIncludeUntracked,
+                        )
+                    },
+                    label = { Text("Include untracked") },
+                )
+                Button(
+                    enabled =
+                        !state.operationInProgress &&
+                            state.repositoryState.name == "NONE",
+                    onClick = onSaveStash,
+                ) {
+                    Text("Save stash")
+                }
+
+                if (state.stashes.isEmpty()) {
+                    Text(
+                        "No local stashes.",
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                } else {
+                    state.stashes.forEach { stash ->
+                        HorizontalDivider()
+                        Text(
+                            "stash@{" + stash.index + "} · " +
+                                stash.oid.take(7),
+                            style = MaterialTheme.typography.titleSmall,
+                        )
+                        Text(
+                            stash.message.ifBlank { "No message" },
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                        Row(
+                            modifier = Modifier.horizontalScroll(
+                                rememberScrollState(),
+                            ),
+                            horizontalArrangement =
+                                Arrangement.spacedBy(8.dp),
+                        ) {
+                            OutlinedButton(
+                                enabled = !state.operationInProgress,
+                                onClick = {
+                                    onApplyStash(stash.index)
+                                },
+                            ) {
+                                Text("Apply")
+                            }
+                            OutlinedButton(
+                                enabled = !state.operationInProgress,
+                                onClick = {
+                                    onPopStash(stash.index)
+                                },
+                            ) {
+                                Text("Pop")
+                            }
+                            TextButton(
+                                enabled = !state.operationInProgress,
+                                onClick = { onDropStash(stash) },
+                            ) {
+                                Text("Drop")
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        Card(modifier = Modifier.fillMaxWidth()) {
+            Column(
+                modifier = Modifier.padding(16.dp),
+                verticalArrangement = Arrangement.spacedBy(10.dp),
+            ) {
+                Text("Reset", style = MaterialTheme.typography.titleMedium)
+                OutlinedTextField(
+                    value = resetRef,
+                    onValueChange = onResetRefChange,
+                    modifier = Modifier.fillMaxWidth(),
+                    label = { Text("Target ref") },
+                    singleLine = true,
+                )
+                Row(
+                    modifier = Modifier.horizontalScroll(
+                        rememberScrollState(),
+                    ),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                ) {
+                    GitResetMode.entries.forEach { mode ->
+                        FilterChip(
+                            selected = resetMode == mode,
+                            onClick = { onResetModeChange(mode) },
+                            label = { Text(mode.name.lowercase()) },
+                        )
+                    }
+                }
+                if (resetMode == GitResetMode.HARD) {
+                    Text(
+                        "Hard reset can permanently discard uncommitted changes.",
+                        color = MaterialTheme.colorScheme.error,
+                    )
+                }
+                Button(
+                    enabled =
+                        !state.operationInProgress &&
+                            state.repositoryState.name == "NONE" &&
+                            resetRef.isNotBlank(),
+                    onClick = onReset,
+                ) {
+                    Text("Reset")
+                }
+            }
+        }
+
+        Card(modifier = Modifier.fillMaxWidth()) {
+            Column(
+                modifier = Modifier.padding(16.dp),
+                verticalArrangement = Arrangement.spacedBy(10.dp),
+            ) {
+                Text(
+                    "Local tags",
+                    style = MaterialTheme.typography.titleMedium,
+                )
+                OutlinedTextField(
+                    value = tagName,
+                    onValueChange = onTagNameChange,
+                    modifier = Modifier.fillMaxWidth(),
+                    label = { Text("Tag name") },
+                    singleLine = true,
+                )
+                OutlinedTextField(
+                    value = tagTarget,
+                    onValueChange = onTagTargetChange,
+                    modifier = Modifier.fillMaxWidth(),
+                    label = { Text("Target ref") },
+                    singleLine = true,
+                )
+                OutlinedTextField(
+                    value = tagMessage,
+                    onValueChange = onTagMessageChange,
+                    modifier = Modifier.fillMaxWidth(),
+                    label = { Text("Annotation message") },
+                )
+                FilterChip(
+                    selected = annotatedTag,
+                    onClick = {
+                        onAnnotatedTagChange(!annotatedTag)
+                    },
+                    label = {
+                        Text(
+                            if (annotatedTag) {
+                                "Annotated tag"
+                            } else {
+                                "Lightweight tag"
+                            },
+                        )
+                    },
+                )
+                Button(
+                    enabled =
+                        !state.operationInProgress &&
+                            tagName.isNotBlank(),
+                    onClick = onCreateTag,
+                ) {
+                    Text("Create local tag")
+                }
+                state.tags.forEach { tag ->
+                    HorizontalDivider()
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
+                        Column(modifier = Modifier.weight(1f)) {
+                            Text(
+                                tag.name,
+                                style = MaterialTheme.typography.titleSmall,
+                            )
+                            Text(
+                                tag.targetOid.take(12) +
+                                    if (tag.annotated) {
+                                        " · annotated"
+                                    } else {
+                                        " · lightweight"
+                                    },
+                                color =
+                                    MaterialTheme.colorScheme.onSurfaceVariant,
+                            )
+                        }
+                        IconButton(
+                            enabled = !state.operationInProgress,
+                            onClick = { onDeleteTag(tag) },
+                        ) {
+                            Icon(
+                                imageVector = Icons.Outlined.Delete,
+                                contentDescription =
+                                    "Delete local tag " + tag.name,
+                            )
+                        }
+                    }
+                }
+            }
+        }
+
+        Card(modifier = Modifier.fillMaxWidth()) {
+            Column(
+                modifier = Modifier.padding(16.dp),
+                verticalArrangement = Arrangement.spacedBy(10.dp),
+            ) {
+                Text(
+                    "Submodules",
+                    style = MaterialTheme.typography.titleMedium,
+                )
+                if (state.submodules.isEmpty()) {
+                    Text(
+                        "No submodules declared by this repository.",
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                } else {
+                    state.submodules.forEach { submodule ->
+                        SubmoduleAdvancedRow(
+                            submodule = submodule,
+                            busy = state.operationInProgress,
+                            onSync = {
+                                onSyncSubmodule(submodule.name)
+                            },
+                            onUpdate = {
+                                onUpdateSubmodule(submodule.name)
+                            },
+                        )
+                    }
+                }
+            }
+        }
+
+        Card(modifier = Modifier.fillMaxWidth()) {
+            Column(
+                modifier = Modifier.padding(16.dp),
+                verticalArrangement = Arrangement.spacedBy(10.dp),
+            ) {
+                Text("Git LFS", style = MaterialTheme.typography.titleMedium)
+                Text(
+                    state.lfs.transferMessage,
+                    color = if (state.lfs.transferSupported) {
+                        MaterialTheme.colorScheme.onSurfaceVariant
+                    } else {
+                        MaterialTheme.colorScheme.error
+                    },
+                )
+                OutlinedTextField(
+                    value = lfsPattern,
+                    onValueChange = onLfsPatternChange,
+                    modifier = Modifier.fillMaxWidth(),
+                    label = { Text("Track pattern, e.g. *.psd") },
+                    singleLine = true,
+                )
+                Button(
+                    enabled =
+                        !state.operationInProgress &&
+                            lfsPattern.isNotBlank(),
+                    onClick = onTrackLfs,
+                ) {
+                    Text("Track with LFS")
+                }
+                if (state.lfs.trackedPatterns.isNotEmpty()) {
+                    Text(
+                        "Tracked patterns",
+                        style = MaterialTheme.typography.titleSmall,
+                    )
+                    state.lfs.trackedPatterns.forEach { pattern ->
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            verticalAlignment = Alignment.CenterVertically,
+                        ) {
+                            Text(
+                                pattern,
+                                modifier = Modifier.weight(1f),
+                                fontFamily = FontFamily.Monospace,
+                            )
+                            TextButton(
+                                enabled = !state.operationInProgress,
+                                onClick = { onUntrackLfs(pattern) },
+                            ) {
+                                Text("Untrack")
+                            }
+                        }
+                    }
+                }
+                Text(
+                    state.lfs.pointers.size.toString() +
+                        " LFS pointer file(s) detected.",
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun SubmoduleAdvancedRow(
+    submodule: GitSubmodule,
+    busy: Boolean,
+    onSync: () -> Unit,
+    onUpdate: () -> Unit,
+) {
+    HorizontalDivider()
+    Text(
+        submodule.name,
+        style = MaterialTheme.typography.titleSmall,
+    )
+    Text(
+        submodule.path,
+        fontFamily = FontFamily.Monospace,
+        color = MaterialTheme.colorScheme.onSurfaceVariant,
+    )
+    Text(
+        if (submodule.initialized) {
+            "Initialized · " +
+                submodule.workdirOid.take(12)
+        } else {
+            "Not initialized"
+        },
+        color = MaterialTheme.colorScheme.onSurfaceVariant,
+    )
+    Row(
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
+    ) {
+        OutlinedButton(
+            enabled = !busy,
+            onClick = onSync,
+        ) {
+            Text("Sync URL")
+        }
+        Button(
+            enabled = !busy,
+            onClick = onUpdate,
+        ) {
+            Text(
+                if (submodule.initialized) "Update" else "Initialize",
+            )
         }
     }
 }
