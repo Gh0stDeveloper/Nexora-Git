@@ -136,7 +136,7 @@ The project must use its own branding and must not imply that it is an official 
 
 ## Status
 
-**Current stage:** Phase L — GitHub Actions implementation is complete; CI validation is in progress.
+**Current stage:** Phase L — GitHub Actions is complete and CI validated. Phase M is next.
 
 Nexora Git now includes native workflow browsing and dispatch, workflow runs, jobs and steps, secure job-log viewing, run cancellation/re-runs, and streaming artifact downloads.
 
