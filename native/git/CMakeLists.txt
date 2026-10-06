@@ -59,6 +59,7 @@ add_library(
     nexoragit_core
     STATIC
     src/git_core.cpp
+    src/advanced_git.cpp
 )
 
 target_include_directories(
