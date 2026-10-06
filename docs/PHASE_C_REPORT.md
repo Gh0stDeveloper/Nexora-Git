@@ -1,5 +1,7 @@
 # Phase C — GitHub Platform Layer Report
 
+> **Historical implementation record — Complete.** This report is retained for traceability. For current product behavior and operations, use the [Documentation Hub](README.md).
+
 Date: 2026-10-04
 
 ## Status
@@ -140,3 +142,7 @@ Live authenticated calls still depend on the Phase B production prerequisites:
 **Phase D — Real Git Engine**
 
 Phase D moves from GitHub platform operations to genuine local Git through libgit2, Android NDK/C++ and JNI.
+
+---
+
+[← Documentation hub](README.md)
