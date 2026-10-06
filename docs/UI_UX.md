@@ -1,5 +1,7 @@
 # UI / UX Direction
 
+> **Current reference:** This document describes the implemented Nexora Git system. See the [Documentation Hub](README.md) for navigation.
+
 ## Product identity
 
 Nexora Git must remain clearly identifiable as an independent product while intentionally using a GitHub-familiar developer-tool visual language.
@@ -136,7 +138,7 @@ Initial editor requirements:
 - diff before commit
 - safe handling of large/binary files
 
-Later phases may add Tree-sitter and LSP-based functionality.
+Tree-sitter-based language intelligence is integrated; LSP support remains provider-neutral and only activates when a trusted provider is explicitly available.
 
 ## Responsive layouts
 
@@ -169,3 +171,7 @@ Every production screen should support:
 - keyboard navigation where applicable
 - state indication that does not rely on color alone
 - reduced motion preference where reasonable
+
+---
+
+[← Documentation hub](README.md)
