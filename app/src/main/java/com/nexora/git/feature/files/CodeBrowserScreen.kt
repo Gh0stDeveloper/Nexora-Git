@@ -13,11 +13,13 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.ArrowBack
 import androidx.compose.material.icons.outlined.Code
@@ -227,6 +229,7 @@ internal fun CodeBrowserContent(
                 entries = state.entries,
                 onOpenEntry = onOpenEntry,
                 onOpenDirectory = onOpenDirectory,
+                modifier = Modifier.weight(1f),
             )
         } else {
             FileBrowser(
@@ -336,7 +339,10 @@ private fun ProjectSearchPanel(
             .padding(horizontal = 12.dp, vertical = 8.dp),
     ) {
         Column(
-            modifier = Modifier.padding(12.dp),
+            modifier = Modifier
+                .heightIn(max = 360.dp)
+                .verticalScroll(rememberScrollState())
+                .padding(12.dp),
             verticalArrangement = Arrangement.spacedBy(8.dp),
         ) {
             OutlinedTextField(
@@ -492,9 +498,10 @@ private fun DirectoryBrowser(
     entries: List<BrowserEntry>,
     onOpenEntry: (BrowserEntry) -> Unit,
     onOpenDirectory: (String) -> Unit,
+    modifier: Modifier = Modifier,
 ) {
     LazyColumn(
-        modifier = Modifier.fillMaxSize(),
+        modifier = modifier.fillMaxSize(),
         contentPadding = PaddingValues(
             start = 16.dp,
             end = 16.dp,

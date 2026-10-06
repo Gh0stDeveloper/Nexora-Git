@@ -53,10 +53,14 @@ class ProjectTemplateCatalog @Inject constructor() {
             "{{PACKAGE_NAME}}" to packageName,
         )
 
-        val rendered = definition.files.mapValues { (_, content) ->
-            values.entries.fold(content) { current, (key, value) ->
+        fun substitute(input: String): String =
+            values.entries.fold(input) { current, (key, value) ->
                 current.replace(key, value)
             }
+
+        val rendered = definition.files.entries.associate {
+            (path, content) ->
+            substitute(path) to substitute(content)
         }
 
         return RenderedProjectTemplate(
@@ -184,7 +188,7 @@ class ProjectTemplateCatalog @Inject constructor() {
                         <manifest xmlns:android="http://schemas.android.com/apk/res/android">
                             <application
                                 android:label="{{PROJECT_NAME}}"
-                                android:theme="@style/Theme.Material3.DayNight.NoActionBar">
+                                android:theme="@style/Theme.NexoraGenerated">
                                 <activity
                                     android:name=".MainActivity"
                                     android:exported="true">
@@ -195,6 +199,13 @@ class ProjectTemplateCatalog @Inject constructor() {
                                 </activity>
                             </application>
                         </manifest>
+                    """.trimIndent() + "\n",
+                    "app/src/main/res/values/themes.xml" to """
+                        <resources>
+                            <style
+                                name="Theme.NexoraGenerated"
+                                parent="android:style/Theme.Material.Light.NoActionBar" />
+                        </resources>
                     """.trimIndent() + "\n",
                     "app/src/main/java/com/nexora/{{PACKAGE_NAME}}/MainActivity.kt" to """
                         package com.nexora.{{PACKAGE_NAME}}
