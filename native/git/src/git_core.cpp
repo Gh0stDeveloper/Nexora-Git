@@ -1443,6 +1443,12 @@ std::string repository_state(
         case GIT_REPOSITORY_STATE_REBASE_INTERACTIVE:
         case GIT_REPOSITORY_STATE_REBASE_MERGE:
             return "rebase";
+        case GIT_REPOSITORY_STATE_CHERRYPICK:
+        case GIT_REPOSITORY_STATE_CHERRYPICK_SEQUENCE:
+            return "cherry_pick";
+        case GIT_REPOSITORY_STATE_REVERT:
+        case GIT_REPOSITORY_STATE_REVERT_SEQUENCE:
+            return "revert";
         default:
             return "other";
     }
