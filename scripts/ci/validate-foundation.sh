@@ -15,6 +15,15 @@ test -s docs/STORAGE.md
 test -s docs/SECURITY.md
 test -s docs/THREAT_MODEL.md
 test -s docs/UI_UX.md
+test -s docs/PRODUCTION_READINESS.md
+test -s docs/PRODUCTION_SECURITY_AUDIT.md
+test -s docs/PERFORMANCE_AUDIT.md
+test -s docs/ACCESSIBILITY_AUDIT.md
+test -s docs/RELEASE_PROCESS.md
+test -s docs/PRIVACY.md
+test -s docs/PLAY_STORE_READINESS.md
+test -s docs/FDROID_READINESS.md
+test -s docs/PHASE_R_REPORT.md
 test -s docs/ROADMAP.md
 test -s docs/BRANDING.md
 test -s docs/GITHUB_APP.md

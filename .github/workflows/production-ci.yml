@@ -1,46 +1,52 @@
-name: Android CI
+name: Production CI
 
 on:
   push:
     branches:
       - main
-      - "phase-*"
+      - "phase-r-*"
     paths:
       - "app/**"
       - "native/**"
+      - "scripts/ci/**"
       - "gradle/**"
       - "build.gradle.kts"
       - "settings.gradle.kts"
       - "gradle.properties"
-      - ".github/workflows/android-ci.yml"
+      - ".github/workflows/**"
   pull_request:
     branches:
       - main
     paths:
       - "app/**"
       - "native/**"
+      - "scripts/ci/**"
       - "gradle/**"
       - "build.gradle.kts"
       - "settings.gradle.kts"
       - "gradle.properties"
-      - ".github/workflows/android-ci.yml"
+      - ".github/workflows/**"
 
 permissions:
   contents: read
 
 concurrency:
-  group: android-${{ github.workflow }}-${{ github.ref }}
+  group: production-${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
-  validate:
-    name: Build, lint and unit test
+  production-gate:
+    name: Release build and production gate
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 40
 
     steps:
       - name: Checkout
         uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
+
+      - name: Validate production policy
+        shell: bash
+        run: bash scripts/ci/validate-production.sh
 
       - name: Set up JDK 17
         uses: actions/setup-java@b6effb05e454b25005698d916606bdc6ffcbf961 # v5
@@ -63,22 +69,30 @@ jobs:
             "ndk;27.2.12479018" \
             "cmake;3.22.1"
 
-      - name: Set up Gradle cache and wrapper validation
+      - name: Set up Gradle
         uses: gradle/actions/setup-gradle@3f5f9adaf7d9fecd50b5935e54106014257a94e6 # v6.4.0
 
-      - name: Build, lint and test
+      - name: Build release, lint and test
         shell: bash
         run: |
           ./gradlew --no-daemon \
-            :app:assembleDebug \
-            :app:assembleDebugAndroidTest \
+            :app:assembleRelease \
+            :app:bundleRelease \
             :app:testDebugUnitTest \
-            :app:lintDebug
+            :app:lintRelease
 
-      - name: Upload debug APK
+      - name: Enforce artifact size budgets
+        shell: bash
+        run: bash scripts/ci/check-artifact-size.sh
+
+      - name: Upload release candidate artifacts
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
-          name: NexoraGit-debug
-          path: app/build/outputs/apk/debug/*.apk
-          if-no-files-found: error
+          name: NexoraGit-release-candidate
+          path: |
+            app/build/outputs/apk/release/*.apk
+            app/build/outputs/bundle/release/*.aab
+            app/build/outputs/native-debug-symbols/release/*.zip
+            app/build/reports/lint-results-release.html
+          if-no-files-found: warn
           retention-days: 7

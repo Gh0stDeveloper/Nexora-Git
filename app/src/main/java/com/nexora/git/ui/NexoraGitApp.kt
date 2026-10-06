@@ -171,10 +171,34 @@ private fun AuthenticatedNexoraGitApp(
             startDestination = NexoraDestination.HOME.route,
         ) {
             composable(NexoraDestination.HOME.route) {
-                HomeScreen(contentPadding = paddingValues)
+                HomeScreen(
+                    contentPadding = paddingValues,
+                    onOpenRepositories = {
+                        navController.navigate(
+                            NexoraDestination.REPOSITORIES.route,
+                        )
+                    },
+                    onOpenExplore = {
+                        navController.navigate(
+                            NexoraDestination.EXPLORE.route,
+                        )
+                    },
+                    onOpenActivity = {
+                        navController.navigate(
+                            NexoraDestination.ACTIVITY.route,
+                        )
+                    },
+                )
             }
             composable(NexoraDestination.EXPLORE.route) {
-                ExploreScreen(contentPadding = paddingValues)
+                ExploreScreen(
+                    contentPadding = paddingValues,
+                    onOpenRepository = { owner, name ->
+                        navController.navigate(
+                            "repository/" + owner + "/" + name,
+                        )
+                    },
+                )
             }
             composable(NexoraDestination.REPOSITORIES.route) {
                 RepositoriesScreen(

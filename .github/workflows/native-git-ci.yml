@@ -30,7 +30,7 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v5
+        uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
 
       - name: Install native build dependencies
         shell: bash
@@ -41,7 +41,12 @@ jobs:
       - name: Configure
         shell: bash
         run: |
-          cmake             -S native/git             -B build/native-git             -G Ninja             -DNEXORA_BUILD_NATIVE_TESTS=ON             -DNEXORA_LIBGIT2_VERSION=v1.9.7             -DNEXORA_MBEDTLS_VERSION=mbedtls-3.6.7             -DCMAKE_BUILD_TYPE=Release
+          cmake \
+            -S native/git \
+            -B build/native-git \
+            -G Ninja \
+            -DNEXORA_BUILD_NATIVE_TESTS=ON \
+            -DCMAKE_BUILD_TYPE=Release
 
       - name: Build
         shell: bash

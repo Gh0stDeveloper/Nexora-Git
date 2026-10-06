@@ -107,6 +107,15 @@ See [Git Engine](docs/GIT_ENGINE.md).
 - [Phase P report](docs/PHASE_P_REPORT.md)
 - [Advanced mobile development](docs/ADVANCED_MOBILE_DEVELOPMENT.md)
 - [Phase Q report](docs/PHASE_Q_REPORT.md)
+- [Production readiness](docs/PRODUCTION_READINESS.md)
+- [Security audit](docs/PRODUCTION_SECURITY_AUDIT.md)
+- [Performance audit](docs/PERFORMANCE_AUDIT.md)
+- [Accessibility audit](docs/ACCESSIBILITY_AUDIT.md)
+- [Release process](docs/RELEASE_PROCESS.md)
+- [Privacy](docs/PRIVACY.md)
+- [Play Store readiness](docs/PLAY_STORE_READINESS.md)
+- [F-Droid readiness](docs/FDROID_READINESS.md)
+- [Phase R report](docs/PHASE_R_REPORT.md)
 - [Auth Broker](auth-broker/README.md)
 - [Architecture decisions](docs/adr/)
 
@@ -146,11 +155,11 @@ The project must use its own branding and must not imply that it is an official 
 
 ## Status
 
-**Current stage:** Phase Q — Advanced Mobile Development is complete, CI validated and integrated into `main` through PR #19. Phase R — Production is next.
+**Current stage:** Phase R — Production is in final repository validation on `phase-r-production`.
 
-Phase Q adds an embedded Tree-sitter engine for Kotlin, Java, JavaScript, TypeScript/TSX, Python and JSON; AST-backed highlighting, symbols and syntax diagnostics; an optional LSP provider architecture; safe mobile formatters; local project templates; and bounded project-wide search.
+The production branch hardens backup/network policy, defines release signing without committed secrets, validates release APK/AAB builds, pins CI actions to immutable revisions, enforces artifact-size budgets, documents privacy/store requirements, and provides a signed tag-release pipeline for `v1.0.0`.
 
-Phase P — Advanced Git is CI validated and integrated into `main` through PR #18.
+Phase Q — Advanced Mobile Development is complete, CI validated and integrated into `main` through PR #19.
 
 
 ---

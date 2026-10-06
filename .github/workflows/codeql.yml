@@ -1,42 +1,30 @@
-name: Android CI
+name: CodeQL
 
 on:
   push:
     branches:
       - main
-      - "phase-*"
-    paths:
-      - "app/**"
-      - "native/**"
-      - "gradle/**"
-      - "build.gradle.kts"
-      - "settings.gradle.kts"
-      - "gradle.properties"
-      - ".github/workflows/android-ci.yml"
+      - "phase-r-*"
   pull_request:
     branches:
       - main
-    paths:
-      - "app/**"
-      - "native/**"
-      - "gradle/**"
-      - "build.gradle.kts"
-      - "settings.gradle.kts"
-      - "gradle.properties"
-      - ".github/workflows/android-ci.yml"
+  schedule:
+    - cron: "23 4 * * 1"
 
 permissions:
   contents: read
+  security-events: write
+  packages: read
 
 concurrency:
-  group: android-${{ github.workflow }}-${{ github.ref }}
+  group: codeql-${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
-  validate:
-    name: Build, lint and unit test
+  analyze:
+    name: Analyze Kotlin/Java
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 40
 
     steps:
       - name: Checkout
@@ -63,22 +51,21 @@ jobs:
             "ndk;27.2.12479018" \
             "cmake;3.22.1"
 
-      - name: Set up Gradle cache and wrapper validation
+      - name: Set up Gradle
         uses: gradle/actions/setup-gradle@3f5f9adaf7d9fecd50b5935e54106014257a94e6 # v6.4.0
 
-      - name: Build, lint and test
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@2892aa5e19bbd11bc0cff5427e3b750a04d9e3c2 # v4
+        with:
+          languages: java-kotlin
+          build-mode: manual
+
+      - name: Build Kotlin/Java for CodeQL
         shell: bash
         run: |
           ./gradlew --no-daemon \
-            :app:assembleDebug \
-            :app:assembleDebugAndroidTest \
-            :app:testDebugUnitTest \
-            :app:lintDebug
+            :app:compileDebugKotlin \
+            :app:compileDebugJavaWithJavac
 
-      - name: Upload debug APK
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
-        with:
-          name: NexoraGit-debug
-          path: app/build/outputs/apk/debug/*.apk
-          if-no-files-found: error
-          retention-days: 7
+      - name: Analyze
+        uses: github/codeql-action/analyze@2892aa5e19bbd11bc0cff5427e3b750a04d9e3c2 # v4

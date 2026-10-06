@@ -1,0 +1,11 @@
+Nexora Git es un espacio de trabajo Git y GitHub de código abierto, diseñado primero para Android y para desarrolladores que trabajan desde el teléfono.
+
+Trabaja con repositorios locales reales mediante libgit2: clone, fetch, pull, push, ramas, merge, rebase, cherry-pick, stash, reset, revert, tags, submódulos y Git LFS.
+
+Explora y edita código localmente con herramientas de sintaxis, inteligencia de lenguaje Tree-sitter, búsqueda en todo el proyecto y plantillas para proyectos móviles.
+
+Administra repositorios de GitHub, Issues, Pull Requests, revisiones, Actions, releases, funciones de cuenta/sociales, Discussions, Projects, Pages, alertas de seguridad, Gists y Codespaces.
+
+Nexora Git utiliza el flujo oficial de autorización web de GitHub. Nunca solicita tu contraseña o passkey de GitHub.
+
+Este es un proyecto independiente y de código abierto; no es una aplicación oficial de GitHub.
