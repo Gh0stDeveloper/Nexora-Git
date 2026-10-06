@@ -1,5 +1,7 @@
 # F-Droid Readiness
 
+> **Current reference:** This document describes the implemented Nexora Git system. See the [Documentation Hub](README.md) for navigation.
+
 F-Droid support is optional for Nexora Git.
 
 ## Prepared
@@ -21,3 +23,7 @@ For that reason the initial F-Droid build entry is intentionally disabled. Do no
 The F-Droid flavor must also receive the public production GitHub App client ID and HTTPS broker/callback configuration without embedding any confidential client secret.
 
 No separate closed-source runtime is required.
+
+---
+
+[← Documentation hub](README.md)
