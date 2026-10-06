@@ -41,6 +41,8 @@ import com.nexora.git.feature.git.GitWorkspaceScreen
 import com.nexora.git.feature.issues.IssueDetailScreen
 import com.nexora.git.feature.issues.IssuesScreen
 import com.nexora.git.feature.profile.ProfileScreen
+import com.nexora.git.feature.pulls.PullRequestDetailScreen
+import com.nexora.git.feature.pulls.PullRequestsScreen
 import com.nexora.git.feature.repositories.RepositoriesScreen
 import com.nexora.git.feature.repositories.RepositoryDetailScreen
 import com.nexora.git.ui.navigation.NexoraDestination
@@ -288,6 +290,66 @@ private fun AuthenticatedNexoraGitApp(
                         navController.navigate(
                             "issues/" + owner + "/" + name,
                         )
+                    },
+                    onOpenPullRequests = { owner, name ->
+                        navController.navigate(
+                            "pulls/" + owner + "/" + name,
+                        )
+                    },
+                )
+            }
+
+            composable(
+                route = "pulls/{owner}/{name}",
+                arguments = listOf(
+                    navArgument("owner") {
+                        type = NavType.StringType
+                    },
+                    navArgument("name") {
+                        type = NavType.StringType
+                    },
+                ),
+            ) { entry ->
+                val owner = entry.arguments
+                    ?.getString("owner")
+                    .orEmpty()
+                val name = entry.arguments
+                    ?.getString("name")
+                    .orEmpty()
+
+                PullRequestsScreen(
+                    contentPadding = paddingValues,
+                    onBack = {
+                        navController.popBackStack()
+                    },
+                    onOpenPullRequest = { number ->
+                        navController.navigate(
+                            "pull/" + owner + "/" +
+                                name + "/" + number,
+                        )
+                    },
+                )
+            }
+
+            composable(
+                route = "pull/{owner}/{name}/{number}",
+                arguments = listOf(
+                    navArgument("owner") {
+                        type = NavType.StringType
+                    },
+                    navArgument("name") {
+                        type = NavType.StringType
+                    },
+                    navArgument("number") {
+                        type = NavType.IntType
+                    },
+                ),
+            ) {
+                PullRequestDetailScreen(
+                    contentPadding = paddingValues,
+                    activeLogin = activeAccount.login,
+                    onBack = {
+                        navController.popBackStack()
                     },
                 )
             }
