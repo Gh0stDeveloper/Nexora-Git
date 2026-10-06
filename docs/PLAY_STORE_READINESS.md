@@ -1,5 +1,7 @@
 # Play Store Readiness
 
+> **Current reference:** This document describes the implemented Nexora Git system. See the [Documentation Hub](README.md) for navigation.
+
 ## Android package
 
 - package: `com.nexora.git`
@@ -21,7 +23,7 @@ Reusable listing text is committed under:
 
 Privacy policy source: `docs/PRIVACY.md`.
 
-Phase R baseline:
+Production baseline:
 
 - no advertising SDK;
 - no analytics SDK;
@@ -44,3 +46,7 @@ The following require the project owner's Play Console/account assets and are th
 - configure Play App Signing/upload key;
 - upload the signed AAB produced by the release workflow;
 - run Play pre-launch reports.
+
+---
+
+[← Documentation hub](README.md)
