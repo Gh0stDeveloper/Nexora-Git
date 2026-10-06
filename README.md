@@ -105,6 +105,8 @@ See [Git Engine](docs/GIT_ENGINE.md).
 - [Phase O report](docs/PHASE_O_REPORT.md)
 - [Advanced Git](docs/ADVANCED_GIT.md)
 - [Phase P report](docs/PHASE_P_REPORT.md)
+- [Advanced mobile development](docs/ADVANCED_MOBILE_DEVELOPMENT.md)
+- [Phase Q report](docs/PHASE_Q_REPORT.md)
 - [Auth Broker](auth-broker/README.md)
 - [Architecture decisions](docs/adr/)
 
@@ -144,11 +146,12 @@ The project must use its own branding and must not imply that it is an official 
 
 ## Status
 
-**Current stage:** Phase P — Advanced Git is feature-complete on `phase-p-advanced-git` and is at the final CI/merge gate.
+**Current stage:** Phase Q — Advanced Mobile Development is feature-complete on `phase-q-advanced-mobile-development` and is at the final Android/Foundation CI and merge gate.
 
-Phase P adds explicit rebase, cherry-pick, stash, reset, revert, local tags, submodule management and Git LFS. The LFS path includes a native libgit2 clean/smudge filter, SHA-256 local object cache, authenticated GitHub basic-transfer support, upload-before-push and manual hydration controls.
+Phase Q adds an embedded Tree-sitter engine for Kotlin, Java, JavaScript, TypeScript/TSX, Python and JSON; AST-backed highlighting, symbols and syntax diagnostics; an optional LSP provider architecture; safe mobile formatters; local project templates; and bounded project-wide search.
 
-Phase O — Advanced GitHub is already CI validated and integrated into `main`.
+Phase P — Advanced Git is CI validated and integrated into `main` through PR #18.
+
 
 ---
 

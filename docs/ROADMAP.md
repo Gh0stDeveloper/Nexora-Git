@@ -609,7 +609,7 @@ This roadmap is intentionally staged. A phase is not complete if it only contain
 
 ## Phase P — Advanced Git
 
-**Implementation status: feature-complete on `phase-p-advanced-git`; final CI and pull-request integration are the remaining merge gate.**
+**Implementation status: complete, CI validated and integrated into `main` through PR #18.**
 
 ### P.1 Explicit rebase — Complete
 - [x] rebase onto branch / tag / commit
@@ -667,7 +667,7 @@ This roadmap is intentionally staged. A phase is not complete if it only contain
 - [x] upload-before-push integration
 - [x] manual download / upload controls
 
-### P.8 Mobile UX and validation — In progress
+### P.8 Mobile UX and validation — Complete
 - [x] Advanced tab in Git Workspace
 - [x] shared conflict workflow
 - [x] recovery state visibility
@@ -676,19 +676,82 @@ This roadmap is intentionally staged. A phase is not complete if it only contain
 - [x] Git LFS unit / protocol tests
 - [x] Compose coverage
 - [x] real-repository native workflow coverage
-- [ ] final Native Git CI
-- [ ] final Android CI
-- [ ] final Foundation CI
-- [ ] pull-request integration validation
+- [x] final Native Git CI
+- [x] final Android CI
+- [x] final Foundation CI
+- [x] pull-request integration validation
 
 ## Phase Q — Advanced Mobile Development
 
-- Tree-sitter
-- richer language intelligence
-- optional LSP architecture
-- formatters
-- project templates
-- advanced search
+**Implementation status: feature-complete on `phase-q-advanced-mobile-development`; final Android/Foundation CI and pull-request integration remain the merge gate.**
+
+### Q.1 Tree-sitter engine — Complete
+- [x] pinned Tree-sitter runtime
+- [x] Kotlin grammar
+- [x] Java grammar
+- [x] JavaScript grammar
+- [x] TypeScript grammar
+- [x] TSX grammar
+- [x] Python grammar
+- [x] JSON grammar
+- [x] Android JNI bridge
+- [x] UTF-8 byte to UTF-16 editor offset mapping
+- [x] bounded AST traversal
+- [x] native CI validation
+
+### Q.2 Rich local language intelligence — Complete
+- [x] AST-backed semantic highlighting
+- [x] symbol extraction
+- [x] syntax diagnostics
+- [x] mobile analysis caps
+- [x] debounced background parsing
+- [x] regex fallback for languages without bundled grammars
+- [x] code-outline UI and symbol navigation
+
+### Q.3 Optional LSP architecture — Complete
+- [x] provider contract
+- [x] capability/status models
+- [x] empty-provider Hilt multibinding
+- [x] provider registry by language
+- [x] JSON-RPC 2.0 request/notification/response codec
+- [x] no bundled arbitrary executable or automatic server download
+
+### Q.4 Formatters — Complete
+- [x] deterministic JSON formatter
+- [x] structured formatter for Kotlin/Java/JavaScript/TypeScript
+- [x] Tree-sitter protected string/comment ranges
+- [x] undoable buffer-only formatting
+- [x] explicit save remains required
+
+### Q.5 Project templates — Complete
+- [x] Kotlin CLI
+- [x] Android Compose
+- [x] Node + TypeScript
+- [x] Python CLI
+- [x] generated workspace strategy
+- [x] path traversal protection
+- [x] file-count and byte limits
+- [x] generated-workspace rescan and deletion lifecycle
+
+### Q.6 Advanced project search — Complete
+- [x] project-wide literal search
+- [x] regular expressions
+- [x] case sensitivity
+- [x] whole-word mode
+- [x] include/exclude globs
+- [x] binary and generated-directory exclusion
+- [x] canonical-path / symlink confinement
+- [x] mobile file/result/size limits
+- [x] direct result opening
+
+### Q.7 Validation and integration — In progress
+- [x] Native Git CI for Tree-sitter
+- [x] JVM tests added
+- [x] Compose coverage added
+- [x] documentation
+- [ ] final Android CI
+- [ ] final Foundation CI
+- [ ] pull-request integration validation
 
 ## Phase R — Production
 
