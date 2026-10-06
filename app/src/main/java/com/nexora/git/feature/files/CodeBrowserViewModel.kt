@@ -14,6 +14,9 @@ import com.nexora.git.core.git.GitBlameHunk
 import com.nexora.git.core.git.GitEngine
 import com.nexora.git.core.git.GitHistoryEntry
 import com.nexora.git.core.storage.WorkspaceRegistry
+import com.nexora.git.core.search.ProjectSearchEngine
+import com.nexora.git.core.search.ProjectSearchMatch
+import com.nexora.git.core.search.ProjectSearchQuery
 import dagger.hilt.android.lifecycle.HiltViewModel
 import java.io.File
 import javax.inject.Inject
@@ -47,6 +50,17 @@ data class CodeBrowserUiState(
     val blameLoading: Boolean = false,
     val historyError: String? = null,
     val blameError: String? = null,
+    val searchVisible: Boolean = false,
+    val projectSearchQuery: String = "",
+    val projectSearchRegex: Boolean = false,
+    val projectSearchMatchCase: Boolean = false,
+    val projectSearchWholeWord: Boolean = false,
+    val projectSearchIncludeGlob: String = "",
+    val projectSearchExcludeGlob: String = "",
+    val projectSearchLoading: Boolean = false,
+    val projectSearchMatches: List<ProjectSearchMatch> = emptyList(),
+    val projectSearchFilesScanned: Int = 0,
+    val projectSearchTruncated: Boolean = false,
     val errorMessage: String? = null,
     val successMessage: String? = null,
 )
@@ -58,6 +72,7 @@ class CodeBrowserViewModel @Inject constructor(
     private val fileSystem: CodeBrowserFileSystem,
     private val fileActionManager: CodeFileActionManager,
     private val gitEngine: GitEngine,
+    private val projectSearchEngine: ProjectSearchEngine,
 ) : ViewModel() {
 
     private val workspaceId: String =
@@ -135,6 +150,98 @@ class CodeBrowserViewModel @Inject constructor(
             CodeBrowserTab.CODE,
             CodeBrowserTab.PREVIEW -> Unit
         }
+    }
+
+    fun toggleProjectSearch() {
+        mutableState.update {
+            it.copy(searchVisible = !it.searchVisible)
+        }
+    }
+
+    fun setProjectSearchQuery(value: String) {
+        mutableState.update {
+            it.copy(projectSearchQuery = value)
+        }
+    }
+
+    fun setProjectSearchRegex(value: Boolean) {
+        mutableState.update {
+            it.copy(projectSearchRegex = value)
+        }
+    }
+
+    fun setProjectSearchMatchCase(value: Boolean) {
+        mutableState.update {
+            it.copy(projectSearchMatchCase = value)
+        }
+    }
+
+    fun setProjectSearchWholeWord(value: Boolean) {
+        mutableState.update {
+            it.copy(projectSearchWholeWord = value)
+        }
+    }
+
+    fun setProjectSearchIncludeGlob(value: String) {
+        mutableState.update {
+            it.copy(projectSearchIncludeGlob = value)
+        }
+    }
+
+    fun setProjectSearchExcludeGlob(value: String) {
+        mutableState.update {
+            it.copy(projectSearchExcludeGlob = value)
+        }
+    }
+
+    fun searchProject() {
+        val current = state.value
+        if (current.projectSearchQuery.isBlank() || workspacePath.isBlank()) {
+            return
+        }
+
+        viewModelScope.launch {
+            mutableState.update {
+                it.copy(
+                    projectSearchLoading = true,
+                    errorMessage = null,
+                )
+            }
+
+            runCatching {
+                projectSearchEngine.search(
+                    workspacePath = workspacePath,
+                    query = ProjectSearchQuery(
+                        text = current.projectSearchQuery,
+                        regex = current.projectSearchRegex,
+                        matchCase = current.projectSearchMatchCase,
+                        wholeWord = current.projectSearchWholeWord,
+                        includeGlob = current.projectSearchIncludeGlob,
+                        excludeGlob = current.projectSearchExcludeGlob,
+                    ),
+                )
+            }.onSuccess { result ->
+                mutableState.update {
+                    it.copy(
+                        projectSearchLoading = false,
+                        projectSearchMatches = result.matches,
+                        projectSearchFilesScanned = result.filesScanned,
+                        projectSearchTruncated = result.truncated,
+                    )
+                }
+            }.onFailure { error ->
+                mutableState.update {
+                    it.copy(projectSearchLoading = false)
+                }
+                showError(
+                    error.message ?: "Project search failed.",
+                )
+            }
+        }
+    }
+
+    fun openSearchResult(match: ProjectSearchMatch) {
+        loadFile(match.path)
     }
 
     fun refresh() {
