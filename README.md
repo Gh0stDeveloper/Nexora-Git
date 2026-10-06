@@ -97,6 +97,8 @@ See [Git Engine](docs/GIT_ENGINE.md).
 - [Phase K report](docs/PHASE_K_REPORT.md)
 - [GitHub Actions](docs/GITHUB_ACTIONS.md)
 - [Phase L report](docs/PHASE_L_REPORT.md)
+- [Releases](docs/RELEASES.md)
+- [Phase M report](docs/PHASE_M_REPORT.md)
 - [Auth Broker](auth-broker/README.md)
 - [Architecture decisions](docs/adr/)
 
@@ -136,9 +138,9 @@ The project must use its own branding and must not imply that it is an official 
 
 ## Status
 
-**Current stage:** Phase L — GitHub Actions is complete and CI validated. Phase M is next.
+**Current stage:** Phase M — Releases implementation is complete; CI validation is in progress.
 
-Nexora Git now includes native workflow browsing and dispatch, workflow runs, jobs and steps, secure job-log viewing, run cancellation/re-runs, and streaming artifact downloads.
+Nexora Git now adds native tags, releases, drafts, prereleases, immutable-release handling, and secure release-asset upload/download management.
 
 ---
 
