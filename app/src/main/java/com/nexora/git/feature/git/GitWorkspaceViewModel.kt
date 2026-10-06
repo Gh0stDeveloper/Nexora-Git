@@ -13,6 +13,7 @@ import com.nexora.git.core.git.GitEngine
 import com.nexora.git.core.git.GitHistoryEntry
 import com.nexora.git.core.git.GitLfsManager
 import com.nexora.git.core.git.GitLfsState
+import com.nexora.git.core.git.GitLfsTransport
 import com.nexora.git.core.git.GitMergeResult
 import com.nexora.git.core.git.GitPullRequest
 import com.nexora.git.core.git.GitPullStrategy
@@ -102,6 +103,7 @@ class GitWorkspaceViewModel @Inject constructor(
     private val workspaceRegistry: WorkspaceRegistry,
     private val gitEngine: GitEngine,
     private val lfsManager: GitLfsManager,
+    private val lfsTransport: GitLfsTransport,
 ) : ViewModel() {
 
     private val workspaceId =
@@ -668,6 +670,58 @@ class GitWorkspaceViewModel @Inject constructor(
         }
     }
 
+    fun downloadLfs(remoteName: String) {
+        val remote = state.value.remotes.firstOrNull {
+            it.name == remoteName
+        }
+        if (remote == null) {
+            showError("Choose a configured remote for Git LFS.")
+            return
+        }
+        if (!lfsTransport.supportsRemote(remote.url)) {
+            showError(
+                "Git LFS object transfer currently supports GitHub HTTPS remotes.",
+            )
+            return
+        }
+
+        launchOperation {
+            val result = lfsTransport.downloadMissing(
+                repositoryPath = workspacePath,
+                remoteUrl = remote.url,
+            )
+            "Git LFS download: " +
+                result.transferred + " transferred · " +
+                result.alreadyPresent + " already local."
+        }
+    }
+
+    fun uploadLfs(remoteName: String) {
+        val remote = state.value.remotes.firstOrNull {
+            it.name == remoteName
+        }
+        if (remote == null) {
+            showError("Choose a configured remote for Git LFS.")
+            return
+        }
+        if (!lfsTransport.supportsRemote(remote.url)) {
+            showError(
+                "Git LFS object transfer currently supports GitHub HTTPS remotes.",
+            )
+            return
+        }
+
+        launchOperation {
+            val result = lfsTransport.uploadPending(
+                repositoryPath = workspacePath,
+                remoteUrl = remote.url,
+            )
+            "Git LFS upload: " +
+                result.transferred + " transferred · " +
+                result.alreadyPresent + " already remote."
+        }
+    }
+
     fun merge(
         ref: String,
         authorName: String,
@@ -740,6 +794,18 @@ class GitWorkspaceViewModel @Inject constructor(
                 }
             } else {
                 ""
+            }
+
+            val remoteConfig = state.value.remotes
+                .firstOrNull { it.name == normalizedRemote }
+            if (state.value.lfs.trackedPatterns.isNotEmpty() &&
+                remoteConfig != null &&
+                lfsTransport.supportsRemote(remoteConfig.url)
+            ) {
+                lfsTransport.uploadPending(
+                    repositoryPath = workspacePath,
+                    remoteUrl = remoteConfig.url,
+                )
             }
 
             val result = gitEngine.push(
