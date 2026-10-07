@@ -13,6 +13,13 @@ import javax.inject.Singleton
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 
+enum class AppThemePreference {
+    SYSTEM,
+    LIGHT,
+    DARK,
+    AMOLED,
+}
+
 private val Context.nexoraSettingsDataStore by preferencesDataStore(
     name = "nexora_git_settings",
 )
@@ -25,6 +32,8 @@ class SettingsRepository @Inject constructor(
         val onboardingCompleted = booleanPreferencesKey("onboarding_completed")
         val activeAccountId = longPreferencesKey("active_account_id")
         val editorIndentStyle = stringPreferencesKey("editor_indent_style")
+        val themePreference = stringPreferencesKey("theme_preference")
+        val dynamicColorEnabled = booleanPreferencesKey("dynamic_color_enabled")
     }
 
     val onboardingCompleted: Flow<Boolean> =
@@ -35,6 +44,22 @@ class SettingsRepository @Inject constructor(
     val activeAccountId: Flow<Long?> =
         context.nexoraSettingsDataStore.data.map { preferences ->
             preferences[Keys.activeAccountId]
+        }
+
+    val themePreference: Flow<AppThemePreference> =
+        context.nexoraSettingsDataStore.data.map { preferences ->
+            preferences[Keys.themePreference]
+                ?.let { stored ->
+                    runCatching {
+                        AppThemePreference.valueOf(stored)
+                    }.getOrNull()
+                }
+                ?: AppThemePreference.SYSTEM
+        }
+
+    val dynamicColorEnabled: Flow<Boolean> =
+        context.nexoraSettingsDataStore.data.map { preferences ->
+            preferences[Keys.dynamicColorEnabled] ?: false
         }
 
     val editorIndentStyle: Flow<EditorIndentStyle> =
@@ -51,6 +76,18 @@ class SettingsRepository @Inject constructor(
     suspend fun setOnboardingCompleted(completed: Boolean) {
         context.nexoraSettingsDataStore.edit { preferences ->
             preferences[Keys.onboardingCompleted] = completed
+        }
+    }
+
+    suspend fun setThemePreference(preference: AppThemePreference) {
+        context.nexoraSettingsDataStore.edit { preferences ->
+            preferences[Keys.themePreference] = preference.name
+        }
+    }
+
+    suspend fun setDynamicColorEnabled(enabled: Boolean) {
+        context.nexoraSettingsDataStore.edit { preferences ->
+            preferences[Keys.dynamicColorEnabled] = enabled
         }
     }
 
