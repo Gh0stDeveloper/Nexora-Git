@@ -408,7 +408,10 @@ private fun WorkflowRunCard(
 
             run.actorLogin?.let {
                 Text(
-                    text = "Triggered by " + it,
+                    text = stringResource(
+                        R.string.actions_triggered_by,
+                        it,
+                    ),
                     color =
                         MaterialTheme.colorScheme.onSurfaceVariant,
                     style = MaterialTheme.typography.bodySmall,
@@ -498,7 +501,12 @@ private fun DispatchWorkflowDialog(
             }
         },
         title = {
-            Text("Dispatch " + workflow.name)
+            Text(
+                stringResource(
+                    R.string.actions_dispatch_workflow,
+                    workflow.name,
+                ),
+            )
         },
         text = {
             Column(
@@ -526,7 +534,7 @@ private fun DispatchWorkflowDialog(
                     },
                     supportingText = {
                         Text(
-                            "One key=value pair per line.",
+                            stringResource(R.string.actions_inputs_hint),
                         )
                     },
                 )
