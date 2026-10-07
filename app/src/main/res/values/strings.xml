@@ -398,12 +398,7 @@
 
     <string name="repo_refreshing">Refreshing</string>
     <string name="repo_refresh">Refresh</string>
-    <string name="repo_github_section">GitHub</string>
-    <string name="repo_device_section">On this device</string>
-    <string name="repo_loading_github">Loading GitHub repositories…</string>
-    <string name="repo_no_github">No GitHub repositories available</string>
     <string name="repo_no_github_body">Create a repository or refresh after granting the GitHub App access to repositories.</string>
-    <string name="repo_no_local">No local workspaces</string>
     <string name="repo_no_local_body">Clone a GitHub repository or choose a project folder from Android storage.</string>
     <string name="repo_private">Private repository</string>
     <string name="repo_public">Public repository</string>
@@ -411,7 +406,6 @@
     <string name="repo_forks">Forks</string>
     <string name="repo_no_language">No language</string>
     <string name="repo_files_size">%1$d files · %2$s</string>
-    <string name="repo_branch">Branch: %1$s</string>
     <string name="repo_risk_summary">%1$d secret · %2$d large · %3$d sync conflicts</string>
     <string name="repo_init_git">Init Git</string>
     <string name="repo_git_workspace">Git workspace</string>
