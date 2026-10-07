@@ -53,7 +53,7 @@ fun LoginScreen(
             Spacer(Modifier.height(10.dp))
 
             Text(
-                text = "Nexora Git uses GitHub's official authorization page. Passwords, passkeys and 2FA are handled only by GitHub.",
+                text = stringResource(R.string.login_description),
                 style = MaterialTheme.typography.bodyLarge,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
