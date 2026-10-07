@@ -18,7 +18,9 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import com.nexora.git.R
 
 @Composable
 fun LoginScreen(
@@ -44,14 +46,14 @@ fun LoginScreen(
             Spacer(Modifier.height(20.dp))
 
             Text(
-                text = "Sign in to GitHub",
+                text = stringResource(R.string.login_title),
                 style = MaterialTheme.typography.headlineSmall,
             )
 
             Spacer(Modifier.height(10.dp))
 
             Text(
-                text = "Nexora Git uses GitHub's official authorization page. Passwords, passkeys and 2FA are handled only by GitHub.",
+                text = stringResource(R.string.login_description),
                 style = MaterialTheme.typography.bodyLarge,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
@@ -69,14 +71,14 @@ fun LoginScreen(
                         modifier = Modifier.height(20.dp),
                     )
                 } else {
-                    Text("Continue with GitHub")
+                    Text(stringResource(R.string.login_continue))
                 }
             }
 
             if (!configured) {
                 Spacer(Modifier.height(18.dp))
                 Text(
-                    text = "Authentication is disabled in this build until the GitHub App client ID, broker URL and callback URL are configured.",
+                    text = stringResource(R.string.login_not_configured),
                     style = MaterialTheme.typography.bodyLarge,
                     color = MaterialTheme.colorScheme.error,
                 )
