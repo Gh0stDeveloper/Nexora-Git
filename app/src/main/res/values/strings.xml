@@ -388,4 +388,11 @@
     <string name="editor_line_prefix">Ln %1$d</string>
     <string name="editor_diff_summary">Diff  +%1$d  -%2$d</string>
     <string name="editor_commit_summary">Commit changes  +%1$d  -%2$d</string>
+
+    <string name="releases_no_tags">No Git tags are available.</string>
+    <string name="editor_syntax_diagnostics">%1$d syntax diagnostic(s)</string>
+    <string name="editor_diagnostic_line">L%1$d:%2$d · %3$s</string>
+    <string name="editor_symbol_line">%1$s · %2$s · L%3$d</string>
+    <string name="editor_line_column">Ln %1$d, Col %2$d</string>
+    <string name="editor_saved">Saved</string>
 </resources>
