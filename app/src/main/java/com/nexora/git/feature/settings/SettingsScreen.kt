@@ -1,7 +1,6 @@
 package com.nexora.git.feature.settings
 
 import androidx.compose.foundation.horizontalScroll
-import androidx.compose.foundation.selection.toggleable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
@@ -13,6 +12,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.selection.toggleable
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.ArrowBack
 import androidx.compose.material3.Card
@@ -45,6 +45,35 @@ fun SettingsScreen(
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
 
+    SettingsContent(
+        state = state,
+        contentPadding = contentPadding,
+        onBack = onBack,
+        onTheme = viewModel::setTheme,
+        onDynamicColor = viewModel::setDynamicColor,
+        onLanguage = viewModel::setLanguage,
+        onIndent = viewModel::setIndentStyle,
+        onConfirmForcePush = viewModel::setConfirmForcePush,
+        onWifiOnly = viewModel::setWifiOnlyLargeTransfers,
+        onReplayOnboarding = viewModel::replayOnboarding,
+        onReset = viewModel::reset,
+    )
+}
+
+@Composable
+internal fun SettingsContent(
+    state: SettingsUiState,
+    contentPadding: PaddingValues,
+    onBack: () -> Unit,
+    onTheme: (AppThemeMode) -> Unit,
+    onDynamicColor: (Boolean) -> Unit,
+    onLanguage: (AppLanguage) -> Unit,
+    onIndent: (EditorIndentStyle) -> Unit,
+    onConfirmForcePush: (Boolean) -> Unit,
+    onWifiOnly: (Boolean) -> Unit,
+    onReplayOnboarding: () -> Unit,
+    onReset: () -> Unit,
+) {
     LazyColumn(
         modifier = Modifier
             .fillMaxSize()
@@ -89,7 +118,7 @@ fun SettingsScreen(
                     AppThemeMode.entries.forEach { mode ->
                         FilterChip(
                             selected = state.product.themeMode == mode,
-                            onClick = { viewModel.setTheme(mode) },
+                            onClick = { onTheme(mode) },
                             label = {
                                 Text(
                                     when (mode) {
@@ -107,7 +136,7 @@ fun SettingsScreen(
                     title = stringResource(R.string.settings_dynamic_color),
                     summary = stringResource(R.string.settings_dynamic_color_summary),
                     checked = state.product.dynamicColor,
-                    onCheckedChange = viewModel::setDynamicColor,
+                    onCheckedChange = onDynamicColor,
                 )
             }
         }
@@ -118,7 +147,7 @@ fun SettingsScreen(
                     AppLanguage.entries.forEach { language ->
                         FilterChip(
                             selected = state.product.language == language,
-                            onClick = { viewModel.setLanguage(language) },
+                            onClick = { onLanguage(language) },
                             label = {
                                 Text(
                                     when (language) {
@@ -141,7 +170,7 @@ fun SettingsScreen(
                     EditorIndentStyle.entries.forEach { style ->
                         FilterChip(
                             selected = state.editorIndentStyle == style,
-                            onClick = { viewModel.setIndentStyle(style) },
+                            onClick = { onIndent(style) },
                             label = {
                                 Text(
                                     when (style) {
@@ -163,7 +192,7 @@ fun SettingsScreen(
                     title = stringResource(R.string.settings_confirm_force_push),
                     summary = stringResource(R.string.settings_confirm_force_push_summary),
                     checked = state.product.confirmForcePush,
-                    onCheckedChange = viewModel::setConfirmForcePush,
+                    onCheckedChange = onConfirmForcePush,
                 )
             }
         }
@@ -174,7 +203,7 @@ fun SettingsScreen(
                     title = stringResource(R.string.settings_wifi_only),
                     summary = stringResource(R.string.settings_wifi_only_summary),
                     checked = state.product.wifiOnlyLargeTransfers,
-                    onCheckedChange = viewModel::setWifiOnlyLargeTransfers,
+                    onCheckedChange = onWifiOnly,
                 )
             }
         }
@@ -189,7 +218,7 @@ fun SettingsScreen(
         item {
             OutlinedButton(
                 modifier = Modifier.fillMaxWidth(),
-                onClick = viewModel::replayOnboarding,
+                onClick = onReplayOnboarding,
             ) {
                 Text(stringResource(R.string.onboarding_replay))
             }
@@ -198,7 +227,7 @@ fun SettingsScreen(
         item {
             OutlinedButton(
                 modifier = Modifier.fillMaxWidth(),
-                onClick = viewModel::reset,
+                onClick = onReset,
             ) {
                 Text(stringResource(R.string.action_reset))
             }
@@ -226,7 +255,9 @@ private fun SettingsCard(
 }
 
 @Composable
-private fun ChoiceRow(content: @Composable RowScope.() -> Unit) {
+private fun ChoiceRow(
+    content: @Composable RowScope.() -> Unit,
+) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
