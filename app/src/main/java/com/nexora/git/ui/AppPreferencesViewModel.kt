@@ -8,6 +8,7 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
@@ -30,12 +31,14 @@ class AppPreferencesViewModel @Inject constructor(
             initialValue = false,
         )
 
-    val onboardingCompleted: StateFlow<Boolean> =
-        settingsRepository.onboardingCompleted.stateIn(
-            scope = viewModelScope,
-            started = SharingStarted.WhileSubscribed(5_000),
-            initialValue = false,
-        )
+    val onboardingCompleted: StateFlow<Boolean?> =
+        settingsRepository.onboardingCompleted
+            .map<Boolean, Boolean?> { it }
+            .stateIn(
+                scope = viewModelScope,
+                started = SharingStarted.WhileSubscribed(5_000),
+                initialValue = null,
+            )
 
     fun completeOnboarding() {
         viewModelScope.launch {
