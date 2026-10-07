@@ -592,11 +592,11 @@ private fun PullRequestHeaderCard(
             )
 
             Text(
-                text = "Checks: " +
-                    state.successfulChecks +
-                    " passed · " +
-                    state.failedChecks +
-                    " failed",
+                text = stringResource(
+                    R.string.pr_checks_summary,
+                    state.successfulChecks,
+                    state.failedChecks,
+                ),
                 color = if (state.failedChecks > 0) {
                     MaterialTheme.colorScheme.error
                 } else {
