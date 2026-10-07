@@ -914,20 +914,20 @@ The detailed executable checklist is maintained in **[PHASE_S_PRODUCTION_HARDENI
 
 ## External launch operations
 
-The implementation roadmap is complete. The following actions depend on production accounts, credentials or publication decisions and therefore remain outside phase completion:
+Phases 0–R are implementation-complete, while Phase S remains the active hardening gate. The following actions depend on production accounts, credentials or publication decisions and remain external operations unless a Phase S acceptance gate explicitly requires evidence from them:
 
 - create/configure the production GitHub App in the owning GitHub account;
 - provision the production Auth Broker secret and DNS/TLS environment;
 - inject production Android signing credentials through the documented release mechanism;
-- publish the first signed `v1.0.0` GitHub Release when launch credentials are available;
+- publish a signed beta/RC for Phase S qualification, then publish stable `v1.0.0` only after the Phase S stable-release gate passes;
 - create/complete the Play Console listing, screenshots and publication workflow;
 - enable an F-Droid build entry only when native dependency acquisition satisfies the documented reproducibility requirement.
 
-These tasks must not be represented as incomplete application features. Their procedures live in `GITHUB_APP.md`, `AUTH_DEPLOYMENT.md`, `VPS_INSTALLER.md`, `RELEASE_PROCESS.md`, `PLAY_STORE_READINESS.md` and `FDROID_READINESS.md`.
+These tasks must not be confused with missing application features. Where Phase S requires deployment or release evidence, the corresponding external operation becomes part of that acceptance gate. Procedures live in `GITHUB_APP.md`, `AUTH_DEPLOYMENT.md`, `VPS_INSTALLER.md`, `RELEASE_PROCESS.md`, `PLAY_STORE_READINESS.md` and `FDROID_READINESS.md`.
 
 ## Definition of Done
 
-A feature can be marked complete only when applicable UI, implementation, errors, permissions, tests, accessibility and documentation are present.
+A feature can be marked complete only when applicable UI, implementation, errors, permissions, tests, accessibility and documentation are present. Phase S additionally requires the completion evidence and stable-release gates defined in `PHASE_S_PRODUCTION_HARDENING_ROADMAP.md`.
 
 ---
 
