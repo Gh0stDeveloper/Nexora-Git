@@ -18,6 +18,8 @@ export NEXORA_SIGNING_SECRETS="$NEXORA_SIGNING_ROOT/secrets.env"
 export NEXORA_SIGNING_METADATA="$NEXORA_SIGNING_ROOT/identity.conf"
 export NEXORA_SIGNING_CERTIFICATE="$NEXORA_SIGNING_ROOT/certificate.pem"
 export NEXORA_SIGNING_BACKUP_DIR="$NEXORA_SIGNING_ROOT/backups"
+export NEXORA_WEB_ROOT="$TEMP_ROOT/web"
+export NEXORA_WEB_RELEASE_ROOT="$NEXORA_WEB_ROOT/releases"
 NEXORA_ANDROID_BUILD_USER="$(id -un)"
 NEXORA_SIGNING_OWNER="$(id -un)"
 NEXORA_SIGNING_GROUP="$(id -gn)"
@@ -50,6 +52,17 @@ android_signing_create_identity
 job="20261007T030000Z-a1b2c3d4"
 commit="$(git -C "$REPO_ROOT" rev-parse HEAD)"
 created="2026-10-07T03:00:00Z"
+job_dir="$NEXORA_ANDROID_STATE_ROOT/builds/$job"
+mkdir -p "$job_dir/source/app"
+cp "$REPO_ROOT/app/build.gradle.kts" "$job_dir/source/app/build.gradle.kts"
+cat > "$job_dir/job.conf" <<EOF
+JOB_ID=$job
+MODE=release
+COMMIT=$commit
+CREATED_AT=$created
+STATUS=COMPLETED
+EOF
+
 log_file="$(android_artifacts_init_log "$job")"
 printf 'production signing integration\n' > "$log_file"
 
@@ -60,5 +73,8 @@ android_release_verify_signed "$job"
 signed_dir="$(android_release_signed_dir "$job")"
 [[ -s "$signed_dir/$job-signed.apk" ]]
 [[ -s "$signed_dir/$job-signed.aab" ]]
+[[ -L "$NEXORA_WEB_RELEASE_ROOT/current" ]]
+[[ -s "$NEXORA_WEB_RELEASE_ROOT/current/Nexora-Git.apk" ]]
+grep -q '"versionName": "1.0.0"' "$NEXORA_WEB_RELEASE_ROOT/current/latest.json"
 
 printf 'Android release signing integration test passed.\n'

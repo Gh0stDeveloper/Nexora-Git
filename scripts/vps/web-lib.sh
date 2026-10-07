@@ -113,7 +113,7 @@ web_image_exists() {
 web_source_changed() {
   local old_commit="$1"
   local new_commit="$2"
-  ! git -C "$INSTALL_DIR" diff --quiet "$old_commit" "$new_commit" -- web
+  ! git -C "$INSTALL_DIR" diff --quiet "$old_commit" "$new_commit" -- web auth-broker/compose.yaml
 }
 
 web_deploy() {
@@ -280,8 +280,9 @@ web_release_version_info() {
 
 web_prune_releases() {
   local keep="${1:-$NEXORA_WEB_RELEASE_KEEP}"
-  [[ "$keep" =~ ^[0-9]+$ ]] && (( keep >= 1 && keep <= 50 )) ||
+  if [[ ! "$keep" =~ ^[0-9]+$ ]] || (( keep < 1 || keep > 50 )); then
     die "Website release retention must be between 1 and 50."
+  fi
 
   local current=""
   if [[ -L "$NEXORA_WEB_RELEASE_ROOT/current" ]]; then
@@ -370,8 +371,16 @@ web_status() {
 
   printf 'Website:      https://%s/\n' "$DOMAIN"
   printf 'Local port:   127.0.0.1:%s\n' "$WEB_PORT"
-  printf 'Container:    %s\n' "$(compose ps --status running --services 2>/dev/null | grep -qx web && printf running || printf stopped)"
-  printf 'Local health: %s\n' "$(web_wait_health 1 && printf ok || printf failed)"
+  local container_state="stopped"
+  local health_state="failed"
+  if compose ps --status running --services 2>/dev/null | grep -qx web; then
+    container_state="running"
+  fi
+  if web_wait_health 1; then
+    health_state="ok"
+  fi
+  printf 'Container:    %s\n' "$container_state"
+  printf 'Local health: %s\n' "$health_state"
   if [[ -L "$NEXORA_WEB_RELEASE_ROOT/current" ]]; then
     printf 'Latest APK:   %s\n' "$(basename "$(readlink "$NEXORA_WEB_RELEASE_ROOT/current")")"
   else
@@ -409,8 +418,12 @@ web_doctor() {
 
   if [[ -L "$NEXORA_WEB_RELEASE_ROOT/current" ]]; then
     local current_apk="$NEXORA_WEB_RELEASE_ROOT/current/Nexora-Git.apk"
-    [[ -s "$current_apk" ]] && log_ok "Published signed APK available" ||
-      { log_error "Website release pointer exists but APK is missing"; failed=1; }
+    if [[ -s "$current_apk" ]]; then
+      log_ok "Published signed APK available"
+    else
+      log_error "Website release pointer exists but APK is missing"
+      failed=1
+    fi
   else
     log_warn "No signed APK published to the website yet."
   fi
