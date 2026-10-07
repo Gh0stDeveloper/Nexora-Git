@@ -1941,7 +1941,7 @@ private fun ChangeCard(
                             horizontal = 10.dp,
                             vertical = 12.dp,
                         ),
-                        text = "Resolve first",
+                        text = stringResource(R.string.git_resolve_first),
                         color = MaterialTheme.colorScheme.error,
                     )
                 }
@@ -2447,19 +2447,19 @@ internal fun PullCard(
                 PullStrategyChip(
                     value = GitPullStrategy.MERGE,
                     selected = strategy,
-                    label = "Merge",
+                    label = stringResource(R.string.git_strategy_merge),
                     onSelect = onStrategyChange,
                 )
                 PullStrategyChip(
                     value = GitPullStrategy.FAST_FORWARD_ONLY,
                     selected = strategy,
-                    label = "FF only",
+                    label = stringResource(R.string.git_strategy_ff_only),
                     onSelect = onStrategyChange,
                 )
                 PullStrategyChip(
                     value = GitPullStrategy.REBASE,
                     selected = strategy,
-                    label = "Rebase",
+                    label = stringResource(R.string.git_strategy_rebase),
                     onSelect = onStrategyChange,
                 )
             }
