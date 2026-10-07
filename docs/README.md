@@ -18,7 +18,7 @@ This directory contains the technical, operational, security and historical docu
 | Git engine | [GIT_ENGINE.md](GIT_ENGINE.md) | libgit2/JNI architecture and local Git behavior |
 | Security | [SECURITY.md](SECURITY.md) | Application security invariants and implementation policy |
 | Threat model | [THREAT_MODEL.md](THREAT_MODEL.md) | Threats, assets, trust boundaries and controls |
-| Deployment | [VPS_INSTALLER.md](VPS_INSTALLER.md) | Self-hosted Auth Broker installation and operations |
+| Deployment | [VPS_INSTALLER.md](VPS_INSTALLER.md) | Self-hosted Auth Broker installation and operations |\n| VPS Android builds | [VPS_ANDROID_BUILDER.md](VPS_ANDROID_BUILDER.md) | Persistent Android SDK/build-host architecture, security boundaries and rollout |
 | Releases | [RELEASE_PROCESS.md](RELEASE_PROCESS.md) | Signing, validation and GitHub Release procedure |
 | Roadmap | [ROADMAP.md](ROADMAP.md) | Completed implementation roadmap and historical scope |
 
@@ -68,7 +68,7 @@ The broker itself is documented in [../auth-broker/README.md](../auth-broker/REA
 - [RELEASE_PROCESS.md](RELEASE_PROCESS.md) — signed release workflow.
 - [PLAY_STORE_READINESS.md](PLAY_STORE_READINESS.md) — Play Store metadata and publication requirements.
 - [FDROID_READINESS.md](FDROID_READINESS.md) — optional F-Droid packaging constraints.
-- [VPS_INSTALLER.md](VPS_INSTALLER.md) — self-hosted Auth Broker deployment.
+- [VPS_INSTALLER.md](VPS_INSTALLER.md) — self-hosted Auth Broker deployment.\n- [VPS_ANDROID_BUILDER.md](VPS_ANDROID_BUILDER.md) — reusable Android build-host environment and signing/build service rollout.
 - [BRANDING.md](BRANDING.md) — product identity and branding rules.
 
 ## Architecture Decision Records

@@ -4,7 +4,7 @@ set -Eeuo pipefail
 
 SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
 # shellcheck source=lib.sh
-source "$SCRIPT_DIR/lib.sh"
+source "$SCRIPT_DIR/lib.sh"\n# shellcheck source=android-build-lib.sh\nsource "$SCRIPT_DIR/android-build-lib.sh"
 
 usage() {
   cat <<'EOF'
@@ -71,6 +71,42 @@ cmd_doctor() {
   return "$failed"
 }
 
+cmd_android() {
+  require_install
+  local subcommand="${1:-status}"
+  case "$subcommand" in
+    status)
+      android_status
+      ;;
+    doctor)
+      android_doctor
+      ;;
+    setup)
+      ensure_android_foundation
+      ;;
+    config)
+      android_config
+      ;;
+    help|-h|--help)
+      cat <<'EOF'
+Nexora Git Android Builder Foundation
+
+Usage:
+  nexora-git android status
+  nexora-git android doctor
+  nexora-git android setup
+  nexora-git android config
+
+Build, signing, logs and artifact commands are added by the next Android
+Builder rollout phases. This foundation command never exposes credentials.
+EOF
+      ;;
+    *)
+      die "Unknown android command: $subcommand"
+      ;;
+  esac
+}
+
 cmd_update() {
   require_install
   local temp
@@ -128,6 +164,10 @@ case "${1:-help}" in
   version)
     require_install
     git -C "$INSTALL_DIR" rev-parse HEAD
+    ;;
+  android)
+    shift
+    cmd_android "$@"
     ;;
   help|-h|--help) usage ;;
   *)

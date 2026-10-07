@@ -15,7 +15,7 @@ test -s docs/STORAGE.md
 test -s docs/SECURITY.md
 test -s docs/THREAT_MODEL.md
 test -s docs/UI_UX.md
-test -s docs/PRODUCTION_READINESS.md
+test -s docs/PRODUCTION_READINESS.md\ntest -s docs/VPS_ANDROID_BUILDER.md
 test -s docs/PRODUCTION_SECURITY_AUDIT.md
 test -s docs/PERFORMANCE_AUDIT.md
 test -s docs/ACCESSIBILITY_AUDIT.md
@@ -35,6 +35,14 @@ if grep -RInE --exclude-dir=.git --exclude='*.md' '(gh[pousr]_[A-Za-z0-9_]{20,}|
   echo 'Potential committed secret detected.'
   exit 1
 fi
+
+bash -n scripts/vps/lib.sh
+bash -n scripts/vps/android-build-lib.sh
+bash -n scripts/vps/install.sh
+bash -n scripts/vps/nexora-git
+bash -n scripts/vps/update.sh
+bash scripts/vps/test-lib.sh
+bash scripts/vps/test-android-build-lib.sh
 
 if [[ -f gradlew ]]; then
   chmod +x gradlew

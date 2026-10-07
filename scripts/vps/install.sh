@@ -4,7 +4,7 @@ set -Eeuo pipefail
 
 SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
 # shellcheck source=lib.sh
-source "$SCRIPT_DIR/lib.sh"
+source "$SCRIPT_DIR/lib.sh"\n# shellcheck source=android-build-lib.sh\nsource "$SCRIPT_DIR/android-build-lib.sh"
 
 RECONFIGURE=0
 if [[ "${1:-}" == "--reconfigure" ]]; then
@@ -17,7 +17,7 @@ require_root
 detect_supported_os
 banner
 
-TOTAL_PHASES=8
+TOTAL_PHASES=9
 phase 1 "$TOTAL_PHASES" "Repository installation"
 
 SOURCE_ROOT="$(git -C "$SCRIPT_DIR/../.." rev-parse --show-toplevel 2>/dev/null || true)"
@@ -48,7 +48,7 @@ if load_state 2>/dev/null && [[ -f "$INSTALL_DIR/auth-broker/.env" ]]; then
 fi
 
 phase 2 "$TOTAL_PHASES" "System dependencies"
-apt_install_missing ca-certificates git curl nginx certbot python3-certbot-nginx iproute2 openssl
+apt_install_missing ca-certificates git curl nginx certbot python3-certbot-nginx iproute2 openssl unzip openjdk-17-jdk-headless
 ensure_docker
 
 if ! systemctl is-active --quiet nginx; then
@@ -264,10 +264,14 @@ ln -sfn "$INSTALL_DIR/scripts/vps/nexora-git" /usr/local/bin/nexora-git
 chmod +x \
   "$INSTALL_DIR/scripts/vps/nexora-git" \
   "$INSTALL_DIR/scripts/vps/update.sh" \
-  "$INSTALL_DIR/scripts/vps/install.sh"
+  "$INSTALL_DIR/scripts/vps/install.sh" \
+  "$INSTALL_DIR/scripts/vps/test-android-build-lib.sh"
 log_ok "Installed command: nexora-git"
 
-phase 8 "$TOTAL_PHASES" "Final verification"
+phase 8 "$TOTAL_PHASES" "Android build foundation"
+ensure_android_foundation
+
+phase 9 "$TOTAL_PHASES" "Final verification"
 curl -fsS --max-time 10 "https://$DOMAIN/health" >/dev/null || die "Public HTTPS health check failed."
 compose ps
 printf '\n'
@@ -280,4 +284,6 @@ printf '\nUseful commands:\n'
 printf '  nexora-git status\n'
 printf '  nexora-git update\n'
 printf '  nexora-git doctor\n'
+printf '  nexora-git android status\n'
+printf '  nexora-git android doctor\n'
 printf '  nexora-git logs\n'

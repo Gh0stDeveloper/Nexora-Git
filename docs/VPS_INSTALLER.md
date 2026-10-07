@@ -1,6 +1,6 @@
 # Nexora Git VPS Installer & Operations
 
-> [Documentation hub](README.md) · [Auth deployment](AUTH_DEPLOYMENT.md) · [Auth Broker](../auth-broker/README.md)
+> [Documentation hub](README.md) · [Android Builder](VPS_ANDROID_BUILDER.md) · [Auth deployment](AUTH_DEPLOYMENT.md) · [Auth Broker](../auth-broker/README.md)
 
 <p align="center">
 
@@ -13,7 +13,7 @@
 
 </p>
 
-The repository includes a managed production installer for the Nexora Git **Auth Broker**. It is designed for Debian/Ubuntu VPS hosts that may already run other websites or services.
+The repository includes a managed production installer for the Nexora Git **Auth Broker** and the reusable **Android build-host foundation**. It is designed for Debian/Ubuntu VPS hosts that may already run other websites or services.
 
 The installer is deliberately conservative:
 
@@ -100,7 +100,7 @@ https://YOUR_DOMAIN/oauth/callback
 
 ## Installation lifecycle
 
-The installer executes eight explicit stages:
+The installer executes nine explicit stages:
 
 | Stage | Action |
 | ---: | --- |
@@ -111,7 +111,7 @@ The installer executes eight explicit stages:
 | 5 | Create the dedicated Nginx virtual host |
 | 6 | Obtain or reuse the Let's Encrypt certificate |
 | 7 | Integrate firewall/management command safely |
-| 8 | Run final local/public health verification |
+| 8 | Provision/reuse the isolated Android build-host foundation |\n| 9 | Run final local/public health verification |
 
 A failed prerequisite aborts rather than applying destructive workarounds.
 
@@ -127,7 +127,7 @@ The installer checks before installing packages. Core dependencies include:
 | Nginx | shared HTTP/TLS reverse proxy |
 | Certbot + Nginx plugin | Let's Encrypt issuance/renewal |
 | iproute2 / `ss` | port ownership diagnostics |
-| OpenSSL | certificate diagnostics |
+| OpenSSL | certificate diagnostics |\n| OpenJDK 17 | pinned JVM toolchain for Android/Gradle builds |\n| unzip | verified Android command-line tools extraction |
 
 Existing dependencies are reused. Updating Nexora Git does **not** reinstall Nginx, Docker, Certbot or the operating-system packages.
 
@@ -200,7 +200,7 @@ The installer creates:
 | `nexora-git renew-cert` | Renew the configured certificate and reload Nginx |
 | `nexora-git reconfigure` | Re-run the installer configuration path |
 | `nexora-git config` | Show non-secret deployment configuration |
-| `nexora-git version` | Print the installed Git commit |
+| `nexora-git version` | Print the installed Git commit |\n| `nexora-git android status` | Show pinned Android host paths and component state |\n| `nexora-git android doctor` | Validate JDK, SDK, Build Tools, NDK, CMake, Gradle wrapper and persistent paths |\n| `nexora-git android setup` | Idempotently repair/reuse the Android build foundation |\n| `nexora-git android config` | Show non-secret Android build-host configuration |
 | `nexora-git help` | Show command usage |
 
 `config` intentionally hides confidential values.
@@ -277,7 +277,7 @@ Reconfiguration preserves the same safety rules: no unrelated Nginx site is over
 | `/etc/nexora-git-vps.conf` | non-secret installer state |
 | `/etc/nginx/sites-available/nexora-git-auth.conf` | Nexora Git Nginx vhost |
 | `/etc/nginx/sites-enabled/nexora-git-auth.conf` | enabled vhost symlink |
-| `/usr/local/bin/nexora-git` | management command symlink |
+| `/usr/local/bin/nexora-git` | management command symlink |\n| `/etc/nexora-git/android-builder.conf` | non-secret pinned Android toolchain configuration |\n| `/opt/nexora-android-sdk` | persistent Android SDK/NDK/CMake toolchain |\n| `/var/cache/nexora-git/gradle` | persistent Gradle cache owned by the isolated builder user |\n| `/var/lib/nexora-git/android` | persistent Android builder state, future logs/builds/artifacts |
 | `/etc/letsencrypt/live/DOMAIN/` | TLS material managed by Certbot |
 
 ---
