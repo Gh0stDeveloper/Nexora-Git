@@ -54,11 +54,13 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import com.nexora.git.R
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.nexora.git.core.auth.AuthAccountSummary
 import com.nexora.git.core.editor.EditorIndentStyle
@@ -148,7 +150,7 @@ fun MobileEditorScreen(
                         onBack()
                     },
                 ) {
-                    Text("Discard")
+                    Text(stringResource(R.string.editor_discard))
                 }
             },
             dismissButton = {
@@ -157,11 +159,11 @@ fun MobileEditorScreen(
                         discardDialog = false
                     },
                 ) {
-                    Text("Keep editing")
+                    Text(stringResource(R.string.editor_keep_editing))
                 }
             },
             title = {
-                Text("Discard unsaved changes?")
+                Text(stringResource(R.string.editor_discard_title))
             },
             text = {
                 Text(
@@ -219,11 +221,11 @@ fun MobileEditorScreen(
             onDismissRequest = viewModel::dismissError,
             confirmButton = {
                 TextButton(onClick = viewModel::dismissError) {
-                    Text("OK")
+                    Text(stringResource(R.string.action_ok))
                 }
             },
             title = {
-                Text("Editor")
+                Text(stringResource(R.string.editor_title))
             },
             text = {
                 Text(message)
@@ -236,11 +238,11 @@ fun MobileEditorScreen(
             onDismissRequest = viewModel::dismissSuccess,
             confirmButton = {
                 TextButton(onClick = viewModel::dismissSuccess) {
-                    Text("Done")
+                    Text(stringResource(R.string.action_done))
                 }
             },
             title = {
-                Text("Nexora Git")
+                Text(stringResource(R.string.app_name))
             },
             text = {
                 Text(message)
@@ -361,7 +363,7 @@ private fun EditorHeader(
         IconButton(onClick = onBack) {
             Icon(
                 imageVector = Icons.AutoMirrored.Outlined.ArrowBack,
-                contentDescription = "Back",
+                contentDescription = stringResource(R.string.editor_back),
             )
         }
 
@@ -390,7 +392,7 @@ private fun EditorHeader(
 
         if (state.dirty) {
             Text(
-                text = "Modified",
+                text = stringResource(R.string.editor_modified),
                 style = MaterialTheme.typography.labelMedium,
                 color = MaterialTheme.colorScheme.tertiary,
             )
@@ -413,7 +415,7 @@ private fun EditorHeader(
                     contentDescription = null,
                 )
             }
-            Text("Save")
+            Text(stringResource(R.string.action_save))
         }
     }
 
@@ -454,7 +456,7 @@ private fun EditorToolbar(
         ) {
             Icon(
                 imageVector = Icons.AutoMirrored.Outlined.Undo,
-                contentDescription = "Undo",
+                contentDescription = stringResource(R.string.editor_undo),
             )
         }
 
@@ -464,21 +466,21 @@ private fun EditorToolbar(
         ) {
             Icon(
                 imageVector = Icons.AutoMirrored.Outlined.Redo,
-                contentDescription = "Redo",
+                contentDescription = stringResource(R.string.editor_redo),
             )
         }
 
         IconButton(onClick = onToggleSearch) {
             Icon(
                 imageVector = Icons.Outlined.Search,
-                contentDescription = "Search and replace",
+                contentDescription = stringResource(R.string.editor_search_replace),
             )
         }
 
         IconButton(onClick = onInsertIndent) {
             Icon(
                 imageVector = Icons.AutoMirrored.Outlined.FormatIndentIncrease,
-                contentDescription = "Insert indentation",
+                contentDescription = stringResource(R.string.editor_indent),
             )
         }
 
@@ -528,7 +530,7 @@ private fun EditorToolbar(
         ) {
             Icon(
                 imageVector = Icons.Outlined.AccountTree,
-                contentDescription = "Language intelligence",
+                contentDescription = stringResource(R.string.editor_language_intelligence),
             )
         }
 
@@ -544,7 +546,7 @@ private fun EditorToolbar(
             } else {
                 Icon(
                     imageVector = Icons.AutoMirrored.Outlined.FormatAlignLeft,
-                    contentDescription = "Format document",
+                    contentDescription = stringResource(R.string.editor_format),
                 )
             }
         }
@@ -552,7 +554,7 @@ private fun EditorToolbar(
         IconButton(onClick = onDiff) {
             Icon(
                 imageVector = Icons.Outlined.Difference,
-                contentDescription = "View diff",
+                contentDescription = stringResource(R.string.editor_view_diff),
             )
         }
 
@@ -562,7 +564,7 @@ private fun EditorToolbar(
                 !state.saving,
             onClick = onCommit,
         ) {
-            Text("Commit")
+            Text(stringResource(R.string.editor_commit))
         }
     }
 
@@ -726,7 +728,7 @@ private fun SearchReplaceBar(
                     onValueChange = onSearchQueryChange,
                     singleLine = true,
                     label = {
-                        Text("Find")
+                        Text(stringResource(R.string.editor_find))
                     },
                 )
 
@@ -749,13 +751,13 @@ private fun SearchReplaceBar(
                     enabled = state.searchMatches.isNotEmpty(),
                     onClick = onPreviousMatch,
                 ) {
-                    Text("Previous")
+                    Text(stringResource(R.string.editor_previous))
                 }
                 TextButton(
                     enabled = state.searchMatches.isNotEmpty(),
                     onClick = onNextMatch,
                 ) {
-                    Text("Next")
+                    Text(stringResource(R.string.editor_next))
                 }
                 FilterChip(
                     selected = state.matchCase,
@@ -763,7 +765,7 @@ private fun SearchReplaceBar(
                         onMatchCaseChange(!state.matchCase)
                     },
                     label = {
-                        Text("Match case")
+                        Text(stringResource(R.string.editor_match_case))
                     },
                 )
             }
@@ -774,7 +776,7 @@ private fun SearchReplaceBar(
                 onValueChange = onReplacementChange,
                 singleLine = true,
                 label = {
-                    Text("Replace with")
+                    Text(stringResource(R.string.editor_replace_with))
                 },
             )
 
@@ -785,13 +787,13 @@ private fun SearchReplaceBar(
                     enabled = state.searchMatches.isNotEmpty(),
                     onClick = onReplaceCurrent,
                 ) {
-                    Text("Replace")
+                    Text(stringResource(R.string.editor_replace))
                 }
                 TextButton(
                     enabled = state.searchMatches.isNotEmpty(),
                     onClick = onReplaceAll,
                 ) {
-                    Text("Replace all")
+                    Text(stringResource(R.string.editor_replace_all))
                 }
             }
         }
@@ -982,7 +984,7 @@ private fun DiffDialog(
         onDismissRequest = onDismiss,
         confirmButton = {
             TextButton(onClick = onDismiss) {
-                Text("Close")
+                Text(stringResource(R.string.editor_close))
             }
         },
         title = {
@@ -1041,7 +1043,7 @@ private fun CommitDialog(
                         strokeWidth = 2.dp,
                     )
                 } else {
-                    Text("Commit")
+                    Text(stringResource(R.string.editor_commit))
                 }
             }
         },
@@ -1050,7 +1052,7 @@ private fun CommitDialog(
                 enabled = !committing,
                 onClick = onDismiss,
             ) {
-                Text("Cancel")
+                Text(stringResource(R.string.action_cancel))
             }
         },
         title = {
@@ -1079,7 +1081,7 @@ private fun CommitDialog(
                             verticalArrangement = Arrangement.spacedBy(4.dp),
                         ) {
                             Text(
-                                text = "Other staged files will also be committed.",
+                                text = stringResource(R.string.editor_other_staged),
                                 style = MaterialTheme.typography.titleSmall,
                                 color = MaterialTheme.colorScheme.onErrorContainer,
                             )
@@ -1108,7 +1110,7 @@ private fun CommitDialog(
                     value = message,
                     onValueChange = onMessageChange,
                     label = {
-                        Text("Commit message")
+                        Text(stringResource(R.string.editor_commit_message))
                     },
                     minLines = 2,
                     maxLines = 4,
@@ -1119,7 +1121,7 @@ private fun CommitDialog(
                     value = authorName,
                     onValueChange = onAuthorNameChange,
                     label = {
-                        Text("Author name")
+                        Text(stringResource(R.string.editor_author_name))
                     },
                     singleLine = true,
                 )
@@ -1129,13 +1131,13 @@ private fun CommitDialog(
                     value = authorEmail,
                     onValueChange = onAuthorEmailChange,
                     label = {
-                        Text("Author email")
+                        Text(stringResource(R.string.editor_author_email))
                     },
                     singleLine = true,
                 )
 
                 Text(
-                    text = "File diff",
+                    text = stringResource(R.string.editor_file_diff),
                     style = MaterialTheme.typography.titleSmall,
                 )
 
