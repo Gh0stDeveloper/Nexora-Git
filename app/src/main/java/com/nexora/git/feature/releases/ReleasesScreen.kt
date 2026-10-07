@@ -600,7 +600,7 @@ private fun CreateReleaseDialog(
                 }
                 item {
                     ReleaseToggleRow(
-                        label = "Draft",
+                        label = stringResource(R.string.release_draft),
                         checked = draft,
                         onCheckedChange = {
                             draft = it
@@ -609,7 +609,7 @@ private fun CreateReleaseDialog(
                 }
                 item {
                     ReleaseToggleRow(
-                        label = "Prerelease",
+                        label = stringResource(R.string.release_prerelease),
                         checked = prerelease,
                         onCheckedChange = {
                             prerelease = it
@@ -618,7 +618,7 @@ private fun CreateReleaseDialog(
                 }
                 item {
                     ReleaseToggleRow(
-                        label = "Generate release notes",
+                        label = stringResource(R.string.releases_generate_notes),
                         checked = generateNotes,
                         onCheckedChange = {
                             generateNotes = it
