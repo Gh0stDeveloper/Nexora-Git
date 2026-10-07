@@ -10,6 +10,10 @@ plugins {
 
 val releaseSigning = NexoraBuildSecrets.releaseSigning(project)
 val authBrokerHost = NexoraBuildSecrets.authBrokerHost(project)
+val requireVendoredNativeSources = providers
+    .gradleProperty("nexora.native.requireVendoredSources")
+    .map { it.equals("true", ignoreCase = true) }
+    .getOrElse(false)
 
 android {
     namespace = "com.nexora.git"
@@ -46,6 +50,12 @@ android {
                     "-DNEXORA_LIBGIT2_REF=49e408b3208bc3093757a1c2db938d3590f3f412",
                     "-DNEXORA_MBEDTLS_REF=068ff080b369adfac81509f9b57b2afabaf82dc5",
                 )
+                if (requireVendoredNativeSources) {
+                    arguments += listOf(
+                        "-DNEXORA_REQUIRE_VENDORED_NATIVE_SOURCES=ON",
+                        "-DFETCHCONTENT_FULLY_DISCONNECTED=ON",
+                    )
+                }
                 cppFlags += listOf(
                     "-std=c++17",
                     "-fexceptions",
