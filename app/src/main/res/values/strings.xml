@@ -360,4 +360,10 @@
     <string name="git_expected_remote">Expected remote: %1$s</string>
     <string name="git_type_branch_confirm">Type %1$s to confirm</string>
     <string name="git_refresh_state">Refresh Git state</string>
+
+    <string name="git_stash_drop_body">stash@{%1$d} will be removed from the local stash list.</string>
+    <string name="git_upstream_not_tracking">%1$s is not tracking a remote branch.</string>
+    <string name="git_upstream_tracks">%1$s tracks %2$s.</string>
+    <string name="git_commit_history_count">Commit history (%1$d)</string>
+    <string name="git_no_commits">No commits yet.</string>
 </resources>
