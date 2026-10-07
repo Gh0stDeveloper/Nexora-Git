@@ -18,7 +18,8 @@ export NEXORA_ANDROID_LOCK_ROOT="$NEXORA_ANDROID_STATE_ROOT/locks"
 export NEXORA_ANDROID_WORKER_LOCK="$NEXORA_ANDROID_LOCK_ROOT/worker.lock"
 export NEXORA_ANDROID_CURRENT_JOB_FILE="$NEXORA_ANDROID_STATE_ROOT/current-job"
 export NEXORA_ANDROID_GRADLE_HOME="$TEMP_ROOT/gradle"
-export NEXORA_ANDROID_BUILD_USER="$(id -un)"
+NEXORA_ANDROID_BUILD_USER="$(id -un)"
+export NEXORA_ANDROID_BUILD_USER
 export NEXORA_ANDROID_SKIP_SYSTEMD=1
 export NEXORA_ANDROID_JAVA_HOME="/usr"
 export NEXORA_ANDROID_SDK_ROOT="$TEMP_ROOT/sdk"
@@ -93,10 +94,16 @@ android_worker_load_state "$job4"
 [[ "$STATUS" == "QUEUED_RECOVERED" ]]
 
 android_worker_valid_job_id "$job1"
-! android_worker_valid_job_id "../../bad"
+if android_worker_valid_job_id "../../bad"; then
+  printf 'Unsafe job ID was accepted.\n' >&2
+  exit 1
+fi
 android_worker_valid_mode release
 android_worker_valid_mode debug
-! android_worker_valid_mode signed
+if android_worker_valid_mode signed; then
+  printf 'Unsupported build mode was accepted.\n' >&2
+  exit 1
+fi
 
 unit="$SCRIPT_DIR/systemd/nexora-git-android-worker.service"
 grep -q '^User=nexora-build$' "$unit"

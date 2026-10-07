@@ -332,8 +332,9 @@ android_worker_show_job() {
 
 android_worker_list_jobs() {
   local limit="${1:-20}"
-  [[ "$limit" =~ ^[0-9]+$ ]] && (( limit >= 1 && limit <= 200 )) ||
+  if [[ ! "$limit" =~ ^[0-9]+$ ]] || (( limit < 1 || limit > 200 )); then
     die "Build list limit must be between 1 and 200."
+  fi
 
   local build_root="$NEXORA_ANDROID_STATE_ROOT/builds"
   [[ -d "$build_root" ]] || {
