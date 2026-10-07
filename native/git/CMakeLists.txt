@@ -16,6 +16,24 @@ set(NEXORA_TREE_SITTER_TYPESCRIPT_REF "75b3874edb2dc714fb1fd77a32013d0f8699989f"
 option(NEXORA_BUILD_NATIVE_TESTS "Build host native Git tests" OFF)
 option(NEXORA_BUILD_NATIVE_FUZZERS "Build project-owned host fuzz targets" OFF)
 option(NEXORA_ENABLE_PROJECT_SANITIZERS "Instrument project-owned native code with ASan/UBSan" OFF)
+option(NEXORA_REQUIRE_VENDORED_NATIVE_SOURCES "Fail instead of downloading native dependencies" OFF)
+set(
+    NEXORA_NATIVE_VENDOR_ROOT
+    "${CMAKE_CURRENT_SOURCE_DIR}/vendor"
+    CACHE PATH
+    "Root containing pinned native dependency source trees"
+)
+
+function(nexora_vendor_source output dependency)
+    set(candidate "${NEXORA_NATIVE_VENDOR_ROOT}/${dependency}")
+    if(EXISTS "${candidate}")
+        set(${output} "${candidate}" PARENT_SCOPE)
+    elseif(NEXORA_REQUIRE_VENDORED_NATIVE_SOURCES)
+        message(FATAL_ERROR "Required vendored native source is missing: ${candidate}")
+    else()
+        set(${output} "" PARENT_SCOPE)
+    endif()
+endfunction()
 
 set(NEXORA_CONFIG_SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/../config")
 include("${NEXORA_CONFIG_SOURCE_DIR}/cmake/NexoraSecureConfig.cmake")
@@ -37,12 +55,20 @@ set(USE_SHARED_MBEDTLS_LIBRARY OFF CACHE BOOL "" FORCE)
 set(USE_STATIC_MBEDTLS_LIBRARY ON CACHE BOOL "" FORCE)
 set(DISABLE_PACKAGE_CONFIG_AND_INSTALL ON CACHE BOOL "" FORCE)
 
-FetchContent_Declare(
-    mbedtls
-    GIT_REPOSITORY https://github.com/Mbed-TLS/mbedtls.git
-    GIT_TAG ${NEXORA_MBEDTLS_REF}
-    GIT_SHALLOW TRUE
-)
+nexora_vendor_source(NEXORA_MBEDTLS_SOURCE mbedtls)
+if(NEXORA_MBEDTLS_SOURCE)
+    FetchContent_Declare(
+        mbedtls
+        SOURCE_DIR "${NEXORA_MBEDTLS_SOURCE}"
+    )
+else()
+    FetchContent_Declare(
+        mbedtls
+        GIT_REPOSITORY https://github.com/Mbed-TLS/mbedtls.git
+        GIT_TAG ${NEXORA_MBEDTLS_REF}
+        GIT_SHALLOW TRUE
+    )
+endif()
 FetchContent_MakeAvailable(mbedtls)
 
 set(NEXORA_PLACEHOLDER_CA "${CMAKE_CURRENT_BINARY_DIR}/placeholder-ca.pem")
@@ -63,15 +89,27 @@ set(REGEX_BACKEND "builtin" CACHE STRING "" FORCE)
 set(SONAME OFF CACHE BOOL "" FORCE)
 set(NEXORA_LIBGIT2_SKIP_INSTALL ON CACHE BOOL "" FORCE)
 
-FetchContent_Declare(
-    libgit2
-    GIT_REPOSITORY https://github.com/libgit2/libgit2.git
-    GIT_TAG ${NEXORA_LIBGIT2_REF}
-    GIT_SHALLOW TRUE
-    PATCH_COMMAND
-        git apply --whitespace=nowarn
-        "${CMAKE_CURRENT_SOURCE_DIR}/cmake/libgit2-no-install.patch"
-)
+nexora_vendor_source(NEXORA_LIBGIT2_SOURCE libgit2)
+if(NEXORA_LIBGIT2_SOURCE)
+    FetchContent_Declare(
+        libgit2
+        SOURCE_DIR "${NEXORA_LIBGIT2_SOURCE}"
+        PATCH_COMMAND
+            bash
+            "${CMAKE_CURRENT_SOURCE_DIR}/cmake/apply-libgit2-no-install.sh"
+            "${CMAKE_CURRENT_SOURCE_DIR}/cmake/libgit2-no-install.patch"
+    )
+else()
+    FetchContent_Declare(
+        libgit2
+        GIT_REPOSITORY https://github.com/libgit2/libgit2.git
+        GIT_TAG ${NEXORA_LIBGIT2_REF}
+        GIT_SHALLOW TRUE
+        PATCH_COMMAND
+            git apply --whitespace=nowarn
+            "${CMAKE_CURRENT_SOURCE_DIR}/cmake/libgit2-no-install.patch"
+    )
+endif()
 FetchContent_MakeAvailable(libgit2)
 
 # llhttp is generated third-party code bundled by libgit2. Its current
@@ -84,13 +122,22 @@ endif()
 
 # Tree-sitter is embedded directly in the native engine so syntax parsing is
 # available offline and uses the same Android ABIs as libgit2.
-FetchContent_Declare(
-    tree_sitter
-    GIT_REPOSITORY https://github.com/tree-sitter/tree-sitter.git
-    GIT_TAG ${NEXORA_TREE_SITTER_REF}
-    GIT_SHALLOW TRUE
-    SOURCE_SUBDIR "__nexora_source_only__"
-)
+nexora_vendor_source(NEXORA_TREE_SITTER_SOURCE tree-sitter)
+if(NEXORA_TREE_SITTER_SOURCE)
+    FetchContent_Declare(
+        tree_sitter
+        SOURCE_DIR "${NEXORA_TREE_SITTER_SOURCE}"
+        SOURCE_SUBDIR "__nexora_source_only__"
+    )
+else()
+    FetchContent_Declare(
+        tree_sitter
+        GIT_REPOSITORY https://github.com/tree-sitter/tree-sitter.git
+        GIT_TAG ${NEXORA_TREE_SITTER_REF}
+        GIT_SHALLOW TRUE
+        SOURCE_SUBDIR "__nexora_source_only__"
+    )
+endif()
 FetchContent_MakeAvailable(tree_sitter)
 
 add_library(
@@ -111,14 +158,23 @@ target_compile_definitions(
     _DEFAULT_SOURCE
 )
 
-function(nexora_fetch_grammar target repository ref)
-    FetchContent_Declare(
-        ${target}_source
-        GIT_REPOSITORY ${repository}
-        GIT_TAG ${ref}
-        GIT_SHALLOW TRUE
-        SOURCE_SUBDIR "__nexora_source_only__"
-    )
+function(nexora_fetch_grammar target vendor_name repository ref)
+    nexora_vendor_source(vendor_source "${vendor_name}")
+    if(vendor_source)
+        FetchContent_Declare(
+            ${target}_source
+            SOURCE_DIR "${vendor_source}"
+            SOURCE_SUBDIR "__nexora_source_only__"
+        )
+    else()
+        FetchContent_Declare(
+            ${target}_source
+            GIT_REPOSITORY ${repository}
+            GIT_TAG ${ref}
+            GIT_SHALLOW TRUE
+            SOURCE_SUBDIR "__nexora_source_only__"
+        )
+    endif()
     FetchContent_MakeAvailable(${target}_source)
     FetchContent_GetProperties(
         ${target}_source
@@ -140,37 +196,51 @@ endfunction()
 
 nexora_fetch_grammar(
     nexora_ts_kotlin
+    tree-sitter-kotlin
     https://github.com/fwcd/tree-sitter-kotlin.git
     ${NEXORA_TREE_SITTER_KOTLIN_REF}
 )
 nexora_fetch_grammar(
     nexora_ts_java
+    tree-sitter-java
     https://github.com/tree-sitter/tree-sitter-java.git
     ${NEXORA_TREE_SITTER_JAVA_REF}
 )
 nexora_fetch_grammar(
     nexora_ts_json
+    tree-sitter-json
     https://github.com/tree-sitter/tree-sitter-json.git
     ${NEXORA_TREE_SITTER_JSON_REF}
 )
 nexora_fetch_grammar(
     nexora_ts_python
+    tree-sitter-python
     https://github.com/tree-sitter/tree-sitter-python.git
     ${NEXORA_TREE_SITTER_PYTHON_REF}
 )
 nexora_fetch_grammar(
     nexora_ts_javascript
+    tree-sitter-javascript
     https://github.com/tree-sitter/tree-sitter-javascript.git
     ${NEXORA_TREE_SITTER_JAVASCRIPT_REF}
 )
 
-FetchContent_Declare(
-    nexora_ts_typescript_source
-    GIT_REPOSITORY https://github.com/tree-sitter/tree-sitter-typescript.git
-    GIT_TAG ${NEXORA_TREE_SITTER_TYPESCRIPT_REF}
-    GIT_SHALLOW TRUE
-    SOURCE_SUBDIR "__nexora_source_only__"
-)
+nexora_vendor_source(NEXORA_TS_TYPESCRIPT_SOURCE tree-sitter-typescript)
+if(NEXORA_TS_TYPESCRIPT_SOURCE)
+    FetchContent_Declare(
+        nexora_ts_typescript_source
+        SOURCE_DIR "${NEXORA_TS_TYPESCRIPT_SOURCE}"
+        SOURCE_SUBDIR "__nexora_source_only__"
+    )
+else()
+    FetchContent_Declare(
+        nexora_ts_typescript_source
+        GIT_REPOSITORY https://github.com/tree-sitter/tree-sitter-typescript.git
+        GIT_TAG ${NEXORA_TREE_SITTER_TYPESCRIPT_REF}
+        GIT_SHALLOW TRUE
+        SOURCE_SUBDIR "__nexora_source_only__"
+    )
+endif()
 FetchContent_MakeAvailable(nexora_ts_typescript_source)
 FetchContent_GetProperties(
     nexora_ts_typescript_source
