@@ -5,6 +5,7 @@ on:
     branches:
       - main
       - "phase-r-*"
+      - "phase-s/**"
     paths:
       - "app/**"
       - "native/**"
@@ -86,6 +87,10 @@ jobs:
             :app:bundleRelease \
             :app:testDebugUnitTest \
             :app:lintRelease
+
+      - name: Scan release candidate artifacts for secrets
+        shell: bash
+        run: bash scripts/ci/scan-android-artifacts-for-secrets.sh
 
       - name: Verify VPS release signing integration
         shell: bash
