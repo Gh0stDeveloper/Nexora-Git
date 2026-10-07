@@ -96,6 +96,12 @@ jobs:
           test -s "$keystore"
           echo "NEXORA_SIGNING_STORE_FILE=$keystore" >> "$GITHUB_ENV"
 
+      - name: Validate GitHub launch settings
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: bash scripts/ci/validate-github-launch-settings.sh "$NEXORA_AUTH_BROKER_BASE_URL"
+
       - name: Validate deployed website and Privacy URL
         shell: bash
         run: bash scripts/ci/validate-live-site.sh "$NEXORA_AUTH_BROKER_BASE_URL"
