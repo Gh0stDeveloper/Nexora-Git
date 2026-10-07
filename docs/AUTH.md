@@ -278,7 +278,7 @@ NEXORA_AUTH_BROKER_BASE_URL
 NEXORA_GITHUB_CALLBACK_URL
 ```
 
-These public values are compiled into the dedicated `libnexoraconfig.so`, not `BuildConfig`. CMake generates per-build split-XOR encoded byte arrays; Kotlin obtains the decoded values only through `SecureRuntimeConfigNative` at runtime. This raises the cost of static string extraction but does not make public OAuth configuration secret.
+These public values are compiled into the native `libnexoragit.so`, not `BuildConfig`. CMake generates per-build split-XOR encoded byte arrays; Kotlin obtains the decoded values only through `SecureRuntimeConfigNative` at runtime. This raises the cost of static string extraction but does not make public OAuth configuration secret.
 
 Release signing credentials are never compiled into this library. They remain build-time-only inputs supplied by the VPS Signing Vault or GitHub Actions secret store.
 
