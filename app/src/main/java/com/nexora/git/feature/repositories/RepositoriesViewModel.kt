@@ -17,6 +17,8 @@ import com.nexora.git.core.storage.WorkspaceRegistry
 import com.nexora.git.core.templates.ProjectTemplateManager
 import com.nexora.git.core.templates.ProjectTemplateSummary
 import com.nexora.git.core.work.DurableRepositoryOperations
+import com.nexora.git.core.work.DurableWorkspaceOperations
+import com.nexora.git.core.work.DurableWorkspaceWorker
 import com.nexora.git.core.work.RepositoryCloneWorker
 import dagger.hilt.android.lifecycle.HiltViewModel
 import java.util.UUID
@@ -37,6 +39,8 @@ data class RepositoriesUiState(
     val operationInProgress: Boolean = false,
     val durableCloneId: String? = null,
     val durableClonePhase: String? = null,
+    val durableWorkspaceId: String? = null,
+    val durableWorkspacePhase: String? = null,
     val recentRisks: List<ProjectRisk> = emptyList(),
     val recentProjectName: String? = null,
     val errorMessage: String? = null,
@@ -51,6 +55,7 @@ class RepositoriesViewModel @Inject constructor(
     private val urlParser: GitHubRepositoryUrlParser,
     private val templateManager: ProjectTemplateManager,
     private val durableOperations: DurableRepositoryOperations,
+    private val durableWorkspaceOperations: DurableWorkspaceOperations,
     private val savedStateHandle: SavedStateHandle,
 ) : ViewModel() {
 
@@ -84,6 +89,7 @@ class RepositoriesViewModel @Inject constructor(
         }
 
         restoreDurableClone()
+        restoreDurableWorkspaceOperation()
         refreshRepositories()
     }
 
@@ -188,22 +194,13 @@ class RepositoriesViewModel @Inject constructor(
     }
 
     fun importTree(uri: Uri) {
-        runOperation {
-            runCatching {
-                workspaceRegistry.importSafTree(uri)
-            }.onSuccess { result ->
-                mutableState.update {
-                    it.copy(
-                        recentRisks = result.scan.risks,
-                        recentProjectName = result.workspace.name,
-                    )
-                }
-                success("Project folder imported.")
-            }.onFailure { error ->
-                failure(
-                    error.message ?: "Project import failed.",
-                )
-            }
+        viewModelScope.launch {
+            scheduleDurableWorkspaceOperation(
+                phase = "import",
+                enqueue = {
+                    durableWorkspaceOperations.enqueueImport(uri)
+                },
+            )
         }
     }
 
@@ -260,22 +257,13 @@ class RepositoriesViewModel @Inject constructor(
     }
 
     fun sync(workspaceId: String) {
-        runOperation {
-            runCatching {
-                workspaceRegistry.sync(workspaceId)
-            }.onSuccess { result ->
-                mutableState.update {
-                    it.copy(
-                        recentRisks = result.scan.risks,
-                        recentProjectName = result.workspace.name,
-                    )
-                }
-                success("Workspace refreshed.")
-            }.onFailure { error ->
-                failure(
-                    error.message ?: "Workspace sync failed.",
-                )
-            }
+        viewModelScope.launch {
+            scheduleDurableWorkspaceOperation(
+                phase = "sync",
+                enqueue = {
+                    durableWorkspaceOperations.enqueueSync(workspaceId)
+                },
+            )
         }
     }
 
@@ -312,6 +300,130 @@ class RepositoriesViewModel @Inject constructor(
         mutableState.update {
             it.copy(successMessage = null)
         }
+    }
+
+    fun cancelDurableWorkspaceOperation() {
+        val id = mutableState.value.durableWorkspaceId
+            ?.let { runCatching { UUID.fromString(it) }.getOrNull() }
+            ?: return
+        durableWorkspaceOperations.cancel(id)
+    }
+
+    private fun restoreDurableWorkspaceOperation() {
+        val rawId = savedStateHandle.get<String>(KEY_ACTIVE_WORKSPACE_WORK_ID)
+            ?: return
+        val id = runCatching { UUID.fromString(rawId) }.getOrNull()
+            ?: run {
+                clearSavedWorkspaceOperation()
+                return
+            }
+        viewModelScope.launch {
+            observeDurableWorkspaceOperation(id)
+        }
+    }
+
+    private suspend fun scheduleDurableWorkspaceOperation(
+        phase: String,
+        enqueue: suspend () -> UUID,
+    ) {
+        setOperationBusy()
+        mutableState.update {
+            it.copy(durableWorkspacePhase = phase)
+        }
+
+        runCatching { enqueue() }
+            .onSuccess { id ->
+                savedStateHandle[KEY_ACTIVE_WORKSPACE_WORK_ID] =
+                    id.toString()
+                observeDurableWorkspaceOperation(id)
+            }
+            .onFailure { error ->
+                clearSavedWorkspaceOperation()
+                mutableState.update {
+                    it.copy(
+                        operationInProgress = false,
+                        durableWorkspaceId = null,
+                        durableWorkspacePhase = null,
+                    )
+                }
+                failure(
+                    error.message ?: "Unable to schedule workspace operation.",
+                )
+            }
+    }
+
+    private suspend fun observeDurableWorkspaceOperation(
+        id: UUID,
+    ) {
+        mutableState.update {
+            it.copy(
+                operationInProgress = true,
+                durableWorkspaceId = id.toString(),
+                durableWorkspacePhase =
+                    it.durableWorkspacePhase ?: "queued",
+                errorMessage = null,
+                successMessage = null,
+            )
+        }
+
+        val terminal = durableWorkspaceOperations.observe(id)
+            .first { info ->
+                val phase = info.progress
+                    .getString(DurableWorkspaceWorker.KEY_PHASE)
+                    ?: if (
+                        info.state == WorkInfo.State.ENQUEUED ||
+                        info.state == WorkInfo.State.BLOCKED
+                    ) {
+                        "queued"
+                    } else {
+                        mutableState.value.durableWorkspacePhase
+                    }
+                mutableState.update {
+                    it.copy(durableWorkspacePhase = phase)
+                }
+                info.state.isFinished
+            }
+
+        clearSavedWorkspaceOperation()
+        mutableState.update {
+            it.copy(
+                operationInProgress = false,
+                durableWorkspaceId = null,
+                durableWorkspacePhase = null,
+            )
+        }
+
+        when (terminal.state) {
+            WorkInfo.State.SUCCEEDED -> {
+                val name = terminal.outputData
+                    .getString(DurableWorkspaceWorker.KEY_WORKSPACE_NAME)
+                    .orEmpty()
+                success(
+                    if (name.isBlank()) {
+                        "Workspace operation completed."
+                    } else {
+                        name + " is ready."
+                    },
+                )
+            }
+
+            WorkInfo.State.CANCELLED ->
+                failure("Workspace operation was canceled.")
+
+            WorkInfo.State.FAILED ->
+                failure(
+                    terminal.outputData
+                        .getString(DurableWorkspaceWorker.KEY_ERROR)
+                        ?.takeIf(String::isNotBlank)
+                        ?: "Workspace operation failed.",
+                )
+
+            else -> Unit
+        }
+    }
+
+    private fun clearSavedWorkspaceOperation() {
+        savedStateHandle.remove<String>(KEY_ACTIVE_WORKSPACE_WORK_ID)
     }
 
     private fun restoreDurableClone() {
@@ -471,5 +583,7 @@ class RepositoriesViewModel @Inject constructor(
             "active_durable_clone_id"
         private const val KEY_ACTIVE_CLONE_NAME =
             "active_durable_clone_name"
+        private const val KEY_ACTIVE_WORKSPACE_WORK_ID =
+            "active_durable_workspace_work_id"
     }
 }
