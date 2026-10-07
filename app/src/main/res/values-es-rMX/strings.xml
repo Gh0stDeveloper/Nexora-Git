@@ -395,4 +395,35 @@
     <string name="editor_symbol_line">%1$s · %2$s · L%3$d</string>
     <string name="editor_line_column">Ln %1$d, Col %2$d</string>
     <string name="editor_saved">Guardado</string>
+
+    <string name="repo_refreshing">Actualizando</string>
+    <string name="repo_refresh">Actualizar</string>
+    <string name="repo_github_section">GitHub</string>
+    <string name="repo_device_section">En este dispositivo</string>
+    <string name="repo_loading_github">Cargando repositorios de GitHub…</string>
+    <string name="repo_no_github">No hay repositorios de GitHub disponibles</string>
+    <string name="repo_no_github_body">Crea un repositorio o actualiza después de conceder acceso a repositorios a la GitHub App.</string>
+    <string name="repo_no_local">No hay workspaces locales</string>
+    <string name="repo_no_local_body">Clona un repositorio de GitHub o elige una carpeta de proyecto desde el almacenamiento de Android.</string>
+    <string name="repo_private">Repositorio privado</string>
+    <string name="repo_public">Repositorio público</string>
+    <string name="repo_stars">Estrellas</string>
+    <string name="repo_forks">Forks</string>
+    <string name="repo_no_language">Sin lenguaje</string>
+    <string name="repo_files_size">%1$d archivos · %2$s</string>
+    <string name="repo_branch">Rama: %1$s</string>
+    <string name="repo_risk_summary">%1$d secretos · %2$d grandes · %3$d conflictos de sync</string>
+    <string name="repo_init_git">Inicializar Git</string>
+    <string name="repo_git_workspace">Workspace Git</string>
+    <string name="repo_rescan">Reanalizar</string>
+    <string name="repo_sync">Sincronizar</string>
+    <string name="repo_private_setting">Repositorio privado</string>
+    <string name="repo_readme_setting">Inicializar con README</string>
+    <string name="repo_project_ready">Proyecto listo</string>
+    <string name="repo_review_before_push">Revisar antes del push</string>
+    <string name="repo_more_warnings">+%1$d advertencias más</string>
+    <string name="repo_strategy_direct">Sistema de archivos directo</string>
+    <string name="repo_strategy_managed">Workspace Android administrado</string>
+    <string name="repo_strategy_clone">Clone de GitHub</string>
+    <string name="repo_strategy_generated">Plantilla generada</string>
 </resources>
