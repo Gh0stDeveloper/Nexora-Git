@@ -17,6 +17,7 @@ FILES = [
     "app/src/main/java/com/nexora/git/feature/actions/ActionsScreen.kt",
     "app/src/main/java/com/nexora/git/feature/releases/ReleasesScreen.kt",
     "app/src/main/java/com/nexora/git/feature/editor/MobileEditorScreen.kt",
+    "app/src/main/java/com/nexora/git/feature/files/CodeBrowserScreen.kt",
     "app/src/main/java/com/nexora/git/feature/activity/ActivityScreen.kt",
     "app/src/main/java/com/nexora/git/feature/explore/ExploreScreen.kt",
     "app/src/main/java/com/nexora/git/feature/repositories/RepositoryDetailScreen.kt",
@@ -29,7 +30,9 @@ FILES = [
 
 PATTERNS = [
     re.compile(r'Text\(\s*(?:text\s*=\s*)?"[A-Za-z][^"]*"'),
+    re.compile(r'text\s*=\s*"[A-Za-z][^"]*"'),
     re.compile(r'contentDescription\s*=\s*"[A-Za-z][^"]*"'),
+    re.compile(r'label\s*=\s*"[A-Za-z][^"]*"'),
     re.compile(r'label\s*=\s*\{\s*Text\("[A-Za-z][^"]*"'),
     re.compile(r'placeholder\s*=\s*\{\s*Text\("[A-Za-z][^"]*"'),
 ]
