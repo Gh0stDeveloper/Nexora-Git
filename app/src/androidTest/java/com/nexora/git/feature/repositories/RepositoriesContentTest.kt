@@ -100,6 +100,7 @@ class RepositoriesContentTest {
                     onBrowseWorkspace = {},
                     onOpenGitWorkspace = {},
                     onCloneRepository = {},
+                    onCancelClone = {},
                     onInitializeGit = {},
                     onSync = {},
                     onDelete = {},
