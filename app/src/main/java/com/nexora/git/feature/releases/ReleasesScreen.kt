@@ -141,7 +141,7 @@ fun ReleasesScreen(
             },
             text = {
                 Text(
-                    "Deleting a Git tag is permanent and does not delete its commit.",
+                    stringResource(R.string.releases_delete_tag_note),
                 )
             },
         )
@@ -331,7 +331,10 @@ internal fun ReleasesContent(
 
         item {
             Text(
-                text = "Tags (" + state.tags.size + ")",
+                text = stringResource(
+                    R.string.releases_tags_count,
+                    state.tags.size,
+                ),
                 style = MaterialTheme.typography.titleMedium,
             )
         }
@@ -339,7 +342,7 @@ internal fun ReleasesContent(
         if (!state.loading && state.tags.isEmpty()) {
             item {
                 ReleaseEmptyCard(
-                    "No Git tags are available.",
+                    stringResource(R.string.releases_no_tags),
                 )
             }
         } else {
@@ -465,7 +468,10 @@ private fun TagRow(
                     Icon(
                         imageVector = Icons.Outlined.Delete,
                         contentDescription =
-                            "Delete tag " + tag.name,
+                            stringResource(
+                                R.string.releases_delete_tag_cd,
+                                tag.name,
+                            ),
                     )
                 }
             }
