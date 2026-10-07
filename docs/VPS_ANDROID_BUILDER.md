@@ -387,7 +387,7 @@ sudo nexora-git github configure
 ```text
 NEXORA_AUTH_BROKER_BASE_URL=https://DOMAIN
 NEXORA_GITHUB_CALLBACK_URL=https://DOMAIN/oauth/callback
-APP_CALLBACK_URI=nexoragit://oauth/callback
+APP_CALLBACK_URI=https://auth.example.com/oauth/android/callback
 ```
 
 and recreates/health-checks the Auth Broker.
