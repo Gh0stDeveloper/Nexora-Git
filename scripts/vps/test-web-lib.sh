@@ -63,6 +63,7 @@ printf 'signed-apk-fixture' > "$signed/$job-signed.apk"
 cat > "$signed/signing-manifest.conf" <<EOF
 JOB_ID=$job
 SIGNED_AT=2026-10-07T04:00:00Z
+SIGNING_CERT_SHA256=AA:AA:AA:AA:AA:AA:AA:AA:AA:AA:AA:AA:AA:AA:AA:AA:AA:AA:AA:AA:AA:AA:AA:AA:AA:AA:AA:AA:AA:AA:AA:AA
 SIGNED_APK=$job-signed.apk
 SIGNED_AAB=$job-signed.aab
 EOF
@@ -93,6 +94,7 @@ web_publish_signed_release "$job" "$signed"
 grep -q '"versionName": "1.0.0"' "$NEXORA_WEB_RELEASE_ROOT/current/latest.json"
 grep -q '"versionCode": 10000' "$NEXORA_WEB_RELEASE_ROOT/current/latest.json"
 grep -q '"downloadUrl": "/download/nexora-git.apk"' "$NEXORA_WEB_RELEASE_ROOT/current/latest.json"
+grep -q '"signingCertificateSha256": "AA:AA:AA:AA:AA:AA:AA:AA:AA:AA:AA:AA:AA:AA:AA:AA:AA:AA:AA:AA:AA:AA:AA:AA:AA:AA:AA:AA:AA:AA:AA:AA"' "$NEXORA_WEB_RELEASE_ROOT/current/latest.json"
 if grep -Rqs 'super-secret-must-survive' "$NEXORA_WEB_RELEASE_ROOT"; then
   printf 'Broker secret leaked into public release metadata.\n' >&2
   exit 1
