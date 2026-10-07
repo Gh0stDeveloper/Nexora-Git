@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Nexora Git</string>
+
+    <string name="common_ok">Aceptar</string>
+    <string name="common_back">Atrás</string>
+    <string name="common_next">Siguiente</string>
+
+    <string name="nav_home">Inicio</string>
+    <string name="nav_explore">Explorar</string>
+    <string name="nav_repositories">Repositorios</string>
+    <string name="nav_activity">Actividad</string>
+    <string name="nav_profile">Perfil</string>
+
+    <string name="auth_dialog_title">Autenticación de GitHub</string>
+    <string name="login_title">Iniciar sesión en GitHub</string>
+    <string name="login_description">Nexora Git utiliza la página oficial de autorización de GitHub. Las contraseñas, passkeys y la autenticación de dos factores son gestionadas únicamente por GitHub.</string>
+    <string name="login_continue">Continuar con GitHub</string>
+    <string name="login_not_configured">La autenticación está deshabilitada en esta compilación hasta configurar el Client ID de la GitHub App, la URL del broker y la URL de callback.</string>
+
+    <string name="home_description">Un entorno Android completo para desarrollo con Git local y GitHub.</string>
+    <string name="home_repositories_title">Repositorios</string>
+    <string name="home_repositories_description">Crea, clona o importa un proyecto; después explora el código y utiliza el flujo completo de Git local.</string>
+    <string name="home_repositories_action">Abrir repositorios</string>
+    <string name="home_explore_title">Explorar GitHub</string>
+    <string name="home_explore_description">Busca repositorios, usuarios y código utilizando la cuenta activa de GitHub.</string>
+    <string name="home_explore_action">Buscar en GitHub</string>
+    <string name="home_activity_title">Actividad</string>
+    <string name="home_activity_description">Revisa la actividad reciente de la cuenta y abre la bandeja de notificaciones de GitHub cuando sea necesario.</string>
+    <string name="home_activity_action">Ver actividad</string>
+    <string name="home_auth_note">La autenticación de GitHub utiliza el flujo web oficial. Nexora Git nunca solicita tu contraseña ni tu passkey de GitHub.</string>
+
+    <string name="onboarding_page_one_title">Un entorno Git real en Android</string>
+    <string name="onboarding_page_one_description">Nexora Git trabaja con repositorios locales reales, ramas, commits, diffs y flujos de GitHub sin requerir Termux.</string>
+    <string name="onboarding_page_two_title">La autenticación de GitHub permanece en GitHub</string>
+    <string name="onboarding_page_two_description">El inicio de sesión utiliza la página oficial de GitHub, PKCE y un callback HTTPS verificado. Nexora Git nunca solicita tu contraseña, passkey ni secreto de 2FA.</string>
+    <string name="onboarding_page_three_title">Comienza con el flujo que ya utilizas</string>
+    <string name="onboarding_page_three_description">Después de iniciar sesión puedes clonar un repositorio, importar un proyecto local existente o crear un nuevo repositorio y continuar desde tu teléfono.</string>
+    <string name="onboarding_continue">Continuar al inicio de sesión</string>
+    <string name="onboarding_skip">Omitir introducción</string>
+    <string name="onboarding_progress">%1$d / %2$d</string>
+
+    <string name="settings_title">Ajustes</string>
+    <string name="settings_appearance">Apariencia</string>
+    <string name="settings_appearance_description">Elige cómo se ve Nexora Git en este dispositivo.</string>
+    <string name="settings_theme_system">Sistema</string>
+    <string name="settings_theme_light">Claro</string>
+    <string name="settings_theme_dark">Oscuro</string>
+    <string name="settings_theme_amoled">AMOLED</string>
+    <string name="settings_dynamic_color">Color dinámico</string>
+    <string name="settings_dynamic_color_description">Usa los colores del sistema Android cuando sean compatibles.</string>
+    <string name="settings_help_onboarding">Ayuda e introducción</string>
+    <string name="settings_help_onboarding_description">Repite la introducción inicial sin modificar tu sesión de GitHub ni tus repositorios.</string>
+    <string name="settings_replay_onboarding">Repetir introducción</string>
+    <string name="settings_about">Acerca de</string>
+    <string name="settings_about_description">Entorno de código abierto para Git y GitHub en Android.</string>
+    <string name="settings_open">Ajustes</string>
+</resources>
