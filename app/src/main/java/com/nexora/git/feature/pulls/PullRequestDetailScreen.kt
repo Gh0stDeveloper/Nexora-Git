@@ -1,5 +1,7 @@
 package com.nexora.git.feature.pulls
 
+import com.nexora.git.R
+
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -38,6 +40,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
@@ -96,10 +99,10 @@ fun PullRequestDetailScreen(
             onDismissRequest = viewModel::dismissError,
             confirmButton = {
                 TextButton(onClick = viewModel::dismissError) {
-                    Text("OK")
+                    Text(stringResource(R.string.action_ok))
                 }
             },
-            title = { Text("Pull request") },
+            title = { Text(stringResource(R.string.pr_title)) },
             text = { Text(message) },
         )
     }
@@ -109,10 +112,10 @@ fun PullRequestDetailScreen(
             onDismissRequest = viewModel::dismissSuccess,
             confirmButton = {
                 TextButton(onClick = viewModel::dismissSuccess) {
-                    Text("Done")
+                    Text(stringResource(R.string.action_done))
                 }
             },
-            title = { Text("Nexora Git") },
+            title = { Text(stringResource(R.string.app_name)) },
             text = { Text(message) },
         )
     }
@@ -185,7 +188,7 @@ internal fun PullRequestDetailContent(
                 IconButton(onClick = onBack) {
                     Icon(
                         imageVector = Icons.AutoMirrored.Outlined.ArrowBack,
-                        contentDescription = "Back",
+                        contentDescription = stringResource(R.string.pr_back),
                     )
                 }
                 Column(
@@ -209,7 +212,7 @@ internal fun PullRequestDetailContent(
                 ) {
                     Icon(
                         imageVector = Icons.Outlined.Refresh,
-                        contentDescription = "Refresh pull request",
+                        contentDescription = stringResource(R.string.pr_refresh),
                     )
                 }
             }
@@ -335,7 +338,7 @@ internal fun PullRequestDetailContent(
                 PullRequestDetailTab.REVIEWS -> {
                     item {
                         Text(
-                            text = "Submitted reviews",
+                            text = stringResource(R.string.pr_submitted_reviews),
                             style =
                                 MaterialTheme.typography.titleMedium,
                         )
@@ -355,7 +358,7 @@ internal fun PullRequestDetailContent(
 
                     item {
                         Text(
-                            text = "Inline comments",
+                            text = stringResource(R.string.pr_inline_comments),
                             style =
                                 MaterialTheme.typography.titleMedium,
                         )
@@ -492,7 +495,7 @@ internal fun PullRequestDetailContent(
                         onDeleteReviewComment(id)
                     },
                 ) {
-                    Text("Delete")
+                    Text(stringResource(R.string.action_delete))
                 }
             },
             dismissButton = {
@@ -501,10 +504,10 @@ internal fun PullRequestDetailContent(
                         deletingCommentId = null
                     },
                 ) {
-                    Text("Cancel")
+                    Text(stringResource(R.string.action_cancel))
                 }
             },
-            title = { Text("Delete review comment?") },
+            title = { Text(stringResource(R.string.pr_delete_review_comment)) },
             text = {
                 Text(
                     "This permanently deletes the inline GitHub review comment.",
@@ -629,7 +632,7 @@ private fun OverviewActions(
             verticalArrangement = Arrangement.spacedBy(10.dp),
         ) {
             Text(
-                text = "Pull request actions",
+                text = stringResource(R.string.pr_actions),
                 style = MaterialTheme.typography.titleMedium,
             )
 
@@ -644,7 +647,7 @@ private fun OverviewActions(
                             !pull.merged,
                     onClick = onEdit,
                 ) {
-                    Text("Edit")
+                    Text(stringResource(R.string.action_edit))
                 }
 
                 OutlinedButton(
@@ -698,12 +701,12 @@ private fun OverviewActions(
             ) {
                 HorizontalDivider()
                 Text(
-                    text = "Merge",
+                    text = stringResource(R.string.pr_merge),
                     style = MaterialTheme.typography.titleSmall,
                 )
                 if (state.allowedMergeMethods.isEmpty()) {
                     Text(
-                        text = "No merge method is enabled for this repository.",
+                        text = stringResource(R.string.pr_no_merge_method),
                         color =
                             MaterialTheme.colorScheme.onSurfaceVariant,
                     )
@@ -767,7 +770,7 @@ private fun ReviewActionCard(
             verticalArrangement = Arrangement.spacedBy(10.dp),
         ) {
             Text(
-                text = "Submit review",
+                text = stringResource(R.string.pr_submit_review),
                 style = MaterialTheme.typography.titleMedium,
             )
             Text(
@@ -798,7 +801,7 @@ private fun ReviewActionCard(
                         )
                     },
                 ) {
-                    Text("Approve")
+                    Text(stringResource(R.string.pr_approve))
                 }
                 OutlinedButton(
                     enabled =
@@ -812,7 +815,7 @@ private fun ReviewActionCard(
                         )
                     },
                 ) {
-                    Text("Request changes")
+                    Text(stringResource(R.string.pr_request_changes))
                 }
                 OutlinedButton(
                     enabled =
@@ -825,7 +828,7 @@ private fun ReviewActionCard(
                         )
                     },
                 ) {
-                    Text("Comment")
+                    Text(stringResource(R.string.action_comment))
                 }
             }
         }
@@ -844,7 +847,7 @@ private fun PullRequestBodyCard(
             verticalArrangement = Arrangement.spacedBy(8.dp),
         ) {
             Text(
-                text = "Description",
+                text = stringResource(R.string.pulls_description),
                 style = MaterialTheme.typography.titleMedium,
             )
             Text(
@@ -923,7 +926,7 @@ private fun PullRequestFileCard(
                     imageVector = Icons.AutoMirrored.Outlined.Comment,
                     contentDescription = null,
                 )
-                Text("Add inline comment")
+                Text(stringResource(R.string.pr_add_inline_comment))
             }
         }
     }
@@ -1035,13 +1038,13 @@ private fun ReviewCommentCard(
                         enabled = !busy,
                         onClick = onEdit,
                     ) {
-                        Text("Edit")
+                        Text(stringResource(R.string.action_edit))
                     }
                     TextButton(
                         enabled = !busy,
                         onClick = onDelete,
                     ) {
-                        Text("Delete")
+                        Text(stringResource(R.string.action_delete))
                     }
                 }
             }
@@ -1069,7 +1072,7 @@ private fun ChecksSummaryCard(
                     contentDescription = null,
                 )
                 Text(
-                    text = "Checks",
+                    text = stringResource(R.string.repository_actions_section),
                     style = MaterialTheme.typography.titleMedium,
                 )
             }
@@ -1164,7 +1167,7 @@ private fun EditPullRequestDialog(
                     )
                 },
             ) {
-                Text("Save")
+                Text(stringResource(R.string.action_save))
             }
         },
         dismissButton = {
@@ -1172,10 +1175,10 @@ private fun EditPullRequestDialog(
                 enabled = !busy,
                 onClick = onDismiss,
             ) {
-                Text("Cancel")
+                Text(stringResource(R.string.action_cancel))
             }
         },
-        title = { Text("Edit pull request") },
+        title = { Text(stringResource(R.string.pr_edit)) },
         text = {
             Column(
                 verticalArrangement = Arrangement.spacedBy(10.dp),
@@ -1185,7 +1188,7 @@ private fun EditPullRequestDialog(
                     value = title,
                     onValueChange = { title = it },
                     singleLine = true,
-                    label = { Text("Title") },
+                    label = { Text(stringResource(R.string.pulls_title_field)) },
                 )
                 OutlinedTextField(
                     modifier = Modifier.fillMaxWidth(),
@@ -1193,14 +1196,14 @@ private fun EditPullRequestDialog(
                     onValueChange = { body = it },
                     minLines = 4,
                     maxLines = 8,
-                    label = { Text("Description") },
+                    label = { Text(stringResource(R.string.pulls_description)) },
                 )
                 OutlinedTextField(
                     modifier = Modifier.fillMaxWidth(),
                     value = base,
                     onValueChange = { base = it },
                     singleLine = true,
-                    label = { Text("Base branch") },
+                    label = { Text(stringResource(R.string.pulls_base_branch)) },
                 )
             }
         },
@@ -1231,7 +1234,7 @@ private fun ReviewDialog(
                     onSubmit(body)
                 },
             ) {
-                Text("Submit")
+                Text(stringResource(R.string.action_submit))
             }
         },
         dismissButton = {
@@ -1239,7 +1242,7 @@ private fun ReviewDialog(
                 enabled = !busy,
                 onClick = onDismiss,
             ) {
-                Text("Cancel")
+                Text(stringResource(R.string.action_cancel))
             }
         },
         title = {
@@ -1316,7 +1319,7 @@ private fun InlineReviewCommentDialog(
                     )
                 },
             ) {
-                Text("Comment")
+                Text(stringResource(R.string.action_comment))
             }
         },
         dismissButton = {
@@ -1324,11 +1327,11 @@ private fun InlineReviewCommentDialog(
                 enabled = !busy,
                 onClick = onDismiss,
             ) {
-                Text("Cancel")
+                Text(stringResource(R.string.action_cancel))
             }
         },
         title = {
-            Text("Inline review comment")
+            Text(stringResource(R.string.pr_inline_comment))
         },
         text = {
             Column(
@@ -1345,7 +1348,7 @@ private fun InlineReviewCommentDialog(
                         lineText = it.filter(Char::isDigit)
                     },
                     singleLine = true,
-                    label = { Text("Line number") },
+                    label = { Text(stringResource(R.string.pr_line_number)) },
                 )
                 Row(
                     horizontalArrangement = Arrangement.spacedBy(8.dp),
@@ -1372,7 +1375,7 @@ private fun InlineReviewCommentDialog(
                     onValueChange = { body = it },
                     minLines = 4,
                     maxLines = 8,
-                    label = { Text("Comment") },
+                    label = { Text(stringResource(R.string.action_comment)) },
                 )
                 Text(
                     text = "Head commit: " + headSha.take(12),
@@ -1404,7 +1407,7 @@ private fun EditReviewCommentDialog(
                 enabled = !busy && body.isNotBlank(),
                 onClick = { onSave(body) },
             ) {
-                Text("Save")
+                Text(stringResource(R.string.action_save))
             }
         },
         dismissButton = {
@@ -1412,10 +1415,10 @@ private fun EditReviewCommentDialog(
                 enabled = !busy,
                 onClick = onDismiss,
             ) {
-                Text("Cancel")
+                Text(stringResource(R.string.action_cancel))
             }
         },
-        title = { Text("Edit review comment") },
+        title = { Text(stringResource(R.string.pr_edit_review_comment)) },
         text = {
             OutlinedTextField(
                 modifier = Modifier.fillMaxWidth(),
@@ -1423,7 +1426,7 @@ private fun EditReviewCommentDialog(
                 onValueChange = { body = it },
                 minLines = 4,
                 maxLines = 8,
-                label = { Text("Comment") },
+                label = { Text(stringResource(R.string.action_comment)) },
             )
         },
     )
@@ -1444,7 +1447,7 @@ private fun MergeConfirmationDialog(
                 enabled = !busy,
                 onClick = onConfirm,
             ) {
-                Text("Merge")
+                Text(stringResource(R.string.pr_merge))
             }
         },
         dismissButton = {
@@ -1452,10 +1455,10 @@ private fun MergeConfirmationDialog(
                 enabled = !busy,
                 onClick = onDismiss,
             ) {
-                Text("Cancel")
+                Text(stringResource(R.string.action_cancel))
             }
         },
-        title = { Text("Merge pull request?") },
+        title = { Text(stringResource(R.string.pr_merge_confirm)) },
         text = {
             Column(
                 verticalArrangement = Arrangement.spacedBy(8.dp),
@@ -1464,7 +1467,7 @@ private fun MergeConfirmationDialog(
                     text = "Method: " + method.wireValue,
                 )
                 Text(
-                    text = "Nexora Git will require the current head SHA. GitHub rejects the merge if the pull request changes before this request reaches the server.",
+                    text = stringResource(R.string.pr_sha_guard),
                 )
                 Text(
                     text = pull.head.sha.take(12),
