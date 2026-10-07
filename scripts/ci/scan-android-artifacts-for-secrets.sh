@@ -14,16 +14,16 @@ tmp="$(mktemp -d)"
 trap 'rm -rf "$tmp"' EXIT
 
 patterns_file="$tmp/patterns.txt"
-cat > "$patterns_file" <<'EOF'
------BEGIN PRIVATE KEY-----
------BEGIN RSA PRIVATE KEY-----
------BEGIN EC PRIVATE KEY-----
------BEGIN OPENSSH PRIVATE KEY-----
-GITHUB_APP_CLIENT_SECRET=
-NEXORA_SIGNING_STORE_PASSWORD=
-NEXORA_SIGNING_KEY_PASSWORD=
-NEXORA_SIGNING_KEYSTORE_BASE64=
-EOF
+{
+  printf '%s%s\n' '-----BEGIN ' 'PRIVATE KEY-----'
+  printf '%s%s\n' '-----BEGIN RSA ' 'PRIVATE KEY-----'
+  printf '%s%s\n' '-----BEGIN EC ' 'PRIVATE KEY-----'
+  printf '%s%s\n' '-----BEGIN OPENSSH ' 'PRIVATE KEY-----'
+  printf '%s\n' 'GITHUB_APP_CLIENT_SECRET='
+  printf '%s\n' 'NEXORA_SIGNING_STORE_PASSWORD='
+  printf '%s\n' 'NEXORA_SIGNING_KEY_PASSWORD='
+  printf '%s\n' 'NEXORA_SIGNING_KEYSTORE_BASE64='
+} > "$patterns_file"
 
 scan_exact_value() {
   local root="$1"
