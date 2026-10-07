@@ -294,7 +294,7 @@ internal fun IssuesContent(
                 ) {
                     Text(
                         modifier = Modifier.padding(18.dp),
-                        text = "No issues match the current filters.",
+                        text = stringResource(R.string.issues_no_matches),
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
                 }
@@ -516,7 +516,7 @@ private fun IssueRow(
 
             issue.milestone?.let {
                 Text(
-                    text = "Milestone: " + it.title,
+                    text = stringResource(R.string.issue_milestone, it.title),
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     style = MaterialTheme.typography.bodySmall,
                 )
