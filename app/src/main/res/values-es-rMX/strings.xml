@@ -580,4 +580,31 @@
     <string name="advanced_back">Atrás</string>
     <string name="advanced_refresh">Actualizar GitHub avanzado</string>
     <string name="advanced_delete_gist_cd">Eliminar gist</string>
+
+    <string name="explore_no_results">No hay resultados coincidentes.</string>
+    <string name="explore_github_user">Usuario de GitHub</string>
+
+    <string name="repository_metric_stars">Estrellas</string>
+    <string name="repository_metric_forks">Forks</string>
+    <string name="repository_metric_open_issues">Issues abiertos</string>
+    <string name="repository_metric_watchers">Seguidores</string>
+    <string name="repository_metric_size">Tamaño</string>
+    <string name="repository_metric_permission">Permiso</string>
+    <string name="repository_feature_issues">Issues</string>
+    <string name="repository_feature_wiki">Wiki</string>
+    <string name="repository_feature_projects">Projects</string>
+    <string name="repository_feature_pages">Pages</string>
+    <string name="repository_delete_branch_after_merge">Eliminar rama después del merge</string>
+
+    <string name="issue_no_comments">Aún no hay comentarios.</string>
+
+    <string name="release_immutable_note">GitHub marca este release como inmutable. La edición, eliminación y cambios en assets están deshabilitados.</string>
+    <string name="release_draft">Borrador</string>
+    <string name="release_prerelease">Pre-release</string>
+
+    <string name="workflow_detached">desacoplado</string>
+
+    <string name="advanced_dependabot">Dependabot</string>
+    <string name="advanced_code_scanning">Code scanning</string>
+    <string name="advanced_secret_scanning">Secret scanning</string>
 </resources>
