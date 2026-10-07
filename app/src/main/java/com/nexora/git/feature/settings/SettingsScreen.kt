@@ -22,7 +22,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import com.nexora.git.R
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.nexora.git.core.settings.AppThemePreference
@@ -55,11 +57,11 @@ fun SettingsScreen(
                 IconButton(onClick = onBack) {
                     Icon(
                         imageVector = Icons.AutoMirrored.Outlined.ArrowBack,
-                        contentDescription = "Back",
+                        contentDescription = stringResource(R.string.common_back),
                     )
                 }
                 Text(
-                    text = "Settings",
+                    text = stringResource(R.string.settings_title),
                     style = MaterialTheme.typography.headlineSmall,
                 )
             }
@@ -72,11 +74,11 @@ fun SettingsScreen(
                     verticalArrangement = Arrangement.spacedBy(12.dp),
                 ) {
                     Text(
-                        text = "Appearance",
+                        text = stringResource(R.string.settings_appearance),
                         style = MaterialTheme.typography.titleMedium,
                     )
                     Text(
-                        text = "Choose how Nexora Git looks on this device.",
+                        text = stringResource(R.string.settings_appearance_description),
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
 
@@ -88,10 +90,10 @@ fun SettingsScreen(
                                 label = {
                                     Text(
                                         when (preference) {
-                                            AppThemePreference.SYSTEM -> "System"
-                                            AppThemePreference.LIGHT -> "Light"
-                                            AppThemePreference.DARK -> "Dark"
-                                            AppThemePreference.AMOLED -> "AMOLED"
+                                            AppThemePreference.SYSTEM -> stringResource(R.string.settings_theme_system)
+                                            AppThemePreference.LIGHT -> stringResource(R.string.settings_theme_light)
+                                            AppThemePreference.DARK -> stringResource(R.string.settings_theme_dark)
+                                            AppThemePreference.AMOLED -> stringResource(R.string.settings_theme_amoled)
                                         },
                                     )
                                 },
@@ -105,9 +107,9 @@ fun SettingsScreen(
                         horizontalArrangement = Arrangement.SpaceBetween,
                     ) {
                         Column(modifier = Modifier.weight(1f)) {
-                            Text("Dynamic color")
+                            Text(stringResource(R.string.settings_dynamic_color))
                             Text(
-                                text = "Use Android system colors when supported.",
+                                text = stringResource(R.string.settings_dynamic_color_description),
                                 style = MaterialTheme.typography.bodySmall,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                             )
@@ -128,15 +130,15 @@ fun SettingsScreen(
                     verticalArrangement = Arrangement.spacedBy(10.dp),
                 ) {
                     Text(
-                        text = "Help and onboarding",
+                        text = stringResource(R.string.settings_help_onboarding),
                         style = MaterialTheme.typography.titleMedium,
                     )
                     Text(
-                        text = "Replay the first-run introduction without changing your GitHub session or repositories.",
+                        text = stringResource(R.string.settings_help_onboarding_description),
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
                     OutlinedButton(onClick = viewModel::replayOnboarding) {
-                        Text("Replay onboarding")
+                        Text(stringResource(R.string.settings_replay_onboarding))
                     }
                 }
             }
@@ -149,12 +151,12 @@ fun SettingsScreen(
                     verticalArrangement = Arrangement.spacedBy(6.dp),
                 ) {
                     Text(
-                        text = "About",
+                        text = stringResource(R.string.settings_about),
                         style = MaterialTheme.typography.titleMedium,
                     )
-                    Text("Nexora Git")
+                    Text(stringResource(R.string.app_name))
                     Text(
-                        text = "Open-source Git and GitHub workspace for Android.",
+                        text = stringResource(R.string.settings_about_description),
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
