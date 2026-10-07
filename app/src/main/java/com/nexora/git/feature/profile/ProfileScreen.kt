@@ -118,10 +118,10 @@ fun ProfileScreen(
             onDismissRequest = viewModel::dismissError,
             confirmButton = {
                 TextButton(onClick = viewModel::dismissError) {
-                    Text("OK")
+                    Text(stringResource(R.string.action_ok))
                 }
             },
-            title = { Text("GitHub account") },
+            title = { Text(stringResource(R.string.profile_github_account)) },
             text = { Text(message) },
         )
     }
@@ -131,10 +131,10 @@ fun ProfileScreen(
             onDismissRequest = viewModel::dismissSuccess,
             confirmButton = {
                 TextButton(onClick = viewModel::dismissSuccess) {
-                    Text("Done")
+                    Text(stringResource(R.string.action_done))
                 }
             },
-            title = { Text("Nexora Git") },
+            title = { Text(stringResource(R.string.app_name)) },
             text = { Text(message) },
         )
     }
@@ -179,7 +179,7 @@ internal fun ProfileContent(
                     modifier = Modifier.weight(1f),
                 ) {
                     Text(
-                        text = "Profile",
+                        text = stringResource(R.string.profile_title),
                         style = MaterialTheme.typography.headlineSmall,
                     )
                     Text(
@@ -195,7 +195,7 @@ internal fun ProfileContent(
                 ) {
                     Icon(
                         imageVector = Icons.Outlined.Refresh,
-                        contentDescription = "Refresh profile",
+                        contentDescription = stringResource(R.string.profile_refresh),
                     )
                 }
 
@@ -468,7 +468,7 @@ private fun ProfileSummaryCard(
                     imageVector = Icons.Outlined.Edit,
                     contentDescription = null,
                 )
-                Text("Edit GitHub profile")
+                Text(stringResource(R.string.profile_edit))
             }
         }
     }
@@ -502,7 +502,7 @@ private fun AccountManagementCard(
             verticalArrangement = Arrangement.spacedBy(10.dp),
         ) {
             Text(
-                text = "Accounts",
+                text = stringResource(R.string.profile_accounts),
                 style = MaterialTheme.typography.titleMedium,
             )
 
@@ -548,7 +548,7 @@ private fun AccountManagementCard(
                             activeAccount.accountId
                     ) {
                         Text(
-                            text = "Active",
+                            text = stringResource(R.string.profile_active),
                             color =
                                 MaterialTheme.colorScheme.primary,
                         )
@@ -565,7 +565,7 @@ private fun AccountManagementCard(
                     imageVector = Icons.Outlined.Add,
                     contentDescription = null,
                 )
-                Text("Add GitHub account")
+                Text(stringResource(R.string.profile_add_account))
             }
 
             OutlinedButton(
@@ -577,7 +577,7 @@ private fun AccountManagementCard(
                     imageVector = Icons.AutoMirrored.Outlined.Logout,
                     contentDescription = null,
                 )
-                Text("Sign out")
+                Text(stringResource(R.string.profile_sign_out))
             }
         }
     }
@@ -669,7 +669,7 @@ private fun StarredRepositoryCard(
                     imageVector = Icons.Outlined.Star,
                     contentDescription = null,
                 )
-                Text("Unstar")
+                Text(stringResource(R.string.profile_unstar))
             }
         }
     }
@@ -777,7 +777,7 @@ private fun EditProfileDialog(
                     )
                 },
             ) {
-                Text("Save")
+                Text(stringResource(R.string.action_save))
             }
         },
         dismissButton = {
@@ -785,11 +785,11 @@ private fun EditProfileDialog(
                 enabled = !busy,
                 onClick = onDismiss,
             ) {
-                Text("Cancel")
+                Text(stringResource(R.string.action_cancel))
             }
         },
         title = {
-            Text("Edit GitHub profile")
+            Text(stringResource(R.string.profile_edit))
         },
         text = {
             LazyColumn(
@@ -801,7 +801,7 @@ private fun EditProfileDialog(
                         modifier = Modifier.fillMaxWidth(),
                         value = name,
                         onValueChange = { name = it },
-                        label = { Text("Name") },
+                        label = { Text(stringResource(R.string.repo_name)) },
                     )
                 }
                 item {
@@ -811,7 +811,7 @@ private fun EditProfileDialog(
                         onValueChange = { bio = it },
                         minLines = 3,
                         maxLines = 5,
-                        label = { Text("Bio") },
+                        label = { Text(stringResource(R.string.profile_bio)) },
                     )
                 }
                 item {
@@ -819,7 +819,7 @@ private fun EditProfileDialog(
                         modifier = Modifier.fillMaxWidth(),
                         value = company,
                         onValueChange = { company = it },
-                        label = { Text("Company") },
+                        label = { Text(stringResource(R.string.profile_company)) },
                     )
                 }
                 item {
@@ -827,7 +827,7 @@ private fun EditProfileDialog(
                         modifier = Modifier.fillMaxWidth(),
                         value = location,
                         onValueChange = { location = it },
-                        label = { Text("Location") },
+                        label = { Text(stringResource(R.string.profile_location)) },
                     )
                 }
                 item {
@@ -835,7 +835,7 @@ private fun EditProfileDialog(
                         modifier = Modifier.fillMaxWidth(),
                         value = blog,
                         onValueChange = { blog = it },
-                        label = { Text("Website") },
+                        label = { Text(stringResource(R.string.profile_website)) },
                     )
                 }
                 item {
@@ -844,7 +844,7 @@ private fun EditProfileDialog(
                         value = twitter,
                         onValueChange = { twitter = it },
                         label = {
-                            Text("X / Twitter username")
+                            Text(stringResource(R.string.profile_x_username))
                         },
                     )
                 }
@@ -856,7 +856,7 @@ private fun EditProfileDialog(
                         horizontalArrangement =
                             Arrangement.SpaceBetween,
                     ) {
-                        Text("Available for hire")
+                        Text(stringResource(R.string.profile_hireable))
                         Switch(
                             checked = hireable,
                             onCheckedChange = {
