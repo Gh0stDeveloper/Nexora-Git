@@ -160,6 +160,8 @@ dependencies {
     implementation(libs.androidx.datastore.preferences)
     implementation(libs.androidx.documentfile)
     implementation(libs.androidx.browser)
+    implementation(libs.androidx.appcompat)
+    implementation(libs.androidx.work.runtime)
 
     implementation(libs.retrofit.core)
     implementation(libs.okhttp.core)
@@ -170,6 +172,7 @@ dependencies {
 
     androidTestImplementation(libs.androidx.test.ext.junit)
     androidTestImplementation(libs.androidx.test.espresso.core)
+    androidTestImplementation(libs.androidx.work.testing)
     androidTestImplementation(platform(libs.androidx.compose.bom))
     androidTestImplementation(libs.androidx.compose.ui.test.junit4)
 
