@@ -1,5 +1,6 @@
 package com.nexora.git.feature.git
 
+import androidx.annotation.StringRes
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -67,13 +68,13 @@ import com.nexora.git.core.git.GitTag
 import com.nexora.git.core.git.GitStatusEntry
 
 private enum class GitWorkspaceTab(
-    val label: String,
+    @param:StringRes val labelRes: Int,
 ) {
-    CHANGES("Changes"),
-    HISTORY("History"),
-    BRANCHES("Branches"),
-    SYNC("Sync"),
-    ADVANCED("Advanced"),
+    CHANGES(R.string.git_tab_changes),
+    HISTORY(R.string.git_tab_history),
+    BRANCHES(R.string.git_tab_branches),
+    SYNC(R.string.git_tab_sync),
+    ADVANCED(R.string.git_tab_advanced),
 }
 
 @Composable
@@ -192,11 +193,11 @@ fun GitWorkspaceScreen(
             onDismissRequest = viewModel::dismissError,
             confirmButton = {
                 TextButton(onClick = viewModel::dismissError) {
-                    Text("OK")
+                    Text(stringResource(R.string.action_ok))
                 }
             },
             title = {
-                Text("Git operation")
+                Text(stringResource(R.string.git_operation))
             },
             text = {
                 Text(message)
@@ -209,11 +210,11 @@ fun GitWorkspaceScreen(
             onDismissRequest = viewModel::dismissSuccess,
             confirmButton = {
                 TextButton(onClick = viewModel::dismissSuccess) {
-                    Text("Done")
+                    Text(stringResource(R.string.action_done))
                 }
             },
             title = {
-                Text("Nexora Git")
+                Text(stringResource(R.string.app_name))
             },
             text = {
                 Text(message)
@@ -261,7 +262,7 @@ fun GitWorkspaceScreen(
                         viewModel.removeRemote(remote.name)
                     },
                 ) {
-                    Text("Remove")
+                    Text(stringResource(R.string.git_remove))
                 }
             },
             dismissButton = {
@@ -270,17 +271,18 @@ fun GitWorkspaceScreen(
                         removeRemote = null
                     },
                 ) {
-                    Text("Cancel")
+                    Text(stringResource(R.string.action_cancel))
                 }
             },
             title = {
-                Text("Remove remote?")
+                Text(stringResource(R.string.git_remove_remote_title))
             },
             text = {
                 Text(
-                    "This removes the local Git remote configuration for " +
-                        remote.name +
-                        ". It does not delete the GitHub repository.",
+                    stringResource(
+                        R.string.git_remove_remote_body,
+                        remote.name,
+                    ),
                 )
             },
         )
@@ -318,22 +320,23 @@ fun GitWorkspaceScreen(
                         )
                     },
                 ) {
-                    Text("Reset hard")
+                    Text(stringResource(R.string.git_reset_hard))
                 }
             },
             dismissButton = {
                 TextButton(
                     onClick = { pendingHardReset = null },
                 ) {
-                    Text("Cancel")
+                    Text(stringResource(R.string.action_cancel))
                 }
             },
-            title = { Text("Discard local changes?") },
+            title = { Text(stringResource(R.string.git_reset_hard_title)) },
             text = {
                 Text(
-                    "Hard reset rewrites the index and working tree to " +
-                        target +
-                        ". Uncommitted changes can be permanently lost.",
+                    stringResource(
+                        R.string.git_reset_hard_body,
+                        target,
+                    ),
                 )
             },
         )
@@ -349,17 +352,17 @@ fun GitWorkspaceScreen(
                         viewModel.dropStash(stash.index)
                     },
                 ) {
-                    Text("Drop")
+                    Text(stringResource(R.string.git_drop))
                 }
             },
             dismissButton = {
                 TextButton(
                     onClick = { pendingStashDrop = null },
                 ) {
-                    Text("Cancel")
+                    Text(stringResource(R.string.action_cancel))
                 }
             },
-            title = { Text("Drop stash?") },
+            title = { Text(stringResource(R.string.git_drop_stash_title)) },
             text = {
                 Text(
                     "stash@{" + stash.index + "} will be removed from " +
@@ -379,21 +382,23 @@ fun GitWorkspaceScreen(
                         viewModel.deleteTag(tag.name)
                     },
                 ) {
-                    Text("Delete")
+                    Text(stringResource(R.string.action_delete))
                 }
             },
             dismissButton = {
                 TextButton(
                     onClick = { pendingTagDelete = null },
                 ) {
-                    Text("Cancel")
+                    Text(stringResource(R.string.action_cancel))
                 }
             },
-            title = { Text("Delete local tag?") },
+            title = { Text(stringResource(R.string.git_delete_local_tag_title)) },
             text = {
                 Text(
-                    "The local tag " + tag.name +
-                        " will be deleted. This does not delete a remote tag.",
+                    stringResource(
+                        R.string.git_delete_local_tag_body,
+                        tag.name,
+                    ),
                 )
             },
         )
@@ -428,13 +433,13 @@ fun GitWorkspaceScreen(
                 ) {
                     Text(
                         text = state.workspaceName.ifBlank {
-                            "Git workspace"
+                            stringResource(R.string.git_workspace_fallback)
                         },
                         style = MaterialTheme.typography.titleLarge,
                     )
                     Text(
                         text = state.branch.ifBlank {
-                            "Repository"
+                            stringResource(R.string.git_repository_fallback)
                         },
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                         style = MaterialTheme.typography.bodyMedium,
@@ -521,7 +526,7 @@ fun GitWorkspaceScreen(
                                 selectedTab = tab
                             },
                             label = {
-                                Text(tab.label)
+                                Text(stringResource(tab.labelRes))
                             },
                         )
                     }
@@ -1123,7 +1128,7 @@ internal fun AdvancedGitPanel(
                     value = rebaseRef,
                     onValueChange = onRebaseRefChange,
                     modifier = Modifier.fillMaxWidth(),
-                    label = { Text("Rebase onto branch / tag / commit") },
+                    label = { Text(stringResource(R.string.git_rebase_onto)) },
                     singleLine = true,
                 )
                 Button(
@@ -1133,7 +1138,7 @@ internal fun AdvancedGitPanel(
                             rebaseRef.isNotBlank(),
                     onClick = onRebase,
                 ) {
-                    Text("Start rebase")
+                    Text(stringResource(R.string.git_start_rebase))
                 }
                 if (state.rebaseInProgress) {
                     Text(
@@ -1157,7 +1162,7 @@ internal fun AdvancedGitPanel(
                     value = commitRef,
                     onValueChange = onCommitRefChange,
                     modifier = Modifier.fillMaxWidth(),
-                    label = { Text("Commit SHA or ref") },
+                    label = { Text(stringResource(R.string.git_commit_sha_ref)) },
                     singleLine = true,
                 )
                 Row(
@@ -1173,7 +1178,7 @@ internal fun AdvancedGitPanel(
                                 commitRef.isNotBlank(),
                         onClick = onCherryPick,
                     ) {
-                        Text("Cherry-pick")
+                        Text(stringResource(R.string.git_cherry_pick))
                     }
                     OutlinedButton(
                         enabled =
@@ -1182,7 +1187,7 @@ internal fun AdvancedGitPanel(
                                 commitRef.isNotBlank(),
                         onClick = onRevert,
                     ) {
-                        Text("Revert")
+                        Text(stringResource(R.string.git_revert))
                     }
                 }
                 if (state.cherryPickInProgress) {
@@ -1199,13 +1204,13 @@ internal fun AdvancedGitPanel(
                                     state.conflicts.isEmpty(),
                             onClick = onContinueCherryPick,
                         ) {
-                            Text("Continue")
+                            Text(stringResource(R.string.git_continue))
                         }
                         OutlinedButton(
                             enabled = !state.operationInProgress,
                             onClick = onAbortCherryPick,
                         ) {
-                            Text("Abort")
+                            Text(stringResource(R.string.git_abort))
                         }
                     }
                 }
@@ -1223,13 +1228,13 @@ internal fun AdvancedGitPanel(
                                     state.conflicts.isEmpty(),
                             onClick = onContinueRevert,
                         ) {
-                            Text("Continue")
+                            Text(stringResource(R.string.git_continue))
                         }
                         OutlinedButton(
                             enabled = !state.operationInProgress,
                             onClick = onAbortRevert,
                         ) {
-                            Text("Abort")
+                            Text(stringResource(R.string.git_abort))
                         }
                     }
                 }
@@ -1251,7 +1256,7 @@ internal fun AdvancedGitPanel(
                     value = stashMessage,
                     onValueChange = onStashMessageChange,
                     modifier = Modifier.fillMaxWidth(),
-                    label = { Text("Message (optional)") },
+                    label = { Text(stringResource(R.string.git_message_optional)) },
                     singleLine = true,
                 )
                 FilterChip(
@@ -1261,7 +1266,7 @@ internal fun AdvancedGitPanel(
                             !stashIncludeUntracked,
                         )
                     },
-                    label = { Text("Include untracked") },
+                    label = { Text(stringResource(R.string.git_include_untracked)) },
                 )
                 Button(
                     enabled =
@@ -1269,7 +1274,7 @@ internal fun AdvancedGitPanel(
                             state.repositoryState.name == "NONE",
                     onClick = onSaveStash,
                 ) {
-                    Text("Save stash")
+                    Text(stringResource(R.string.git_save_stash))
                 }
 
                 if (state.stashes.isEmpty()) {
@@ -1302,7 +1307,7 @@ internal fun AdvancedGitPanel(
                                     onApplyStash(stash.index)
                                 },
                             ) {
-                                Text("Apply")
+                                Text(stringResource(R.string.git_apply))
                             }
                             OutlinedButton(
                                 enabled = !state.operationInProgress,
@@ -1310,13 +1315,13 @@ internal fun AdvancedGitPanel(
                                     onPopStash(stash.index)
                                 },
                             ) {
-                                Text("Pop")
+                                Text(stringResource(R.string.git_pop))
                             }
                             TextButton(
                                 enabled = !state.operationInProgress,
                                 onClick = { onDropStash(stash) },
                             ) {
-                                Text("Drop")
+                                Text(stringResource(R.string.git_drop))
                             }
                         }
                     }
@@ -1334,7 +1339,7 @@ internal fun AdvancedGitPanel(
                     value = resetRef,
                     onValueChange = onResetRefChange,
                     modifier = Modifier.fillMaxWidth(),
-                    label = { Text("Target ref") },
+                    label = { Text(stringResource(R.string.git_target_ref)) },
                     singleLine = true,
                 )
                 Row(
@@ -1364,7 +1369,7 @@ internal fun AdvancedGitPanel(
                             resetRef.isNotBlank(),
                     onClick = onReset,
                 ) {
-                    Text("Reset")
+                    Text(stringResource(R.string.git_reset))
                 }
             }
         }
@@ -1382,21 +1387,21 @@ internal fun AdvancedGitPanel(
                     value = tagName,
                     onValueChange = onTagNameChange,
                     modifier = Modifier.fillMaxWidth(),
-                    label = { Text("Tag name") },
+                    label = { Text(stringResource(R.string.git_tag_name)) },
                     singleLine = true,
                 )
                 OutlinedTextField(
                     value = tagTarget,
                     onValueChange = onTagTargetChange,
                     modifier = Modifier.fillMaxWidth(),
-                    label = { Text("Target ref") },
+                    label = { Text(stringResource(R.string.git_target_ref)) },
                     singleLine = true,
                 )
                 OutlinedTextField(
                     value = tagMessage,
                     onValueChange = onTagMessageChange,
                     modifier = Modifier.fillMaxWidth(),
-                    label = { Text("Annotation message") },
+                    label = { Text(stringResource(R.string.git_annotation_message)) },
                 )
                 FilterChip(
                     selected = annotatedTag,
@@ -1419,7 +1424,7 @@ internal fun AdvancedGitPanel(
                             tagName.isNotBlank(),
                     onClick = onCreateTag,
                 ) {
-                    Text("Create local tag")
+                    Text(stringResource(R.string.git_create_local_tag))
                 }
                 state.tags.forEach { tag ->
                     HorizontalDivider()
@@ -1450,7 +1455,10 @@ internal fun AdvancedGitPanel(
                             Icon(
                                 imageVector = Icons.Outlined.Delete,
                                 contentDescription =
-                                    "Delete local tag " + tag.name,
+                                    stringResource(
+                                        R.string.git_delete_local_tag_cd,
+                                        tag.name,
+                                    ),
                             )
                         }
                     }
@@ -1507,7 +1515,7 @@ internal fun AdvancedGitPanel(
                     value = lfsPattern,
                     onValueChange = onLfsPatternChange,
                     modifier = Modifier.fillMaxWidth(),
-                    label = { Text("Track pattern, e.g. *.psd") },
+                    label = { Text(stringResource(R.string.git_lfs_pattern)) },
                     singleLine = true,
                 )
                 Button(
@@ -1516,11 +1524,14 @@ internal fun AdvancedGitPanel(
                             lfsPattern.isNotBlank(),
                     onClick = onTrackLfs,
                 ) {
-                    Text("Track with LFS")
+                    Text(stringResource(R.string.git_lfs_track))
                 }
                 if (lfsRemoteName.isNotBlank()) {
                     Text(
-                        "Transfer remote: " + lfsRemoteName,
+                        stringResource(
+                            R.string.git_transfer_remote,
+                            lfsRemoteName,
+                        ),
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
                     Row(
@@ -1534,13 +1545,13 @@ internal fun AdvancedGitPanel(
                             enabled = !state.operationInProgress,
                             onClick = onDownloadLfs,
                         ) {
-                            Text("Download LFS")
+                            Text(stringResource(R.string.git_lfs_download))
                         }
                         OutlinedButton(
                             enabled = !state.operationInProgress,
                             onClick = onUploadLfs,
                         ) {
-                            Text("Upload LFS")
+                            Text(stringResource(R.string.git_lfs_upload))
                         }
                     }
                 }
@@ -1563,7 +1574,7 @@ internal fun AdvancedGitPanel(
                                 enabled = !state.operationInProgress,
                                 onClick = { onUntrackLfs(pattern) },
                             ) {
-                                Text("Untrack")
+                                Text(stringResource(R.string.git_lfs_untrack))
                             }
                         }
                     }
@@ -1611,7 +1622,7 @@ private fun SubmoduleAdvancedRow(
             enabled = !busy,
             onClick = onSync,
         ) {
-            Text("Sync URL")
+            Text(stringResource(R.string.git_sync_url))
         }
         Button(
             enabled = !busy,
@@ -1645,7 +1656,7 @@ internal fun RepositorySummaryCard(
                 )
                 Text(
                     text = state.branch.ifBlank {
-                        "Detached / unborn HEAD"
+                        stringResource(R.string.git_detached_head)
                     },
                     style = MaterialTheme.typography.titleMedium,
                 )
@@ -1653,13 +1664,16 @@ internal fun RepositorySummaryCard(
 
             if (state.currentUpstream.isNotBlank()) {
                 Text(
-                    text = "Upstream: " + state.currentUpstream,
+                    text = stringResource(
+                        R.string.git_upstream,
+                        state.currentUpstream,
+                    ),
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     style = MaterialTheme.typography.bodyMedium,
                 )
             } else {
                 Text(
-                    text = "No upstream configured",
+                    text = stringResource(R.string.git_no_upstream),
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     style = MaterialTheme.typography.bodyMedium,
                 )
@@ -1667,10 +1681,11 @@ internal fun RepositorySummaryCard(
 
             state.divergence?.let { divergence ->
                 Text(
-                    text = divergence.ahead.toString() +
-                        " ahead · " +
-                        divergence.behind.toString() +
-                        " behind",
+                    text = stringResource(
+                        R.string.git_divergence,
+                        divergence.ahead,
+                        divergence.behind,
+                    ),
                     color = if (
                         divergence.ahead > 0 &&
                         divergence.behind > 0
@@ -1684,12 +1699,12 @@ internal fun RepositorySummaryCard(
             }
 
             Text(
-                text = state.stagedEntries.size.toString() +
-                    " staged · " +
-                    state.unstagedEntries.size.toString() +
-                    " working tree · " +
-                    state.conflicts.size.toString() +
-                    " conflicts",
+                text = stringResource(
+                    R.string.git_worktree_summary,
+                    state.stagedEntries.size,
+                    state.unstagedEntries.size,
+                    state.conflicts.size,
+                ),
                 color = if (state.conflicts.isEmpty()) {
                     MaterialTheme.colorScheme.onSurfaceVariant
                 } else {
@@ -1699,7 +1714,7 @@ internal fun RepositorySummaryCard(
 
             if (state.rebaseInProgress) {
                 Text(
-                    text = "Rebase in progress",
+                    text = stringResource(R.string.git_rebase_in_progress),
                     color = MaterialTheme.colorScheme.error,
                     style = MaterialTheme.typography.titleSmall,
                 )
@@ -1707,7 +1722,7 @@ internal fun RepositorySummaryCard(
 
             if (state.mergeInProgress) {
                 Text(
-                    text = "Merge in progress",
+                    text = stringResource(R.string.git_merge_in_progress),
                     color = MaterialTheme.colorScheme.error,
                     style = MaterialTheme.typography.titleSmall,
                 )
@@ -1715,7 +1730,7 @@ internal fun RepositorySummaryCard(
 
             if (state.cherryPickInProgress) {
                 Text(
-                    text = "Cherry-pick in progress",
+                    text = stringResource(R.string.git_cherry_in_progress),
                     color = MaterialTheme.colorScheme.error,
                     style = MaterialTheme.typography.titleSmall,
                 )
@@ -1723,7 +1738,7 @@ internal fun RepositorySummaryCard(
 
             if (state.revertInProgress) {
                 Text(
-                    text = "Revert in progress",
+                    text = stringResource(R.string.git_revert_in_progress),
                     color = MaterialTheme.colorScheme.error,
                     style = MaterialTheme.typography.titleSmall,
                 )
@@ -1751,7 +1766,7 @@ private fun ChangesActions(
                     },
             onClick = onStageAll,
         ) {
-            Text("Stage all")
+            Text(stringResource(R.string.git_stage_all))
         }
 
         OutlinedButton(
@@ -1761,7 +1776,7 @@ private fun ChangesActions(
                     state.stagedEntries.isNotEmpty(),
             onClick = onUnstageAll,
         ) {
-            Text("Unstage all")
+            Text(stringResource(R.string.git_unstage_all))
         }
     }
 }
@@ -1781,7 +1796,7 @@ private fun RebaseInProgressCard(
             verticalArrangement = Arrangement.spacedBy(10.dp),
         ) {
             Text(
-                text = "Rebase in progress",
+                text = stringResource(R.string.git_rebase_in_progress),
                 style = MaterialTheme.typography.titleMedium,
             )
             Text(
@@ -1801,14 +1816,14 @@ private fun RebaseInProgressCard(
                     enabled = !busy && conflictCount == 0,
                     onClick = onContinue,
                 ) {
-                    Text("Continue")
+                    Text(stringResource(R.string.git_continue))
                 }
                 OutlinedButton(
                     modifier = Modifier.weight(1f),
                     enabled = !busy,
                     onClick = onAbort,
                 ) {
-                    Text("Abort")
+                    Text(stringResource(R.string.git_abort))
                 }
             }
         }
@@ -1829,7 +1844,7 @@ private fun MergeInProgressCard(
             verticalArrangement = Arrangement.spacedBy(10.dp),
         ) {
             Text(
-                text = "Merge in progress",
+                text = stringResource(R.string.git_merge_in_progress),
                 style = MaterialTheme.typography.titleMedium,
             )
             Text(
@@ -1845,7 +1860,7 @@ private fun MergeInProgressCard(
                 enabled = !busy && conflictCount == 0,
                 onClick = onContinue,
             ) {
-                Text("Continue merge")
+                Text(stringResource(R.string.git_continue_merge))
             }
         }
     }
@@ -1892,7 +1907,7 @@ private fun ChangeCard(
                         imageVector = Icons.Outlined.Code,
                         contentDescription = null,
                     )
-                    Text("Edit")
+                    Text(stringResource(R.string.git_edit))
                 }
 
                 if (stagedView) {
@@ -1900,14 +1915,14 @@ private fun ChangeCard(
                         enabled = !busy,
                         onClick = onUnstage,
                     ) {
-                        Text("Unstage")
+                        Text(stringResource(R.string.git_unstage))
                     }
                 } else if (!entry.conflicted) {
                     TextButton(
                         enabled = !busy,
                         onClick = onStage,
                     ) {
-                        Text("Stage")
+                        Text(stringResource(R.string.git_stage))
                     }
                 } else {
                     Text(
@@ -1946,7 +1961,7 @@ private fun ConflictCard(
                 color = MaterialTheme.colorScheme.error,
             )
             Text(
-                text = "Edit the conflict markers, save the file, then mark it resolved. Nexora Git refuses to stage a file while standard conflict markers remain.",
+                text = stringResource(R.string.git_conflict_edit_note),
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
             Row(
@@ -1963,25 +1978,25 @@ private fun ConflictCard(
                         imageVector = Icons.Outlined.Code,
                         contentDescription = null,
                     )
-                    Text("Edit")
+                    Text(stringResource(R.string.git_edit))
                 }
                 OutlinedButton(
                     enabled = !busy,
                     onClick = onUseOurs,
                 ) {
-                    Text("Use ours")
+                    Text(stringResource(R.string.git_use_ours))
                 }
                 OutlinedButton(
                     enabled = !busy,
                     onClick = onUseTheirs,
                 ) {
-                    Text("Use theirs")
+                    Text(stringResource(R.string.git_use_theirs))
                 }
                 Button(
                     enabled = !busy,
                     onClick = onResolved,
                 ) {
-                    Text("Mark resolved")
+                    Text(stringResource(R.string.git_mark_resolved))
                 }
             }
         }
@@ -2013,7 +2028,7 @@ private fun CommitCard(
                     contentDescription = null,
                 )
                 Text(
-                    text = "Commit staged changes",
+                    text = stringResource(R.string.git_commit_staged),
                     style = MaterialTheme.typography.titleMedium,
                 )
             }
@@ -2024,7 +2039,7 @@ private fun CommitCard(
                 minLines = 2,
                 maxLines = 5,
                 label = {
-                    Text("Commit message")
+                    Text(stringResource(R.string.git_commit_message))
                 },
             )
             Button(
@@ -2101,7 +2116,7 @@ private fun BranchCreateCard(
             verticalArrangement = Arrangement.spacedBy(10.dp),
         ) {
             Text(
-                text = "Create branch",
+                text = stringResource(R.string.git_create_branch),
                 style = MaterialTheme.typography.titleMedium,
             )
             OutlinedTextField(
@@ -2110,7 +2125,7 @@ private fun BranchCreateCard(
                 singleLine = true,
                 onValueChange = onValueChange,
                 label = {
-                    Text("Branch name")
+                    Text(stringResource(R.string.git_branch_name))
                 },
             )
             Button(
@@ -2122,7 +2137,7 @@ private fun BranchCreateCard(
                     imageVector = Icons.AutoMirrored.Outlined.CallSplit,
                     contentDescription = null,
                 )
-                Text("Create and switch")
+                Text(stringResource(R.string.git_create_switch))
             }
         }
     }
@@ -2144,7 +2159,7 @@ private fun UpstreamCard(
             verticalArrangement = Arrangement.spacedBy(10.dp),
         ) {
             Text(
-                text = "Upstream tracking",
+                text = stringResource(R.string.git_upstream_tracking),
                 style = MaterialTheme.typography.titleMedium,
             )
             Text(
@@ -2186,7 +2201,7 @@ private fun UpstreamCard(
                         onSetUpstream(null)
                     },
                 ) {
-                    Text("Unset upstream")
+                    Text(stringResource(R.string.git_unset_upstream))
                 }
             }
         }
@@ -2219,7 +2234,7 @@ private fun BranchCard(
                 )
                 if (branch.head) {
                     Text(
-                        text = "Current",
+                        text = stringResource(R.string.git_current),
                         color = MaterialTheme.colorScheme.primary,
                     )
                 }
@@ -2241,7 +2256,7 @@ private fun BranchCard(
                         enabled = !busy,
                         onClick = onCheckout,
                     ) {
-                        Text("Switch")
+                        Text(stringResource(R.string.git_switch))
                     }
                 }
 
@@ -2254,7 +2269,7 @@ private fun BranchCard(
                             imageVector = Icons.AutoMirrored.Outlined.CallMerge,
                             contentDescription = null,
                         )
-                        Text("Merge")
+                        Text(stringResource(R.string.git_merge))
                     }
                 }
             }
@@ -2277,7 +2292,7 @@ private fun RemotesHeader(
                 imageVector = Icons.Outlined.Add,
                 contentDescription = null,
             )
-            Text("Add")
+            Text(stringResource(R.string.git_add))
         }
     }
 }
@@ -2346,7 +2361,7 @@ private fun RemoteCard(
                         imageVector = Icons.Outlined.CloudDownload,
                         contentDescription = null,
                     )
-                    Text("Fetch")
+                    Text(stringResource(R.string.git_fetch))
                 }
                 TextButton(
                     enabled = !busy,
@@ -2356,7 +2371,7 @@ private fun RemoteCard(
                         imageVector = Icons.Outlined.Edit,
                         contentDescription = null,
                     )
-                    Text("Rename")
+                    Text(stringResource(R.string.git_rename))
                 }
                 TextButton(
                     enabled = !busy,
@@ -2366,7 +2381,7 @@ private fun RemoteCard(
                         imageVector = Icons.Outlined.Delete,
                         contentDescription = null,
                     )
-                    Text("Remove")
+                    Text(stringResource(R.string.git_remove))
                 }
             }
         }
@@ -2391,11 +2406,11 @@ internal fun PullCard(
             verticalArrangement = Arrangement.spacedBy(10.dp),
         ) {
             Text(
-                text = "Pull from " + remote,
+                text = stringResource(R.string.git_pull_from, remote),
                 style = MaterialTheme.typography.titleMedium,
             )
             Text(
-                text = "Choose how local commits are integrated with fetched commits.",
+                text = stringResource(R.string.git_pull_description),
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
 
@@ -2437,7 +2452,7 @@ internal fun PullCard(
                     imageVector = Icons.Outlined.CloudDownload,
                     contentDescription = null,
                 )
-                Text("Pull")
+                Text(stringResource(R.string.git_pull))
             }
         }
     }
@@ -2486,7 +2501,7 @@ internal fun PushCard(
             verticalArrangement = Arrangement.spacedBy(10.dp),
         ) {
             Text(
-                text = "Push to " + remote,
+                text = stringResource(R.string.git_push_to, remote),
                 style = MaterialTheme.typography.titleMedium,
             )
 
@@ -2496,12 +2511,12 @@ internal fun PushCard(
                 singleLine = true,
                 onValueChange = onPushTargetChange,
                 label = {
-                    Text("Remote branch")
+                    Text(stringResource(R.string.git_remote_branch))
                 },
             )
 
             Text(
-                text = "Normal push never forces history. After a successful push, Nexora Git configures the selected destination as the current branch upstream.",
+                text = stringResource(R.string.git_push_description),
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 style = MaterialTheme.typography.bodySmall,
             )
@@ -2520,17 +2535,17 @@ internal fun PushCard(
                     imageVector = Icons.Outlined.CloudUpload,
                     contentDescription = null,
                 )
-                Text("Push")
+                Text(stringResource(R.string.git_push))
             }
 
             HorizontalDivider()
 
             Text(
-                text = "History rewrite",
+                text = stringResource(R.string.git_history_rewrite),
                 style = MaterialTheme.typography.titleSmall,
             )
             Text(
-                text = "Force with lease is only available when a remote-tracking OID is known. The native layer verifies that exact remote OID before permitting the forced branch update.",
+                text = stringResource(R.string.git_force_lease_description),
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 style = MaterialTheme.typography.bodySmall,
             )
@@ -2545,7 +2560,7 @@ internal fun PushCard(
                         !state.rebaseInProgress,
                 onClick = onForceWithLease,
             ) {
-                Text("Force with lease")
+                Text(stringResource(R.string.git_force_lease))
             }
         }
     }
@@ -2574,16 +2589,16 @@ private fun AddRemoteDialog(
                     onAdd(name, url)
                 },
             ) {
-                Text("Add")
+                Text(stringResource(R.string.git_add))
             }
         },
         dismissButton = {
             TextButton(onClick = onDismiss) {
-                Text("Cancel")
+                Text(stringResource(R.string.action_cancel))
             }
         },
         title = {
-            Text("Add Git remote")
+            Text(stringResource(R.string.git_add_remote))
         },
         text = {
             Column(
@@ -2597,7 +2612,7 @@ private fun AddRemoteDialog(
                         name = it
                     },
                     label = {
-                        Text("Remote name")
+                        Text(stringResource(R.string.git_remote_name))
                     },
                 )
                 OutlinedTextField(
@@ -2614,11 +2629,11 @@ private fun AddRemoteDialog(
                         )
                     },
                     label = {
-                        Text("GitHub HTTPS URL")
+                        Text(stringResource(R.string.git_github_https_url))
                     },
                 )
                 Text(
-                    text = "For credential isolation, remotes added from the Android UI must use https://github.com/.",
+                    text = stringResource(R.string.git_remote_https_note),
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     style = MaterialTheme.typography.bodySmall,
                 )
@@ -2648,16 +2663,16 @@ private fun RenameRemoteDialog(
                     onRename(name)
                 },
             ) {
-                Text("Rename")
+                Text(stringResource(R.string.git_rename))
             }
         },
         dismissButton = {
             TextButton(onClick = onDismiss) {
-                Text("Cancel")
+                Text(stringResource(R.string.action_cancel))
             }
         },
         title = {
-            Text("Rename remote")
+            Text(stringResource(R.string.git_rename_remote))
         },
         text = {
             OutlinedTextField(
@@ -2668,7 +2683,7 @@ private fun RenameRemoteDialog(
                     name = it
                 },
                 label = {
-                    Text("Remote name")
+                    Text(stringResource(R.string.git_remote_name))
                 },
             )
         },
@@ -2697,29 +2712,33 @@ private fun ForceWithLeaseDialog(
                         expectedOid.isNotBlank(),
                 onClick = onConfirm,
             ) {
-                Text("Force with lease")
+                Text(stringResource(R.string.git_force_lease))
             }
         },
         dismissButton = {
             TextButton(onClick = onDismiss) {
-                Text("Cancel")
+                Text(stringResource(R.string.action_cancel))
             }
         },
         title = {
-            Text("Rewrite remote branch?")
+            Text(stringResource(R.string.git_rewrite_remote_title))
         },
         text = {
             Column(
                 verticalArrangement = Arrangement.spacedBy(10.dp),
             ) {
                 Text(
-                    text = "This may rewrite " +
-                        remote + "/" + branch +
-                        ". It will proceed only if the remote still points to the exact OID verified by your local tracking ref.",
+                    text = stringResource(
+                        R.string.git_rewrite_remote_body,
+                        remote,
+                        branch,
+                    ),
                 )
                 Text(
-                    text = "Expected remote: " +
+                    text = stringResource(
+                        R.string.git_expected_remote,
                         expectedOid.take(12),
+                    ),
                     fontFamily = FontFamily.Monospace,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
@@ -2731,7 +2750,12 @@ private fun ForceWithLeaseDialog(
                         confirmation = it
                     },
                     label = {
-                        Text("Type " + branch + " to confirm")
+                        Text(
+                            stringResource(
+                                R.string.git_type_branch_confirm,
+                                branch,
+                            ),
+                        )
                     },
                 )
             }
