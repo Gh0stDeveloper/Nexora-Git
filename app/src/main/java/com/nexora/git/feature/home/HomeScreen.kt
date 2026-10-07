@@ -18,7 +18,9 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import com.nexora.git.R
 
 @Composable
 fun HomeScreen(
@@ -41,11 +43,11 @@ fun HomeScreen(
                 verticalArrangement = Arrangement.spacedBy(6.dp),
             ) {
                 Text(
-                    text = "Nexora Git",
+                    text = stringResource(R.string.home_title),
                     style = MaterialTheme.typography.headlineSmall,
                 )
                 Text(
-                    text = "A complete Android workspace for local Git and GitHub development.",
+                    text = stringResource(R.string.home_subtitle),
                     style = MaterialTheme.typography.bodyLarge,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
@@ -54,9 +56,9 @@ fun HomeScreen(
 
         item {
             HomeActionCard(
-                title = "Repositories",
-                description = "Create, clone or import a project, then browse code and use the full local Git workflow.",
-                buttonText = "Open repositories",
+                title = stringResource(R.string.home_repositories_title),
+                description = stringResource(R.string.home_repositories_description),
+                buttonText = stringResource(R.string.home_repositories_button),
                 icon = {
                     Icon(
                         imageVector = Icons.Outlined.Code,
@@ -69,9 +71,9 @@ fun HomeScreen(
 
         item {
             HomeActionCard(
-                title = "Explore GitHub",
-                description = "Search repositories, users and code using the active GitHub account.",
-                buttonText = "Search GitHub",
+                title = stringResource(R.string.home_explore_title),
+                description = stringResource(R.string.home_explore_description),
+                buttonText = stringResource(R.string.home_explore_button),
                 icon = {
                     Icon(
                         imageVector = Icons.Outlined.Explore,
@@ -84,9 +86,9 @@ fun HomeScreen(
 
         item {
             HomeActionCard(
-                title = "Activity",
-                description = "Review recent account activity and open the GitHub notification inbox when needed.",
-                buttonText = "View activity",
+                title = stringResource(R.string.home_activity_title),
+                description = stringResource(R.string.home_activity_description),
+                buttonText = stringResource(R.string.home_activity_button),
                 icon = {
                     Icon(
                         imageVector = Icons.Outlined.History,
@@ -99,7 +101,7 @@ fun HomeScreen(
 
         item {
             Text(
-                text = "GitHub authentication uses the official web flow. Nexora Git never asks for your GitHub password or passkey.",
+                text = stringResource(R.string.home_auth_note),
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
