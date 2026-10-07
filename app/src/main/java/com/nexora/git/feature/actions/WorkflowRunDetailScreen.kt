@@ -354,7 +354,7 @@ private fun WorkflowRunSummaryCard(
 
             run.actorLogin?.let {
                 Text(
-                    text = "Triggered by " + it,
+                    text = stringResource(R.string.workflow_triggered_by, it),
                     color =
                         MaterialTheme.colorScheme.onSurfaceVariant,
                 )
@@ -477,7 +477,7 @@ private fun ActionsJobCard(
 
             job.runnerName?.let {
                 Text(
-                    text = "Runner: " + it,
+                    text = stringResource(R.string.workflow_runner, it),
                     color =
                         MaterialTheme.colorScheme.onSurfaceVariant,
                     style = MaterialTheme.typography.bodySmall,
@@ -591,7 +591,7 @@ private fun ArtifactCard(
 
             artifact.expiresAt?.let {
                 Text(
-                    text = "Expires: " + it,
+                    text = stringResource(R.string.workflow_expires, it),
                     color =
                         MaterialTheme.colorScheme.onSurfaceVariant,
                     style = MaterialTheme.typography.bodySmall,
