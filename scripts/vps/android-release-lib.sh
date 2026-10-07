@@ -60,7 +60,7 @@ android_release_read_broker_config() {
     [[ -n "$NEXORA_RELEASE_CLIENT_SECRET" ]] &&
     [[ "$NEXORA_RELEASE_CLIENT_SECRET" != *$'\n'* ]] &&
     [[ "$NEXORA_RELEASE_CALLBACK_URL" == "https://$DOMAIN/oauth/callback" ]] &&
-    [[ "$NEXORA_RELEASE_APP_CALLBACK_URI" == "nexoragit://oauth/callback" ]] &&
+    [[ "$NEXORA_RELEASE_APP_CALLBACK_URI" == "https://$DOMAIN/oauth/android/callback" ]] &&
     [[ "$NEXORA_RELEASE_PORT" == "$LOCAL_PORT" ]]
 }
 
@@ -81,7 +81,7 @@ android_release_write_broker_config() {
     printf 'GITHUB_APP_CLIENT_ID=%s\n' "$client_id"
     printf 'GITHUB_APP_CLIENT_SECRET=%s\n' "$client_secret"
     printf 'GITHUB_CALLBACK_URL=https://%s/oauth/callback\n' "$DOMAIN"
-    printf 'APP_CALLBACK_URI=nexoragit://oauth/callback\n'
+    printf 'APP_CALLBACK_URI=https://%s/oauth/android/callback\n' "$DOMAIN"
     printf 'PORT=%s\n' "$LOCAL_PORT"
   } > "$temp"
   chmod 0600 "$temp"
