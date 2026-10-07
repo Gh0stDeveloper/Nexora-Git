@@ -130,7 +130,6 @@ func TestSecurityHeadersDisableCaching(t *testing.T) {
 	}
 }
 
-
 func TestLoadConfigRejectsCrossOriginAppCallback(t *testing.T) {
 	t.Setenv("GITHUB_APP_CLIENT_ID", "Iv1.test")
 	t.Setenv("GITHUB_APP_CLIENT_SECRET", "server-secret")
