@@ -14,16 +14,32 @@ tmp="$(mktemp -d)"
 trap 'rm -rf "$tmp"' EXIT
 
 patterns_file="$tmp/patterns.txt"
-{
-  printf '%s%s\n' '-----BEGIN ' 'PRIVATE KEY-----'
-  printf '%s%s\n' '-----BEGIN RSA ' 'PRIVATE KEY-----'
-  printf '%s%s\n' '-----BEGIN EC ' 'PRIVATE KEY-----'
-  printf '%s%s\n' '-----BEGIN OPENSSH ' 'PRIVATE KEY-----'
-  printf '%s\n' 'GITHUB_APP_CLIENT_SECRET='
-  printf '%s\n' 'NEXORA_SIGNING_STORE_PASSWORD='
-  printf '%s\n' 'NEXORA_SIGNING_KEY_PASSWORD='
-  printf '%s\n' 'NEXORA_SIGNING_KEYSTORE_BASE64='
-} > "$patterns_file"
+cat > "$patterns_file" <<'EOF'
+GITHUB_APP_CLIENT_SECRET=
+NEXORA_SIGNING_STORE_PASSWORD=
+NEXORA_SIGNING_KEY_PASSWORD=
+NEXORA_SIGNING_KEYSTORE_BASE64=
+EOF
+
+scan_complete_private_key_block() {
+  local file="$1"
+  python3 - "$file" <<'PY'
+import re
+import sys
+
+path = sys.argv[1]
+data = open(path, "rb").read()
+
+pattern = re.compile(
+    rb"-----BEGIN (?P<kind>(?:RSA |EC |OPENSSH )?PRIVATE KEY)-----"
+    rb"[\r\n]+"
+    rb"(?P<body>(?:[A-Za-z0-9+/=]{16,}[\r\n]+){2,})"
+    rb"-----END (?P=kind)-----"
+)
+
+raise SystemExit(0 if pattern.search(data) else 1)
+PY
+}
 
 scan_exact_value() {
   local root="$1"
@@ -48,6 +64,11 @@ for artifact in "${artifacts[@]}"; do
   while IFS= read -r -d '' file; do
     if strings "$file" 2>/dev/null | grep -Eiq -- 'gh[pousr]_[A-Za-z0-9_]{20,}|github_pat_[A-Za-z0-9_]{20,}'; then
       printf 'GitHub credential-shaped token found in %s (%s).\n' "$artifact" "$file" >&2
+      exit 1
+    fi
+
+    if scan_complete_private_key_block "$file"; then
+      printf 'Complete private-key PEM block found in %s (%s).\n' "$artifact" "$file" >&2
       exit 1
     fi
 
