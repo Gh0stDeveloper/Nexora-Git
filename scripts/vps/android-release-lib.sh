@@ -70,9 +70,13 @@ android_release_write_broker_config() {
   [[ "$client_id" =~ ^[A-Za-z0-9._-]{3,128}$ ]] || die "Invalid GitHub App Client ID."
   [[ -n "$client_secret" && "$client_secret" != *$'\n'* ]] || die "Invalid GitHub App Client Secret."
 
-  local env_file
+  local env_file env_dir
   env_file="$(android_release_broker_env)"
-  [[ -f "$env_file" ]] || die "Auth Broker environment is missing: $env_file"
+  env_dir="$(dirname "$env_file")"
+  [[ -d "$env_dir" ]] || die "Auth Broker directory is missing: $env_dir"
+  if [[ ! -f "$env_file" ]]; then
+    install -m 0600 /dev/null "$env_file"
+  fi
 
   web_upsert_env_value GITHUB_APP_CLIENT_ID "$client_id"
   web_upsert_env_value GITHUB_APP_CLIENT_SECRET "$client_secret"
