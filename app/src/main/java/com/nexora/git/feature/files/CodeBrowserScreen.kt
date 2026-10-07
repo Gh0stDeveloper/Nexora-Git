@@ -1,5 +1,7 @@
 package com.nexora.git.feature.files
 
+import com.nexora.git.R
+
 import android.content.Intent
 import androidx.activity.compose.BackHandler
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -51,6 +53,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
@@ -130,11 +133,11 @@ fun CodeBrowserScreen(
             onDismissRequest = viewModel::dismissError,
             confirmButton = {
                 TextButton(onClick = viewModel::dismissError) {
-                    Text("OK")
+                    Text(stringResource(R.string.action_ok))
                 }
             },
             title = {
-                Text("Code browser")
+                Text(stringResource(R.string.code_browser_title))
             },
             text = {
                 Text(message)
@@ -147,11 +150,11 @@ fun CodeBrowserScreen(
             onDismissRequest = viewModel::dismissSuccess,
             confirmButton = {
                 TextButton(onClick = viewModel::dismissSuccess) {
-                    Text("Done")
+                    Text(stringResource(R.string.action_done))
                 }
             },
             title = {
-                Text("Nexora Git")
+                Text(stringResource(R.string.app_name))
             },
             text = {
                 Text(message)
@@ -268,7 +271,7 @@ private fun BrowserHeader(
         IconButton(onClick = onBack) {
             Icon(
                 imageVector = Icons.AutoMirrored.Outlined.ArrowBack,
-                contentDescription = "Back",
+                contentDescription = stringResource(R.string.code_browser_back),
             )
         }
 
@@ -302,7 +305,7 @@ private fun BrowserHeader(
             ) {
                 Icon(
                     imageVector = Icons.Outlined.Search,
-                    contentDescription = "Search project",
+                    contentDescription = stringResource(R.string.code_browser_search_project),
                 )
             }
 
@@ -312,7 +315,7 @@ private fun BrowserHeader(
         ) {
             Icon(
                 imageVector = Icons.Outlined.Refresh,
-                contentDescription = "Refresh",
+                contentDescription = stringResource(R.string.code_browser_refresh),
             )
         }
         }
@@ -351,7 +354,7 @@ private fun ProjectSearchPanel(
                 onValueChange = onQueryChange,
                 singleLine = true,
                 label = {
-                    Text("Search entire project")
+                    Text(stringResource(R.string.code_browser_search_project))
                 },
             )
 
@@ -367,7 +370,7 @@ private fun ProjectSearchPanel(
                         onRegexChange(!state.projectSearchRegex)
                     },
                     label = {
-                        Text("Regex")
+                        Text(stringResource(R.string.code_browser_regex))
                     },
                 )
                 FilterChip(
@@ -376,7 +379,7 @@ private fun ProjectSearchPanel(
                         onMatchCaseChange(!state.projectSearchMatchCase)
                     },
                     label = {
-                        Text("Match case")
+                        Text(stringResource(R.string.code_browser_match_case))
                     },
                 )
                 FilterChip(
@@ -385,7 +388,7 @@ private fun ProjectSearchPanel(
                         onWholeWordChange(!state.projectSearchWholeWord)
                     },
                     label = {
-                        Text("Whole word")
+                        Text(stringResource(R.string.code_browser_whole_word))
                     },
                 )
             }
@@ -400,7 +403,7 @@ private fun ProjectSearchPanel(
                     onValueChange = onIncludeGlobChange,
                     singleLine = true,
                     label = {
-                        Text("Include glob")
+                        Text(stringResource(R.string.code_browser_include_glob))
                     },
                 )
                 OutlinedTextField(
@@ -409,7 +412,7 @@ private fun ProjectSearchPanel(
                     onValueChange = onExcludeGlobChange,
                     singleLine = true,
                     label = {
-                        Text("Exclude glob")
+                        Text(stringResource(R.string.code_browser_exclude_glob))
                     },
                 )
             }
@@ -431,7 +434,7 @@ private fun ProjectSearchPanel(
                         contentDescription = null,
                     )
                 }
-                Text("Search project")
+                Text(stringResource(R.string.code_browser_search_project))
             }
 
             if (
@@ -527,11 +530,11 @@ private fun DirectoryBrowser(
                         verticalArrangement = Arrangement.spacedBy(4.dp),
                     ) {
                         Text(
-                            text = "Empty directory",
+                            text = stringResource(R.string.code_browser_empty_directory),
                             style = MaterialTheme.typography.titleMedium,
                         )
                         Text(
-                            text = "There are no browsable files here.",
+                            text = stringResource(R.string.code_browser_empty_directory_body),
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                         )
                     }
@@ -569,7 +572,7 @@ private fun Breadcrumbs(
                 onOpenDirectory("")
             },
         ) {
-            Text("root")
+            Text(stringResource(R.string.code_browser_root))
         }
 
         var accumulated = ""
@@ -826,7 +829,7 @@ private fun FileMetadataBar(
             IconButton(onClick = onEdit) {
                 Icon(
                     imageVector = Icons.Outlined.Edit,
-                    contentDescription = "Edit file",
+                    contentDescription = stringResource(R.string.code_browser_edit_file),
                 )
             }
         }
@@ -834,14 +837,14 @@ private fun FileMetadataBar(
         IconButton(onClick = onShare) {
             Icon(
                 imageVector = Icons.Outlined.Share,
-                contentDescription = "Share file",
+                contentDescription = stringResource(R.string.code_browser_share_file),
             )
         }
 
         IconButton(onClick = onDownload) {
             Icon(
                 imageVector = Icons.Outlined.Download,
-                contentDescription = "Save copy",
+                contentDescription = stringResource(R.string.code_browser_save_copy),
             )
         }
     }
