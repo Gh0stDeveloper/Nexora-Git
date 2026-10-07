@@ -55,9 +55,11 @@ class HomeViewModel @Inject constructor(
     }.mapLatest { (workspaces, repositories) ->
         HomeUiState(
             loading = false,
-            recentWorkspaces = workspaces
-                .take(MAX_RECENT_WORKSPACES)
-                .map(::workspaceSummary),
+            recentWorkspaces = buildList {
+                for (workspace in workspaces.take(MAX_RECENT_WORKSPACES)) {
+                    add(workspaceSummary(workspace))
+                }
+            },
             recentRepositories = repositories
                 .sortedByDescending { it.updatedAt.orEmpty() }
                 .take(MAX_RECENT_REPOSITORIES),
