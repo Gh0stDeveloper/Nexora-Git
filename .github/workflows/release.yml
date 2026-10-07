@@ -7,6 +7,8 @@ on:
 
 permissions:
   contents: write
+  id-token: write
+  attestations: write
 
 concurrency:
   group: stable-release-${{ github.ref }}
@@ -145,6 +147,12 @@ jobs:
         shell: bash
         run: bash scripts/ci/check-artifact-size.sh
 
+      - name: Resolve release dependency graph
+        shell: bash
+        run: |
+          mkdir -p build/reports
+          ./gradlew --no-daemon :app:dependencies --configuration releaseRuntimeClasspath             > build/reports/release-runtime-dependencies.txt
+
       - name: Stage release artifacts
         id: stage
         shell: bash
@@ -162,10 +170,28 @@ jobs:
             cp "$SYMBOLS" "dist/NexoraGit-$VERSION-native-symbols.zip"
           fi
 
+      - name: Generate SPDX SBOM
+        shell: bash
+        run: |
+          VERSION="${GITHUB_REF_NAME#v}"
+          python3 scripts/ci/generate-release-sbom.py             "$VERSION"             dist/NexoraGit-$VERSION-SBOM.spdx.json
+
+      - name: Generate release checksums
+        shell: bash
+        run: |
           (
             cd dist
             sha256sum NexoraGit-* > SHA256SUMS.txt
           )
+
+      - name: Attest release build provenance
+        uses: actions/attest-build-provenance@977bb373ede98d70efdf65b84cb5f73e068dcc2a # v3
+        with:
+          subject-path: |
+            dist/*.apk
+            dist/*.aab
+            dist/*-SBOM.spdx.json
+            dist/SHA256SUMS.txt
 
       - name: Upload verified release artifacts
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
