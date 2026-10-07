@@ -9,25 +9,6 @@ const description =
 
 const siteUrl = getSiteUrl();
 
-const structuredData = {
-  "@context": "https://schema.org",
-  "@type": "SoftwareApplication",
-  name: "Nexora Git",
-  applicationCategory: "DeveloperApplication",
-  operatingSystem: "Android 8.0+",
-  description,
-  url: siteUrl,
-  downloadUrl: new URL("/download/nexora-git.apk", siteUrl).toString(),
-  codeRepository: "https://github.com/Gh0stDeveloper/Nexora-Git",
-  license: "https://www.apache.org/licenses/LICENSE-2.0",
-  author: {
-    "@type": "Person",
-    name: "Ghost Developer",
-    url: "https://github.com/Gh0stDeveloper",
-  },
-  isAccessibleForFree: true,
-};
-
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
   title: {
@@ -65,12 +46,6 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
   return (
     <html lang="en">
       <body>
-        <script
-          type="application/ld+json"
-          dangerouslySetInnerHTML={{
-            __html: JSON.stringify(structuredData).replace(/</g, "\\u003c"),
-          }}
-        />
         <SiteHeader />
         {children}
         <Footer />
