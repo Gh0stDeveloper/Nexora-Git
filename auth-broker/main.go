@@ -5,16 +5,13 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"errors"
-	"fmt"
 	"io"
 	"log"
-	"net"
 	"net/http"
 	"net/url"
 	"os"
 	"regexp"
 	"strings"
-	"sync"
 	"time"
 )
 
@@ -33,9 +30,8 @@ type config struct {
 }
 
 type server struct {
-	cfg     config
-	client  *http.Client
-	limiter *rateLimiter
+	cfg    config
+	client *http.Client
 }
 
 type tokenResponse struct {
@@ -101,9 +97,8 @@ func loadConfig() (config, error) {
 
 func newServer(cfg config, client *http.Client) *server {
 	return &server{
-		cfg:     cfg,
-		client:  client,
-		limiter: newRateLimiter(60, time.Minute),
+		cfg:    cfg,
+		client: client,
 	}
 }
 
@@ -115,7 +110,7 @@ func (s *server) routes() http.Handler {
 	mux.HandleFunc("/v1/oauth/refresh", s.refresh)
 	mux.HandleFunc("/v1/oauth/revoke", s.revoke)
 
-	return securityHeaders(s.limiter.middleware(mux))
+	return securityHeaders(mux)
 }
 
 func (s *server) health(w http.ResponseWriter, r *http.Request) {
@@ -180,7 +175,7 @@ func (s *server) exchange(w http.ResponseWriter, r *http.Request) {
 	form.Set("redirect_uri", s.cfg.GitHubCallbackURL)
 	form.Set("code_verifier", request.CodeVerifier)
 
-	s.forwardTokenRequest(w, form)
+	s.forwardTokenRequest(w, r.Context(), form)
 }
 
 func (s *server) refresh(w http.ResponseWriter, r *http.Request) {
@@ -208,7 +203,7 @@ func (s *server) refresh(w http.ResponseWriter, r *http.Request) {
 	form.Set("grant_type", "refresh_token")
 	form.Set("refresh_token", request.RefreshToken)
 
-	s.forwardTokenRequest(w, form)
+	s.forwardTokenRequest(w, r.Context(), form)
 }
 
 func (s *server) revoke(w http.ResponseWriter, r *http.Request) {
@@ -270,10 +265,10 @@ func (s *server) revoke(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusNoContent)
 }
 
-func (s *server) forwardTokenRequest(w http.ResponseWriter, form url.Values) {
+func (s *server) forwardTokenRequest(w http.ResponseWriter, requestContext context.Context, form url.Values) {
 	endpoint := strings.TrimRight(s.cfg.GitHubOAuthBase, "/") + "/login/oauth/access_token"
 
-	ctx, cancel := context.WithTimeout(context.Background(), 15*time.Second)
+	ctx, cancel := context.WithTimeout(requestContext, 15*time.Second)
 	defer cancel()
 
 	req, err := http.NewRequestWithContext(
@@ -365,55 +360,3 @@ func securityHeaders(next http.Handler) http.Handler {
 	})
 }
 
-type rateLimiter struct {
-	mu       sync.Mutex
-	limit    int
-	window   time.Duration
-	requests map[string]*rateWindow
-}
-
-type rateWindow struct {
-	start time.Time
-	count int
-}
-
-func newRateLimiter(limit int, window time.Duration) *rateLimiter {
-	return &rateLimiter{
-		limit:    limit,
-		window:   window,
-		requests: make(map[string]*rateWindow),
-	}
-}
-
-func (l *rateLimiter) middleware(next http.Handler) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if r.URL.Path == "/health" {
-			next.ServeHTTP(w, r)
-			return
-		}
-
-		host, _, err := net.SplitHostPort(r.RemoteAddr)
-		if err != nil {
-			host = r.RemoteAddr
-		}
-
-		now := time.Now()
-		l.mu.Lock()
-		window := l.requests[host]
-		if window == nil || now.Sub(window.start) >= l.window {
-			window = &rateWindow{start: now}
-			l.requests[host] = window
-		}
-		window.count++
-		allowed := window.count <= l.limit
-		l.mu.Unlock()
-
-		if !allowed {
-			w.Header().Set("Retry-After", fmt.Sprintf("%.0f", l.window.Seconds()))
-			writeError(w, http.StatusTooManyRequests, "rate_limited", "")
-			return
-		}
-
-		next.ServeHTTP(w, r)
-	})
-}
