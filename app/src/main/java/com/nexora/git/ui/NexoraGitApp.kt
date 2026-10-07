@@ -20,6 +20,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavGraph.Companion.findStartDestination
@@ -50,6 +51,7 @@ import com.nexora.git.feature.repositories.RepositoriesScreen
 import com.nexora.git.feature.repositories.RepositoryDetailScreen
 import com.nexora.git.feature.releases.ReleaseDetailScreen
 import com.nexora.git.feature.releases.ReleasesScreen
+import com.nexora.git.feature.settings.SettingsScreen
 import com.nexora.git.ui.navigation.NexoraDestination
 
 @Composable
@@ -129,7 +131,7 @@ private fun AuthenticatedNexoraGitApp(
 ) {
     val activeAccount = requireNotNull(state.activeAccount)
     val navController = rememberNavController()
-    val destinations = NexoraDestination.entries
+    val destinations = NexoraDestination.entries.filter { it.showInBottomBar }
     val backStackEntry by navController.currentBackStackEntryAsState()
     val currentRoute = backStackEntry?.destination?.route
 
@@ -154,11 +156,11 @@ private fun AuthenticatedNexoraGitApp(
                             icon = {
                                 Icon(
                                     imageVector = destination.icon,
-                                    contentDescription = destination.label,
+                                    contentDescription = stringResource(destination.labelRes),
                                 )
                             },
                             label = {
-                                Text(destination.label)
+                                Text(stringResource(destination.labelRes))
                             },
                         )
                     }
@@ -197,6 +199,19 @@ private fun AuthenticatedNexoraGitApp(
                         navController.navigate(
                             "repository/" + owner + "/" + name,
                         )
+                    },
+                    onOpenSettings = {
+                        navController.navigate(
+                            NexoraDestination.SETTINGS.route,
+                        )
+                    },
+                )
+            }
+            composable(NexoraDestination.SETTINGS.route) {
+                SettingsScreen(
+                    contentPadding = paddingValues,
+                    onBack = {
+                        navController.popBackStack()
                     },
                 )
             }
