@@ -17,3 +17,4 @@ dependencyResolutionManagement {
 rootProject.name = "NexoraGit"
 
 include(":app")
+include(":baselineprofile")

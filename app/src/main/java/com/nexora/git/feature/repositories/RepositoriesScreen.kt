@@ -41,6 +41,7 @@ import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
@@ -48,9 +49,11 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.nexora.git.R
 import com.nexora.git.core.repository.CreateRepositoryRequest
 import com.nexora.git.core.repository.RepositorySummary
 import com.nexora.git.core.storage.ProjectRisk
@@ -60,12 +63,21 @@ import com.nexora.git.core.storage.WorkspaceStrategy
 import com.nexora.git.core.templates.ProjectTemplateSummary
 import java.util.Locale
 
+enum class RepositoryEntryAction {
+    NONE,
+    CLONE,
+    IMPORT,
+    CREATE,
+}
+
 @Composable
 fun RepositoriesScreen(
     contentPadding: PaddingValues,
     onOpenRepository: (String, String) -> Unit,
     onBrowseWorkspace: (String) -> Unit,
     onOpenGitWorkspace: (String) -> Unit,
+    initialAction: RepositoryEntryAction = RepositoryEntryAction.NONE,
+    onInitialActionConsumed: () -> Unit = {},
     viewModel: RepositoriesViewModel = hiltViewModel(),
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
@@ -84,6 +96,18 @@ fun RepositoriesScreen(
     ) { uri ->
         if (uri != null) {
             viewModel.importTree(uri)
+        }
+    }
+
+    LaunchedEffect(initialAction) {
+        when (initialAction) {
+            RepositoryEntryAction.NONE -> Unit
+            RepositoryEntryAction.CLONE -> showCloneDialog = true
+            RepositoryEntryAction.IMPORT -> folderPicker.launch(null)
+            RepositoryEntryAction.CREATE -> showCreateDialog = true
+        }
+        if (initialAction != RepositoryEntryAction.NONE) {
+            onInitialActionConsumed()
         }
     }
 
@@ -107,6 +131,8 @@ fun RepositoriesScreen(
         onBrowseWorkspace = onBrowseWorkspace,
         onOpenGitWorkspace = onOpenGitWorkspace,
         onCloneRepository = viewModel::cloneRepository,
+        onCancelClone = viewModel::cancelDurableClone,
+        onCancelWorkspaceOperation = viewModel::cancelDurableWorkspaceOperation,
         onInitializeGit = viewModel::initializeWorkspaceGit,
         onSync = viewModel::sync,
         onDelete = viewModel::delete,
@@ -160,11 +186,11 @@ fun RepositoriesScreen(
             onDismissRequest = viewModel::dismissError,
             confirmButton = {
                 TextButton(onClick = viewModel::dismissError) {
-                    Text("OK")
+                    Text(stringResource(R.string.action_ok))
                 }
             },
             title = {
-                Text("Repository operation")
+                Text(stringResource(R.string.repo_operation))
             },
             text = {
                 Text(message)
@@ -177,11 +203,11 @@ fun RepositoriesScreen(
             onDismissRequest = viewModel::dismissSuccess,
             confirmButton = {
                 TextButton(onClick = viewModel::dismissSuccess) {
-                    Text("Done")
+                    Text(stringResource(R.string.action_done))
                 }
             },
             title = {
-                Text("Nexora Git")
+                Text(stringResource(R.string.app_name))
             },
             text = {
                 Text(message)
@@ -211,6 +237,8 @@ internal fun RepositoriesContent(
     onBrowseWorkspace: (String) -> Unit,
     onOpenGitWorkspace: (String) -> Unit,
     onCloneRepository: (RepositorySummary) -> Unit,
+    onCancelClone: () -> Unit,
+    onCancelWorkspaceOperation: () -> Unit,
     onInitializeGit: (String) -> Unit,
     onSync: (String) -> Unit,
     onDelete: (String) -> Unit,
@@ -232,11 +260,11 @@ internal fun RepositoriesContent(
                 verticalArrangement = Arrangement.spacedBy(6.dp),
             ) {
                 Text(
-                    text = "Repositories",
+                    text = stringResource(R.string.repo_title),
                     style = MaterialTheme.typography.headlineSmall,
                 )
                 Text(
-                    text = "GitHub repositories and local development workspaces in one place.",
+                    text = stringResource(R.string.repo_subtitle),
                     style = MaterialTheme.typography.bodyLarge,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
@@ -253,7 +281,7 @@ internal fun RepositoriesContent(
                     imageVector = Icons.Outlined.Add,
                     contentDescription = null,
                 )
-                Text("Create repository")
+                Text(stringResource(R.string.repo_create))
             }
         }
 
@@ -271,7 +299,7 @@ internal fun RepositoriesContent(
                         imageVector = Icons.Outlined.Link,
                         contentDescription = null,
                     )
-                    Text("Clone URL")
+                    Text(stringResource(R.string.repo_clone_url))
                 }
 
                 OutlinedButton(
@@ -283,7 +311,7 @@ internal fun RepositoriesContent(
                         imageVector = Icons.Outlined.FolderOpen,
                         contentDescription = null,
                     )
-                    Text("Folder")
+                    Text(stringResource(R.string.repo_folder))
                 }
             }
         }
@@ -299,28 +327,70 @@ internal fun RepositoriesContent(
                     imageVector = Icons.Outlined.Code,
                     contentDescription = null,
                 )
-                Text("New from template")
+                Text(stringResource(R.string.repo_new_template))
             }
         }
 
         if (state.operationInProgress) {
             item {
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.Center,
-                ) {
-                    CircularProgressIndicator()
+                Card(modifier = Modifier.fillMaxWidth()) {
+                    Column(
+                        modifier = Modifier.padding(16.dp),
+                        verticalArrangement = Arrangement.spacedBy(10.dp),
+                    ) {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(12.dp),
+                        ) {
+                            CircularProgressIndicator()
+                            Text(
+                                text = when {
+                                    state.durableWorkspaceId != null -> {
+                                        when (state.durableWorkspacePhase) {
+                                            "import" -> stringResource(R.string.workspace_durable_import)
+                                            "sync" -> stringResource(R.string.workspace_durable_sync)
+                                            else -> stringResource(R.string.workspace_durable_queued)
+                                        }
+                                    }
+                                    else -> {
+                                        when (state.durableClonePhase) {
+                                            "resolve" -> stringResource(R.string.clone_durable_resolving)
+                                            "clone" -> stringResource(R.string.clone_durable_running)
+                                            "queued" -> stringResource(R.string.clone_durable_queued)
+                                            else -> stringResource(R.string.clone_durable_running)
+                                        }
+                                    }
+                                },
+                            )
+                        }
+
+                        if (state.durableWorkspaceId != null) {
+                            OutlinedButton(
+                                modifier = Modifier.fillMaxWidth(),
+                                onClick = onCancelWorkspaceOperation,
+                            ) {
+                                Text(stringResource(R.string.workspace_durable_cancel))
+                            }
+                        } else if (state.durableCloneId != null) {
+                            OutlinedButton(
+                                modifier = Modifier.fillMaxWidth(),
+                                onClick = onCancelClone,
+                            ) {
+                                Text(stringResource(R.string.clone_durable_cancel))
+                            }
+                        }
+                    }
                 }
             }
         }
 
         item {
             SectionHeader(
-                title = "GitHub",
+                title = stringResource(R.string.repo_github_section),
                 actionLabel = if (state.refreshing) {
-                    "Refreshing"
+                    stringResource(R.string.repo_refreshing)
                 } else {
-                    "Refresh"
+                    stringResource(R.string.repo_refresh)
                 },
                 actionEnabled =
                     !state.refreshing && !state.operationInProgress,
@@ -330,13 +400,13 @@ internal fun RepositoriesContent(
 
         if (state.loading && state.remoteRepositories.isEmpty()) {
             item {
-                LoadingCard("Loading GitHub repositories…")
+                LoadingCard(stringResource(R.string.repo_loading_github))
             }
         } else if (state.remoteRepositories.isEmpty()) {
             item {
                 EmptyCard(
-                    title = "No GitHub repositories",
-                    body = "Create a repository or refresh after granting the GitHub App access to repositories.",
+                    title = stringResource(R.string.repo_no_github),
+                    body = stringResource(R.string.repo_no_github_body),
                 )
             }
         } else {
@@ -370,7 +440,7 @@ internal fun RepositoriesContent(
 
         item {
             SectionHeader(
-                title = "On this device",
+                title = stringResource(R.string.repo_device_section),
                 actionLabel = null,
                 actionEnabled = false,
                 onAction = {},
@@ -380,8 +450,8 @@ internal fun RepositoriesContent(
         if (!state.loading && state.workspaces.isEmpty()) {
             item {
                 EmptyCard(
-                    title = "No local workspaces",
-                    body = "Clone a GitHub repository or choose a project folder from Android storage.",
+                    title = stringResource(R.string.repo_no_local),
+                    body = stringResource(R.string.repo_no_local_body),
                 )
             }
         }
@@ -493,9 +563,9 @@ private fun RemoteRepositoryCard(
                     contentDescription = if (
                         repository.privateRepository
                     ) {
-                        "Private repository"
+                        stringResource(R.string.repo_private_setting)
                     } else {
-                        "Public repository"
+                        stringResource(R.string.repo_public)
                     },
                 )
             }
@@ -514,15 +584,15 @@ private fun RemoteRepositoryCard(
                 RepositoryMetric(
                     icon = Icons.Outlined.StarBorder,
                     value = repository.stars.toString(),
-                    description = "Stars",
+                    description = stringResource(R.string.repo_stars),
                 )
                 RepositoryMetric(
                     icon = Icons.AutoMirrored.Outlined.CallSplit,
                     value = repository.forks.toString(),
-                    description = "Forks",
+                    description = stringResource(R.string.repo_forks),
                 )
                 Text(
-                    text = repository.language ?: "No language",
+                    text = repository.language ?: stringResource(R.string.repo_no_language),
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
@@ -537,7 +607,7 @@ private fun RemoteRepositoryCard(
                     imageVector = Icons.Outlined.CloudDownload,
                     contentDescription = null,
                 )
-                Text("Clone to device")
+                Text(stringResource(R.string.repo_clone_device))
             }
         }
     }
@@ -607,14 +677,17 @@ private fun WorkspaceCard(
                 ) {
                     Icon(
                         imageVector = Icons.Outlined.Delete,
-                        contentDescription = "Remove workspace",
+                        contentDescription = stringResource(R.string.repo_remove_workspace),
                     )
                 }
             }
 
             Text(
-                text = workspace.fileCount.toString() +
-                    " files · " + humanBytes(workspace.totalBytes),
+                text = stringResource(
+                    R.string.repo_files_size,
+                    workspace.fileCount,
+                    humanBytes(workspace.totalBytes),
+                ),
                 style = MaterialTheme.typography.bodyLarge,
             )
 
@@ -622,7 +695,7 @@ private fun WorkspaceCard(
                 ?.takeIf { it.isNotBlank() }
                 ?.let { branch ->
                     Text(
-                        text = "Branch: " + branch,
+                        text = stringResource(R.string.repo_branch, branch),
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
                 }
@@ -641,12 +714,12 @@ private fun WorkspaceCard(
                         tint = MaterialTheme.colorScheme.error,
                     )
                     Text(
-                        text = workspace.secretWarningCount.toString() +
-                            " secret · " +
-                            workspace.largeFileWarningCount.toString() +
-                            " large · " +
-                            workspace.syncConflictCount.toString() +
-                            " sync conflicts",
+                        text = stringResource(
+                            R.string.repo_risk_summary,
+                            workspace.secretWarningCount,
+                            workspace.largeFileWarningCount,
+                            workspace.syncConflictCount,
+                        ),
                         color = MaterialTheme.colorScheme.error,
                     )
                 }
@@ -661,7 +734,7 @@ private fun WorkspaceCard(
                     imageVector = Icons.Outlined.Code,
                     contentDescription = null,
                 )
-                Text("Browse code")
+                Text(stringResource(R.string.repo_browse_code))
             }
 
             Row(
@@ -685,9 +758,9 @@ private fun WorkspaceCard(
                     )
                     Text(
                         if (workspace.currentBranch.isNullOrBlank()) {
-                            "Init Git"
+                            stringResource(R.string.repo_init_git)
                         } else {
-                            "Git workspace"
+                            stringResource(R.string.repo_git_workspace)
                         },
                     )
                 }
@@ -708,9 +781,9 @@ private fun WorkspaceCard(
                             workspace.strategy ==
                                 WorkspaceStrategy.GENERATED
                         ) {
-                            "Rescan"
+                            stringResource(R.string.repo_rescan)
                         } else {
-                            "Sync"
+                            stringResource(R.string.repo_sync)
                         },
                     )
                 }
@@ -785,7 +858,7 @@ private fun ProjectTemplateDialog(
                     onCreate(selectedId, projectName)
                 },
             ) {
-                Text("Create project")
+                Text(stringResource(R.string.repo_create_project))
             }
         },
         dismissButton = {
@@ -793,11 +866,11 @@ private fun ProjectTemplateDialog(
                 enabled = !operationInProgress,
                 onClick = onDismiss,
             ) {
-                Text("Cancel")
+                Text(stringResource(R.string.action_cancel))
             }
         },
         title = {
-            Text("New from template")
+            Text(stringResource(R.string.repo_new_template))
         },
         text = {
             Column(
@@ -811,7 +884,7 @@ private fun ProjectTemplateDialog(
                         projectName = it
                     },
                     label = {
-                        Text("Project name")
+                        Text(stringResource(R.string.repo_project_name))
                     },
                 )
 
@@ -880,7 +953,7 @@ private fun CreateRepositoryDialog(
                     )
                 },
             ) {
-                Text("Create")
+                Text(stringResource(R.string.action_create))
             }
         },
         dismissButton = {
@@ -888,11 +961,11 @@ private fun CreateRepositoryDialog(
                 enabled = !operationInProgress,
                 onClick = onDismiss,
             ) {
-                Text("Cancel")
+                Text(stringResource(R.string.action_cancel))
             }
         },
         title = {
-            Text("Create repository")
+            Text(stringResource(R.string.repo_create))
         },
         text = {
             Column(
@@ -906,7 +979,7 @@ private fun CreateRepositoryDialog(
                         name = it
                     },
                     label = {
-                        Text("Name")
+                        Text(stringResource(R.string.repo_name))
                     },
                 )
                 OutlinedTextField(
@@ -916,20 +989,20 @@ private fun CreateRepositoryDialog(
                         description = it
                     },
                     label = {
-                        Text("Description")
+                        Text(stringResource(R.string.repo_description))
                     },
                     minLines = 2,
                     maxLines = 4,
                 )
                 SettingSwitch(
-                    label = "Private repository",
+                    label = stringResource(R.string.repo_private_setting),
                     checked = privateRepository,
                     onCheckedChange = {
                         privateRepository = it
                     },
                 )
                 SettingSwitch(
-                    label = "Initialize with README",
+                    label = stringResource(R.string.repo_readme_setting),
                     checked = initializeWithReadme,
                     onCheckedChange = {
                         initializeWithReadme = it
@@ -960,7 +1033,7 @@ private fun CloneRepositoryDialog(
                     onClone(url)
                 },
             ) {
-                Text("Clone")
+                Text(stringResource(R.string.repo_clone))
             }
         },
         dismissButton = {
@@ -968,11 +1041,11 @@ private fun CloneRepositoryDialog(
                 enabled = !operationInProgress,
                 onClick = onDismiss,
             ) {
-                Text("Cancel")
+                Text(stringResource(R.string.action_cancel))
             }
         },
         title = {
-            Text("Clone GitHub repository")
+            Text(stringResource(R.string.repo_clone_github))
         },
         text = {
             OutlinedTextField(
@@ -983,7 +1056,7 @@ private fun CloneRepositoryDialog(
                     url = it
                 },
                 label = {
-                    Text("https://github.com/owner/repository")
+                    Text(stringResource(R.string.repo_url_hint))
                 },
             )
         },
@@ -1028,15 +1101,15 @@ private fun ImportRiskDialog(
         onDismissRequest = onDismiss,
         confirmButton = {
             TextButton(onClick = onDismiss) {
-                Text("Done")
+                Text(stringResource(R.string.action_done))
             }
         },
         title = {
             Text(
                 if (actionable.isEmpty()) {
-                    "Project ready"
+                    stringResource(R.string.repo_project_ready)
                 } else {
-                    "Review before push"
+                    stringResource(R.string.repo_review_before_push)
                 },
             )
         },
@@ -1047,9 +1120,7 @@ private fun ImportRiskDialog(
                 Text(projectName)
 
                 if (actionable.isEmpty()) {
-                    Text(
-                        "The project was scanned and no non-ignored secret or large-file risks were detected.",
-                    )
+                    Text(stringResource(R.string.repo_no_risks))
                 } else {
                     actionable.take(6).forEach { risk ->
                         Text(
@@ -1060,9 +1131,10 @@ private fun ImportRiskDialog(
 
                     if (actionable.size > 6) {
                         Text(
-                            text = "+" +
-                                (actionable.size - 6).toString() +
-                                " more warnings",
+                            text = stringResource(
+                                R.string.repo_more_warnings,
+                                actionable.size - 6,
+                            ),
                         )
                     }
                 }
@@ -1071,14 +1143,15 @@ private fun ImportRiskDialog(
     )
 }
 
+@Composable
 private fun workspaceStrategyLabel(
     strategy: WorkspaceStrategy,
 ): String =
     when (strategy) {
-        WorkspaceStrategy.DIRECT -> "Direct filesystem"
-        WorkspaceStrategy.MANAGED -> "Managed Android workspace"
-        WorkspaceStrategy.REMOTE_CLONE -> "GitHub clone"
-        WorkspaceStrategy.GENERATED -> "Generated template"
+        WorkspaceStrategy.DIRECT -> stringResource(R.string.repo_strategy_direct)
+        WorkspaceStrategy.MANAGED -> stringResource(R.string.repo_strategy_managed)
+        WorkspaceStrategy.REMOTE_CLONE -> stringResource(R.string.repo_strategy_clone)
+        WorkspaceStrategy.GENERATED -> stringResource(R.string.repo_strategy_generated)
     }
 
 private fun humanBytes(bytes: Long): String =

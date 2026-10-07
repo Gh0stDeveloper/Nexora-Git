@@ -1,5 +1,7 @@
 package com.nexora.git.feature.activity
 
+import com.nexora.git.R
+
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
@@ -30,6 +32,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.style.TextOverflow
@@ -70,10 +73,10 @@ fun ActivityScreen(
             onDismissRequest = viewModel::dismissError,
             confirmButton = {
                 TextButton(onClick = viewModel::dismissError) {
-                    Text("OK")
+                    Text(stringResource(R.string.action_ok))
                 }
             },
-            title = { Text("Activity") },
+            title = { Text(stringResource(R.string.activity_title)) },
             text = { Text(message) },
         )
     }
@@ -109,7 +112,7 @@ internal fun ActivityContent(
                     modifier = Modifier.weight(1f),
                 ) {
                     Text(
-                        text = "Activity",
+                        text = stringResource(R.string.activity_title),
                         style = MaterialTheme.typography.headlineSmall,
                     )
                     Text(
@@ -125,7 +128,7 @@ internal fun ActivityContent(
                 ) {
                     Icon(
                         imageVector = Icons.Outlined.Refresh,
-                        contentDescription = "Refresh activity",
+                        contentDescription = stringResource(R.string.activity_refresh),
                     )
                 }
             }
@@ -235,7 +238,7 @@ private fun NotificationCapabilityCard(
                 Arrangement.spacedBy(10.dp),
         ) {
             Text(
-                text = "GitHub notification inbox",
+                text = stringResource(R.string.activity_notifications),
                 style =
                     MaterialTheme.typography.titleMedium,
             )
@@ -245,7 +248,7 @@ private fun NotificationCapabilityCard(
                     MaterialTheme.colorScheme.onSurfaceVariant,
             )
             Text(
-                text = "Nexora Git continues to use the primary GitHub App session. A second OAuth credential is not silently requested or stored just to bypass this API restriction.",
+                text = stringResource(R.string.activity_notifications_note),
                 color =
                     MaterialTheme.colorScheme.onSurfaceVariant,
                 style =
@@ -261,7 +264,7 @@ private fun NotificationCapabilityCard(
                         Icons.Outlined.OpenInBrowser,
                     contentDescription = null,
                 )
-                Text("Open GitHub notifications")
+                Text(stringResource(R.string.activity_open_notifications))
             }
         }
     }

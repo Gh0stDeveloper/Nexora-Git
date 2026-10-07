@@ -35,10 +35,12 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import com.nexora.git.R
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.nexora.git.core.actions.GitHubWorkflow
 import com.nexora.git.core.actions.GitHubWorkflowRun
@@ -95,10 +97,10 @@ fun ActionsScreen(
             onDismissRequest = viewModel::dismissError,
             confirmButton = {
                 TextButton(onClick = viewModel::dismissError) {
-                    Text("OK")
+                    Text(stringResource(R.string.action_ok))
                 }
             },
-            title = { Text("GitHub Actions") },
+            title = { Text(stringResource(R.string.actions_title)) },
             text = { Text(message) },
         )
     }
@@ -108,10 +110,10 @@ fun ActionsScreen(
             onDismissRequest = viewModel::dismissSuccess,
             confirmButton = {
                 TextButton(onClick = viewModel::dismissSuccess) {
-                    Text("Done")
+                    Text(stringResource(R.string.action_done))
                 }
             },
-            title = { Text("GitHub Actions") },
+            title = { Text(stringResource(R.string.actions_title)) },
             text = { Text(message) },
         )
     }
@@ -148,14 +150,14 @@ internal fun ActionsContent(
                 IconButton(onClick = onBack) {
                     Icon(
                         imageVector = Icons.AutoMirrored.Outlined.ArrowBack,
-                        contentDescription = "Back",
+                        contentDescription = stringResource(R.string.action_back),
                     )
                 }
                 Column(
                     modifier = Modifier.weight(1f),
                 ) {
                     Text(
-                        text = "GitHub Actions",
+                        text = stringResource(R.string.actions_title),
                         style = MaterialTheme.typography.titleLarge,
                     )
                     Text(
@@ -170,7 +172,7 @@ internal fun ActionsContent(
                 ) {
                     Icon(
                         imageVector = Icons.Outlined.Refresh,
-                        contentDescription = "Refresh Actions",
+                        contentDescription = stringResource(R.string.actions_refresh),
                     )
                 }
             }
@@ -178,7 +180,7 @@ internal fun ActionsContent(
 
         item {
             Text(
-                text = "Workflows",
+                text = stringResource(R.string.actions_workflows),
                 style = MaterialTheme.typography.titleMedium,
             )
         }
@@ -221,7 +223,7 @@ internal fun ActionsContent(
 
         item {
             Text(
-                text = "Runs",
+                text = stringResource(R.string.actions_runs),
                 style = MaterialTheme.typography.titleMedium,
             )
         }
@@ -343,7 +345,7 @@ private fun WorkflowCard(
                     imageVector = Icons.Outlined.PlayArrow,
                     contentDescription = null,
                 )
-                Text("Dispatch")
+                Text(stringResource(R.string.actions_dispatch))
             }
         }
     }
@@ -396,7 +398,7 @@ private fun WorkflowRunCard(
             )
 
             Text(
-                text = (run.headBranch ?: "detached") +
+                text = (run.headBranch ?: stringResource(R.string.workflow_detached)) +
                     " · " + run.headSha.take(10),
                 fontFamily = FontFamily.Monospace,
                 style = MaterialTheme.typography.bodySmall,
@@ -406,7 +408,10 @@ private fun WorkflowRunCard(
 
             run.actorLogin?.let {
                 Text(
-                    text = "Triggered by " + it,
+                    text = stringResource(
+                        R.string.actions_triggered_by,
+                        it,
+                    ),
                     color =
                         MaterialTheme.colorScheme.onSurfaceVariant,
                     style = MaterialTheme.typography.bodySmall,
@@ -484,7 +489,7 @@ private fun DispatchWorkflowDialog(
                     }
                 },
             ) {
-                Text("Run workflow")
+                Text(stringResource(R.string.actions_run_workflow))
             }
         },
         dismissButton = {
@@ -492,11 +497,16 @@ private fun DispatchWorkflowDialog(
                 enabled = !busy,
                 onClick = onDismiss,
             ) {
-                Text("Cancel")
+                Text(stringResource(R.string.action_cancel))
             }
         },
         title = {
-            Text("Dispatch " + workflow.name)
+            Text(
+                stringResource(
+                    R.string.actions_dispatch_workflow,
+                    workflow.name,
+                ),
+            )
         },
         text = {
             Column(
@@ -507,7 +517,7 @@ private fun DispatchWorkflowDialog(
                     value = ref,
                     onValueChange = { ref = it },
                     singleLine = true,
-                    label = { Text("Git ref") },
+                    label = { Text(stringResource(R.string.actions_git_ref)) },
                 )
 
                 OutlinedTextField(
@@ -520,11 +530,11 @@ private fun DispatchWorkflowDialog(
                     minLines = 4,
                     maxLines = 9,
                     label = {
-                        Text("Inputs (optional)")
+                        Text(stringResource(R.string.actions_inputs))
                     },
                     supportingText = {
                         Text(
-                            "One key=value pair per line.",
+                            stringResource(R.string.actions_inputs_hint),
                         )
                     },
                 )
@@ -537,7 +547,7 @@ private fun DispatchWorkflowDialog(
                 }
 
                 Text(
-                    text = "GitHub validates whether this workflow supports workflow_dispatch and which inputs are accepted.",
+                    text = stringResource(R.string.actions_dispatch_note),
                     color =
                         MaterialTheme.colorScheme.onSurfaceVariant,
                     style = MaterialTheme.typography.bodySmall,

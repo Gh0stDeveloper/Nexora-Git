@@ -37,9 +37,11 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import com.nexora.git.R
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.nexora.git.core.pulls.CreatePullRequestRequest
 import com.nexora.git.core.pulls.PullRequestState
@@ -88,10 +90,10 @@ fun PullRequestsScreen(
             onDismissRequest = viewModel::dismissError,
             confirmButton = {
                 TextButton(onClick = viewModel::dismissError) {
-                    Text("OK")
+                    Text(stringResource(R.string.action_ok))
                 }
             },
-            title = { Text("Pull requests") },
+            title = { Text(stringResource(R.string.pulls_title)) },
             text = { Text(message) },
         )
     }
@@ -101,10 +103,10 @@ fun PullRequestsScreen(
             onDismissRequest = viewModel::dismissSuccess,
             confirmButton = {
                 TextButton(onClick = viewModel::dismissSuccess) {
-                    Text("Done")
+                    Text(stringResource(R.string.action_done))
                 }
             },
-            title = { Text("Nexora Git") },
+            title = { Text(stringResource(R.string.app_name)) },
             text = { Text(message) },
         )
     }
@@ -140,14 +142,14 @@ internal fun PullRequestsContent(
                 IconButton(onClick = onBack) {
                     Icon(
                         imageVector = Icons.AutoMirrored.Outlined.ArrowBack,
-                        contentDescription = "Back",
+                        contentDescription = stringResource(R.string.action_back),
                     )
                 }
                 Column(
                     modifier = Modifier.weight(1f),
                 ) {
                     Text(
-                        text = "Pull requests",
+                        text = stringResource(R.string.pulls_title),
                         style = MaterialTheme.typography.titleLarge,
                     )
                     Text(
@@ -162,7 +164,7 @@ internal fun PullRequestsContent(
                 ) {
                     Icon(
                         imageVector = Icons.Outlined.Refresh,
-                        contentDescription = "Refresh pull requests",
+                        contentDescription = stringResource(R.string.pulls_refresh),
                     )
                 }
             }
@@ -205,7 +207,7 @@ internal fun PullRequestsContent(
                     imageVector = Icons.Outlined.Add,
                     contentDescription = null,
                 )
-                Text("New pull request")
+                Text(stringResource(R.string.pulls_new))
             }
         }
 
@@ -225,7 +227,7 @@ internal fun PullRequestsContent(
                 ) {
                     Text(
                         modifier = Modifier.padding(18.dp),
-                        text = "No pull requests match this state.",
+                        text = stringResource(R.string.pulls_no_matches),
                         color =
                             MaterialTheme.colorScheme.onSurfaceVariant,
                     )
@@ -384,7 +386,7 @@ private fun CreatePullRequestDialog(
                     )
                 },
             ) {
-                Text("Create")
+                Text(stringResource(R.string.action_create))
             }
         },
         dismissButton = {
@@ -392,11 +394,11 @@ private fun CreatePullRequestDialog(
                 enabled = !busy,
                 onClick = onDismiss,
             ) {
-                Text("Cancel")
+                Text(stringResource(R.string.action_cancel))
             }
         },
         title = {
-            Text("New pull request")
+            Text(stringResource(R.string.pulls_new))
         },
         text = {
             Column(
@@ -408,7 +410,7 @@ private fun CreatePullRequestDialog(
                     value = title,
                     onValueChange = { title = it },
                     singleLine = true,
-                    label = { Text("Title") },
+                    label = { Text(stringResource(R.string.pulls_title_field)) },
                 )
                 OutlinedTextField(
                     modifier = Modifier.fillMaxWidth(),
@@ -416,29 +418,29 @@ private fun CreatePullRequestDialog(
                     onValueChange = { body = it },
                     minLines = 3,
                     maxLines = 7,
-                    label = { Text("Description") },
+                    label = { Text(stringResource(R.string.pulls_description)) },
                 )
                 OutlinedTextField(
                     modifier = Modifier.fillMaxWidth(),
                     value = head,
                     onValueChange = { head = it },
                     singleLine = true,
-                    label = { Text("Head branch") },
+                    label = { Text(stringResource(R.string.pulls_head_branch)) },
                 )
                 OutlinedTextField(
                     modifier = Modifier.fillMaxWidth(),
                     value = base,
                     onValueChange = { base = it },
                     singleLine = true,
-                    label = { Text("Base branch") },
+                    label = { Text(stringResource(R.string.pulls_base_branch)) },
                 )
                 ToggleRow(
-                    label = "Create as draft",
+                    label = stringResource(R.string.pulls_create_draft),
                     checked = draft,
                     onCheckedChange = { draft = it },
                 )
                 ToggleRow(
-                    label = "Allow maintainer edits",
+                    label = stringResource(R.string.pulls_maintainer_edits),
                     checked = maintainersCanModify,
                     onCheckedChange = {
                         maintainersCanModify = it

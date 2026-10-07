@@ -2,6 +2,7 @@ package com.nexora.git.feature.git
 
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
+import androidx.work.WorkInfo
 import androidx.lifecycle.viewModelScope
 import com.nexora.git.core.git.GitApplyResult
 import com.nexora.git.core.git.GitAuthor
@@ -26,13 +27,17 @@ import com.nexora.git.core.git.GitStash
 import com.nexora.git.core.git.GitSubmodule
 import com.nexora.git.core.git.GitTag
 import com.nexora.git.core.storage.WorkspaceRegistry
+import com.nexora.git.core.work.DurableGitOperations
+import com.nexora.git.core.work.DurableGitWorker
 import dagger.hilt.android.lifecycle.HiltViewModel
 import java.io.File
+import java.util.UUID
 import javax.inject.Inject
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -59,6 +64,8 @@ data class GitWorkspaceUiState(
     val loading: Boolean = true,
     val refreshing: Boolean = false,
     val operationInProgress: Boolean = false,
+    val durableOperationId: String? = null,
+    val durableOperationPhase: String? = null,
     val errorMessage: String? = null,
     val successMessage: String? = null,
 ) {
@@ -99,11 +106,12 @@ data class GitWorkspaceUiState(
 
 @HiltViewModel
 class GitWorkspaceViewModel @Inject constructor(
-    savedStateHandle: SavedStateHandle,
+    private val savedStateHandle: SavedStateHandle,
     private val workspaceRegistry: WorkspaceRegistry,
     private val gitEngine: GitEngine,
     private val lfsManager: GitLfsManager,
     private val lfsTransport: GitLfsTransport,
+    private val durableGitOperations: DurableGitOperations,
 ) : ViewModel() {
 
     private val workspaceId =
@@ -119,6 +127,7 @@ class GitWorkspaceViewModel @Inject constructor(
 
     init {
         load()
+        restoreDurableOperation()
     }
 
     fun refresh() {
@@ -353,11 +362,13 @@ class GitWorkspaceViewModel @Inject constructor(
             return
         }
 
-        launchOperation("Fetched " + normalized + ".") {
-            gitEngine.fetch(
-                repositoryPath = workspacePath,
-                remote = normalized,
-            )
+        viewModelScope.launch {
+            scheduleDurableOperation {
+                durableGitOperations.enqueueFetch(
+                    workspaceId = workspaceId,
+                    remote = normalized,
+                )
+            }
         }
     }
 
@@ -382,22 +393,16 @@ class GitWorkspaceViewModel @Inject constructor(
             return
         }
 
-        launchMergeOperation(
-            label = when (strategy) {
-                GitPullStrategy.MERGE -> "Pull with merge"
-                GitPullStrategy.FAST_FORWARD_ONLY ->
-                    "Fast-forward-only pull"
-                GitPullStrategy.REBASE -> "Pull with rebase"
-            },
-        ) {
-            gitEngine.pull(
-                GitPullRequest(
-                    repositoryPath = workspacePath,
+        viewModelScope.launch {
+            scheduleDurableOperation {
+                durableGitOperations.enqueuePull(
+                    workspaceId = workspaceId,
                     remote = normalized,
-                    author = author,
                     strategy = strategy,
-                ),
-            )
+                    authorName = author.name,
+                    authorEmail = author.email,
+                )
+            }
         }
     }
 
@@ -769,78 +774,14 @@ class GitWorkspaceViewModel @Inject constructor(
             return
         }
 
-        val refspec = runCatching {
-            GitWorkflowPolicy.pushRefspec(
-                currentBranch = current,
-                targetBranch = target,
-            )
-        }.getOrElse {
-            showError(it.message ?: "Invalid push refspec.")
-            return
-        }
-
-        launchOperation {
-            val expectedOid = if (forceWithLease) {
-                val remoteTracking =
-                    normalizedRemote + "/" + target
-                gitEngine.divergence(
-                    repositoryPath = workspacePath,
-                    localRef = current,
-                    upstreamRef = remoteTracking,
-                ).upstreamOid.also {
-                    require(it.isNotBlank()) {
-                        "Force-with-lease requires a verified remote-tracking branch. Fetch first."
-                    }
-                }
-            } else {
-                ""
-            }
-
-            val remoteConfig = state.value.remotes
-                .firstOrNull { it.name == normalizedRemote }
-            if (state.value.lfs.trackedPatterns.isNotEmpty() &&
-                remoteConfig != null &&
-                lfsTransport.supportsRemote(remoteConfig.url)
-            ) {
-                lfsTransport.uploadPending(
-                    repositoryPath = workspacePath,
-                    remoteUrl = remoteConfig.url,
-                )
-            }
-
-            val result = gitEngine.push(
-                GitPushRequest(
-                    repositoryPath = workspacePath,
+        viewModelScope.launch {
+            scheduleDurableOperation {
+                durableGitOperations.enqueuePush(
+                    workspaceId = workspaceId,
                     remote = normalizedRemote,
-                    refspec = refspec,
+                    targetBranch = target,
                     forceWithLease = forceWithLease,
-                    expectedRemoteOid = expectedOid,
-                ),
-            )
-
-            if (!forceWithLease) {
-                val upstream =
-                    normalizedRemote + "/" + target
-
-                runCatching {
-                    gitEngine.fetch(
-                        repositoryPath = workspacePath,
-                        remote = normalizedRemote,
-                    )
-                    gitEngine.setUpstream(
-                        repositoryPath = workspacePath,
-                        branch = current,
-                        upstream = upstream,
-                    )
-                }
-            }
-
-            if (result.forceWithLease) {
-                "Force-with-lease push completed to " +
-                    normalizedRemote + "/" + target + "."
-            } else {
-                "Pushed " + current + " to " +
-                    normalizedRemote + "/" + target + "."
+                )
             }
         }
     }
@@ -1069,6 +1010,110 @@ class GitWorkspaceViewModel @Inject constructor(
         }
     }
 
+    fun cancelDurableOperation() {
+        val id = state.value.durableOperationId
+            ?.let { runCatching { UUID.fromString(it) }.getOrNull() }
+            ?: return
+        durableGitOperations.cancel(id)
+    }
+
+    private fun restoreDurableOperation() {
+        val raw = savedStateHandle.get<String>(KEY_DURABLE_GIT_ID)
+            ?: return
+        val id = runCatching { UUID.fromString(raw) }.getOrNull()
+            ?: run {
+                savedStateHandle.remove<String>(KEY_DURABLE_GIT_ID)
+                return
+            }
+        viewModelScope.launch {
+            observeDurableOperation(id)
+        }
+    }
+
+    private suspend fun scheduleDurableOperation(
+        enqueue: suspend () -> UUID,
+    ) {
+        mutableState.update {
+            it.copy(
+                operationInProgress = true,
+                errorMessage = null,
+                successMessage = null,
+                durableOperationPhase = "queued",
+            )
+        }
+
+        runCatching { enqueue() }
+            .onSuccess { id ->
+                savedStateHandle[KEY_DURABLE_GIT_ID] = id.toString()
+                observeDurableOperation(id)
+            }
+            .onFailure { error ->
+                mutableState.update {
+                    it.copy(
+                        operationInProgress = false,
+                        durableOperationPhase = null,
+                        errorMessage = friendlyGitError(error),
+                    )
+                }
+            }
+    }
+
+    private suspend fun observeDurableOperation(id: UUID) {
+        mutableState.update {
+            it.copy(
+                operationInProgress = true,
+                durableOperationId = id.toString(),
+            )
+        }
+
+        val terminal = durableGitOperations.observe(id).first { info ->
+            val phase = info.progress
+                .getString(DurableGitWorker.KEY_PHASE)
+                ?: if (info.state == WorkInfo.State.ENQUEUED ||
+                    info.state == WorkInfo.State.BLOCKED
+                ) {
+                    "queued"
+                } else {
+                    state.value.durableOperationPhase
+                }
+            mutableState.update {
+                it.copy(durableOperationPhase = phase)
+            }
+            info.state.isFinished
+        }
+
+        savedStateHandle.remove<String>(KEY_DURABLE_GIT_ID)
+        mutableState.update {
+            it.copy(
+                operationInProgress = false,
+                durableOperationId = null,
+                durableOperationPhase = null,
+            )
+        }
+
+        when (terminal.state) {
+            WorkInfo.State.SUCCEEDED -> {
+                refreshInternal(showBusy = false)
+                mutableState.update {
+                    it.copy(
+                        successMessage = terminal.outputData
+                            .getString(DurableGitWorker.KEY_MESSAGE)
+                            ?: "Git operation completed.",
+                    )
+                }
+            }
+            WorkInfo.State.CANCELLED ->
+                showError("Git operation was canceled.")
+            WorkInfo.State.FAILED ->
+                showError(
+                    terminal.outputData
+                        .getString(DurableGitWorker.KEY_ERROR)
+                        ?: "Git operation failed.",
+                )
+            else -> Unit
+        }
+    }
+
     private fun launchOperation(
         successMessage: String,
         operation: suspend () -> Unit,
@@ -1207,4 +1252,8 @@ class GitWorkspaceViewModel @Inject constructor(
         val submodules: List<GitSubmodule>,
         val lfs: GitLfsState,
     )
+    companion object {
+        private const val KEY_DURABLE_GIT_ID = "durable_git_work_id"
+    }
+
 }

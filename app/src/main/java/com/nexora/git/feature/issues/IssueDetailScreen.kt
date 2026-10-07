@@ -1,5 +1,7 @@
 package com.nexora.git.feature.issues
 
+import com.nexora.git.R
+
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -34,6 +36,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
@@ -76,11 +79,11 @@ fun IssueDetailScreen(
             onDismissRequest = viewModel::dismissError,
             confirmButton = {
                 TextButton(onClick = viewModel::dismissError) {
-                    Text("OK")
+                    Text(stringResource(R.string.action_ok))
                 }
             },
             title = {
-                Text("Issue")
+                Text(stringResource(R.string.issue_title))
             },
             text = {
                 Text(message)
@@ -93,11 +96,11 @@ fun IssueDetailScreen(
             onDismissRequest = viewModel::dismissSuccess,
             confirmButton = {
                 TextButton(onClick = viewModel::dismissSuccess) {
-                    Text("Done")
+                    Text(stringResource(R.string.action_done))
                 }
             },
             title = {
-                Text("Nexora Git")
+                Text(stringResource(R.string.app_name))
             },
             text = {
                 Text(message)
@@ -160,7 +163,7 @@ internal fun IssueDetailContent(
                 IconButton(onClick = onBack) {
                     Icon(
                         imageVector = Icons.AutoMirrored.Outlined.ArrowBack,
-                        contentDescription = "Back",
+                        contentDescription = stringResource(R.string.issue_back),
                     )
                 }
 
@@ -168,7 +171,7 @@ internal fun IssueDetailContent(
                     modifier = Modifier.weight(1f),
                 ) {
                     Text(
-                        text = "Issue #" + state.number,
+                        text = stringResource(R.string.issue_number, state.number),
                         style = MaterialTheme.typography.titleLarge,
                     )
                     Text(
@@ -184,7 +187,7 @@ internal fun IssueDetailContent(
                 ) {
                     Icon(
                         imageVector = Icons.Outlined.Refresh,
-                        contentDescription = "Refresh issue",
+                        contentDescription = stringResource(R.string.issue_refresh),
                     )
                 }
             }
@@ -218,7 +221,7 @@ internal fun IssueDetailContent(
                             showEdit = true
                         },
                     ) {
-                        Text("Edit")
+                        Text(stringResource(R.string.action_edit))
                     }
 
                     OutlinedButton(
@@ -228,7 +231,7 @@ internal fun IssueDetailContent(
                             showMetadata = true
                         },
                     ) {
-                        Text("Manage")
+                        Text(stringResource(R.string.action_manage))
                     }
 
                     Button(
@@ -263,8 +266,10 @@ internal fun IssueDetailContent(
 
             item {
                 Text(
-                    text = "Comments (" +
-                        state.comments.size + ")",
+                    text = stringResource(
+                        R.string.issue_comments,
+                        state.comments.size,
+                    ),
                     style = MaterialTheme.typography.titleMedium,
                 )
             }
@@ -276,7 +281,7 @@ internal fun IssueDetailContent(
                     ) {
                         Text(
                             modifier = Modifier.padding(16.dp),
-                            text = "No comments yet.",
+                            text = stringResource(R.string.issue_no_comments),
                             color =
                                 MaterialTheme.colorScheme.onSurfaceVariant,
                         )
@@ -322,7 +327,7 @@ internal fun IssueDetailContent(
                             Arrangement.spacedBy(10.dp),
                     ) {
                         Text(
-                            text = "Add comment",
+                            text = stringResource(R.string.issue_add_comment),
                             style = MaterialTheme.typography.titleMedium,
                         )
                         OutlinedTextField(
@@ -334,7 +339,7 @@ internal fun IssueDetailContent(
                                 commentDraft = it
                             },
                             label = {
-                                Text("Comment")
+                                Text(stringResource(R.string.action_comment))
                             },
                         )
                         Button(
@@ -348,7 +353,7 @@ internal fun IssueDetailContent(
                                 onCreateComment(body)
                             },
                         ) {
-                            Text("Comment")
+                            Text(stringResource(R.string.action_comment))
                         }
                     }
                 }
@@ -417,7 +422,7 @@ internal fun IssueDetailContent(
                         onDeleteComment(id)
                     },
                 ) {
-                    Text("Delete")
+                    Text(stringResource(R.string.action_delete))
                 }
             },
             dismissButton = {
@@ -426,14 +431,14 @@ internal fun IssueDetailContent(
                         deletingCommentId = null
                     },
                 ) {
-                    Text("Cancel")
+                    Text(stringResource(R.string.action_cancel))
                 }
             },
             title = {
-                Text("Delete comment?")
+                Text(stringResource(R.string.issue_delete_comment))
             },
             text = {
-                Text("This permanently deletes the GitHub comment.")
+                Text(stringResource(R.string.issue_delete_comment_note))
             },
         )
     }
@@ -477,27 +482,31 @@ private fun IssueHeaderCard(
 
             if (summary.labels.isNotEmpty()) {
                 Text(
-                    text = "Labels: " +
+                    text = stringResource(
+                        R.string.issue_labels,
                         summary.labels.joinToString(", ") {
                             it.name
                         },
+                    ),
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
             }
 
             if (summary.assignees.isNotEmpty()) {
                 Text(
-                    text = "Assignees: " +
+                    text = stringResource(
+                        R.string.issue_assignees,
                         summary.assignees.joinToString(", ") {
                             it.login
                         },
+                    ),
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
             }
 
             summary.milestone?.let {
                 Text(
-                    text = "Milestone: " + it.title,
+                    text = stringResource(R.string.issue_milestone, it.title),
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
             }
@@ -560,13 +569,13 @@ private fun CommentCard(
                         enabled = !busy,
                         onClick = onEdit,
                     ) {
-                        Text("Edit")
+                        Text(stringResource(R.string.action_edit))
                     }
                     TextButton(
                         enabled = !busy,
                         onClick = onDelete,
                     ) {
-                        Text("Delete")
+                        Text(stringResource(R.string.action_delete))
                     }
                 }
             }
@@ -628,16 +637,16 @@ private fun EditIssueDialog(
                     )
                 },
             ) {
-                Text("Save")
+                Text(stringResource(R.string.action_save))
             }
         },
         dismissButton = {
             TextButton(onClick = onDismiss) {
-                Text("Cancel")
+                Text(stringResource(R.string.action_cancel))
             }
         },
         title = {
-            Text("Edit issue")
+            Text(stringResource(R.string.issue_edit))
         },
         text = {
             Column(
@@ -651,7 +660,7 @@ private fun EditIssueDialog(
                         title = it
                     },
                     label = {
-                        Text("Title")
+                        Text(stringResource(R.string.issues_title_field))
                     },
                 )
                 OutlinedTextField(
@@ -663,7 +672,7 @@ private fun EditIssueDialog(
                         body = it
                     },
                     label = {
-                        Text("Description")
+                        Text(stringResource(R.string.issues_description))
                     },
                 )
             }
@@ -714,16 +723,16 @@ private fun ManageIssueDialog(
                     )
                 },
             ) {
-                Text("Save")
+                Text(stringResource(R.string.action_save))
             }
         },
         dismissButton = {
             TextButton(onClick = onDismiss) {
-                Text("Cancel")
+                Text(stringResource(R.string.action_cancel))
             }
         },
         title = {
-            Text("Manage issue")
+            Text(stringResource(R.string.issue_manage))
         },
         text = {
             LazyColumn(
@@ -731,7 +740,7 @@ private fun ManageIssueDialog(
             ) {
                 item {
                     Text(
-                        text = "Labels",
+                        text = stringResource(R.string.issues_labels),
                         style = MaterialTheme.typography.titleSmall,
                     )
                 }
@@ -751,7 +760,7 @@ private fun ManageIssueDialog(
 
                 item {
                     Text(
-                        text = "Assignees",
+                        text = stringResource(R.string.issues_assignees),
                         style = MaterialTheme.typography.titleSmall,
                     )
                 }
@@ -776,7 +785,7 @@ private fun ManageIssueDialog(
 
                 item {
                     Text(
-                        text = "Milestone",
+                        text = stringResource(R.string.issues_milestone),
                         style = MaterialTheme.typography.titleSmall,
                     )
                 }
@@ -787,7 +796,7 @@ private fun ManageIssueDialog(
                             milestone = null
                         },
                         label = {
-                            Text("No milestone")
+                            Text(stringResource(R.string.issue_no_milestone))
                         },
                     )
                 }
@@ -832,16 +841,16 @@ private fun EditCommentDialog(
                     onSave(body)
                 },
             ) {
-                Text("Save")
+                Text(stringResource(R.string.action_save))
             }
         },
         dismissButton = {
             TextButton(onClick = onDismiss) {
-                Text("Cancel")
+                Text(stringResource(R.string.action_cancel))
             }
         },
         title = {
-            Text("Edit comment")
+            Text(stringResource(R.string.issue_edit_comment))
         },
         text = {
             OutlinedTextField(
@@ -853,7 +862,7 @@ private fun EditCommentDialog(
                     body = it
                 },
                 label = {
-                    Text("Comment")
+                    Text(stringResource(R.string.action_comment))
                 },
             )
         },

@@ -90,6 +90,7 @@ class ProfileContentTest {
                     onAddAccount = {},
                     onSignOut = {},
                     onOpenRepository = { _, _ -> },
+                    onOpenSettings = {},
                     onUnstar = {},
                     onSetFollowing = { _, _ -> },
                 )

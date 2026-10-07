@@ -1,5 +1,7 @@
 package com.nexora.git.feature.explore
 
+import com.nexora.git.R
+
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
@@ -29,6 +31,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -89,14 +92,14 @@ internal fun ExploreContent(
     ) {
         item {
             Text(
-                text = "Explore",
+                text = stringResource(R.string.explore_title),
                 style = MaterialTheme.typography.headlineSmall,
             )
         }
 
         item {
             Text(
-                text = "Search GitHub repositories, users and code with your active account.",
+                text = stringResource(R.string.explore_subtitle),
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
         }
@@ -107,7 +110,7 @@ internal fun ExploreContent(
                 value = state.query,
                 onValueChange = onQueryChange,
                 singleLine = true,
-                label = { Text("Search GitHub") },
+                label = { Text(stringResource(R.string.explore_search)) },
                 leadingIcon = {
                     Icon(
                         imageVector = Icons.Outlined.Search,
@@ -164,7 +167,7 @@ internal fun ExploreContent(
                         imageVector = Icons.Outlined.Search,
                         contentDescription = null,
                     )
-                    Text("Search")
+                    Text(stringResource(R.string.action_search))
                 }
             }
         }
@@ -241,7 +244,7 @@ internal fun ExploreContent(
                 ) {
                     Text(
                         modifier = Modifier.padding(16.dp),
-                        text = "No matching results.",
+                        text = stringResource(R.string.explore_no_results),
                         color =
                             MaterialTheme.colorScheme.onSurfaceVariant,
                     )
@@ -322,7 +325,7 @@ private fun UserSearchCard(
                     style = MaterialTheme.typography.titleMedium,
                 )
                 Text(
-                    text = user.type ?: "GitHub user",
+                    text = user.type ?: stringResource(R.string.explore_github_user),
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
             }

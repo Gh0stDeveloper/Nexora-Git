@@ -4,6 +4,7 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.v2.createComposeRule
 import androidx.compose.ui.test.onNodeWithText
+import androidx.compose.ui.test.performClick
 import androidx.compose.ui.unit.dp
 import com.nexora.git.core.repository.RepositoryPermissions
 import com.nexora.git.core.repository.RepositorySummary
@@ -19,6 +20,54 @@ class RepositoriesContentTest {
 
     @get:Rule
     val composeRule = createComposeRule()
+
+    @Test
+    fun durableWorkspaceOperationShowsProgressAndCancel() {
+        var cancelled = false
+
+        composeRule.setContent {
+            NexoraGitTheme {
+                RepositoriesContent(
+                    state = RepositoriesUiState(
+                        loading = false,
+                        operationInProgress = true,
+                        durableWorkspaceId =
+                            "11111111-1111-1111-1111-111111111111",
+                        durableWorkspacePhase = "import",
+                    ),
+                    contentPadding = PaddingValues(0.dp),
+                    onRefresh = {},
+                    onCreate = {},
+                    onCloneUrl = {},
+                    onOpenFolder = {},
+                    onNewTemplate = {},
+                    onOpenRepository = { _, _ -> },
+                    onBrowseWorkspace = {},
+                    onOpenGitWorkspace = {},
+                    onCloneRepository = {},
+                    onCancelClone = {},
+                    onCancelWorkspaceOperation = {
+                        cancelled = true
+                    },
+                    onInitializeGit = {},
+                    onSync = {},
+                    onDelete = {},
+                )
+            }
+        }
+
+        composeRule
+            .onNodeWithText("Importing project as durable work…")
+            .assertIsDisplayed()
+        composeRule
+            .onNodeWithText("Cancel operation")
+            .assertIsDisplayed()
+            .performClick()
+
+        composeRule.runOnIdle {
+            assert(cancelled)
+        }
+    }
 
     @Test
     fun displaysRemoteRepositoryAndManagedWorkspace() {
@@ -100,6 +149,8 @@ class RepositoriesContentTest {
                     onBrowseWorkspace = {},
                     onOpenGitWorkspace = {},
                     onCloneRepository = {},
+                    onCancelClone = {},
+                    onCancelWorkspaceOperation = {},
                     onInitializeGit = {},
                     onSync = {},
                     onDelete = {},

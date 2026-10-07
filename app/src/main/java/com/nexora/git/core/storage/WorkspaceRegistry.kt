@@ -37,6 +37,11 @@ class WorkspaceRegistry @Inject constructor(
     ): Workspace? =
         workspaceDao.findByRepositoryRemote(remoteUrl)?.toDomain()
 
+    fun persistSafTreeAccess(
+        treeUri: Uri,
+    ): PersistedTreePermission =
+        permissionManager.persist(treeUri)
+
     suspend fun importSafTree(
         treeUri: Uri,
     ): WorkspaceImportResult {

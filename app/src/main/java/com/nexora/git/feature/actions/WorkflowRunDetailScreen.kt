@@ -1,5 +1,7 @@
 package com.nexora.git.feature.actions
 
+import com.nexora.git.R
+
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -33,6 +35,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
@@ -78,10 +81,10 @@ fun WorkflowRunDetailScreen(
             onDismissRequest = viewModel::dismissError,
             confirmButton = {
                 TextButton(onClick = viewModel::dismissError) {
-                    Text("OK")
+                    Text(stringResource(R.string.action_ok))
                 }
             },
-            title = { Text("GitHub Actions") },
+            title = { Text(stringResource(R.string.actions_title)) },
             text = { Text(message) },
         )
     }
@@ -91,10 +94,10 @@ fun WorkflowRunDetailScreen(
             onDismissRequest = viewModel::dismissSuccess,
             confirmButton = {
                 TextButton(onClick = viewModel::dismissSuccess) {
-                    Text("Done")
+                    Text(stringResource(R.string.action_done))
                 }
             },
-            title = { Text("GitHub Actions") },
+            title = { Text(stringResource(R.string.actions_title)) },
             text = {
                 Column(
                     verticalArrangement = Arrangement.spacedBy(8.dp),
@@ -150,14 +153,14 @@ internal fun WorkflowRunDetailContent(
                 IconButton(onClick = onBack) {
                     Icon(
                         imageVector = Icons.AutoMirrored.Outlined.ArrowBack,
-                        contentDescription = "Back",
+                        contentDescription = stringResource(R.string.workflow_back),
                     )
                 }
                 Column(
                     modifier = Modifier.weight(1f),
                 ) {
                     Text(
-                        text = "Workflow run",
+                        text = stringResource(R.string.workflow_run_title),
                         style = MaterialTheme.typography.titleLarge,
                     )
                     Text(
@@ -172,7 +175,7 @@ internal fun WorkflowRunDetailContent(
                 ) {
                     Icon(
                         imageVector = Icons.Outlined.Refresh,
-                        contentDescription = "Refresh run",
+                        contentDescription = stringResource(R.string.workflow_refresh),
                     )
                 }
             }
@@ -205,7 +208,7 @@ internal fun WorkflowRunDetailContent(
 
             item {
                 Text(
-                    text = "Jobs",
+                    text = stringResource(R.string.workflow_jobs),
                     style = MaterialTheme.typography.titleMedium,
                 )
             }
@@ -233,7 +236,7 @@ internal fun WorkflowRunDetailContent(
 
             item {
                 Text(
-                    text = "Artifacts",
+                    text = stringResource(R.string.workflow_artifacts),
                     style = MaterialTheme.typography.titleMedium,
                 )
             }
@@ -270,7 +273,7 @@ internal fun WorkflowRunDetailContent(
                                 Arrangement.spacedBy(6.dp),
                         ) {
                             Text(
-                                text = "Last downloaded artifact",
+                                text = stringResource(R.string.workflow_last_downloaded),
                                 style =
                                     MaterialTheme.typography.titleSmall,
                             )
@@ -335,14 +338,21 @@ private fun WorkflowRunSummaryCard(
             )
 
             Text(
-                text = "Run #" + run.runNumber +
-                    " · attempt " + run.runAttempt,
+                text = stringResource(
+                    R.string.workflow_run_attempt,
+                    run.runNumber,
+                    run.runAttempt,
+                ),
                 fontFamily = FontFamily.Monospace,
             )
 
             Text(
-                text = (run.headBranch ?: "detached") +
-                    " · " + run.headSha.take(12),
+                text = stringResource(
+                    R.string.workflow_branch_sha,
+                    run.headBranch
+                        ?: stringResource(R.string.workflow_detached),
+                    run.headSha.take(12),
+                ),
                 fontFamily = FontFamily.Monospace,
                 style = MaterialTheme.typography.bodySmall,
                 color =
@@ -351,7 +361,7 @@ private fun WorkflowRunSummaryCard(
 
             run.actorLogin?.let {
                 Text(
-                    text = "Triggered by " + it,
+                    text = stringResource(R.string.workflow_triggered_by, it),
                     color =
                         MaterialTheme.colorScheme.onSurfaceVariant,
                 )
@@ -375,7 +385,7 @@ private fun WorkflowRunControls(
             verticalArrangement = Arrangement.spacedBy(10.dp),
         ) {
             Text(
-                text = "Run controls",
+                text = stringResource(R.string.workflow_controls),
                 style = MaterialTheme.typography.titleMedium,
             )
 
@@ -391,7 +401,7 @@ private fun WorkflowRunControls(
                             state.canCancel,
                     onClick = onCancel,
                 ) {
-                    Text("Cancel")
+                    Text(stringResource(R.string.action_cancel))
                 }
 
                 OutlinedButton(
@@ -400,7 +410,7 @@ private fun WorkflowRunControls(
                             state.canRerun,
                     onClick = onRerun,
                 ) {
-                    Text("Re-run all")
+                    Text(stringResource(R.string.workflow_rerun_all))
                 }
 
                 OutlinedButton(
@@ -410,12 +420,12 @@ private fun WorkflowRunControls(
                             state.run?.conclusion != "success",
                     onClick = onRerunFailed,
                 ) {
-                    Text("Re-run failed")
+                    Text(stringResource(R.string.workflow_rerun_failed))
                 }
             }
 
             Text(
-                text = "GitHub remains authoritative for Actions permissions, repository rules, and whether the current run state accepts each operation.",
+                text = stringResource(R.string.workflow_authority_note),
                 color =
                     MaterialTheme.colorScheme.onSurfaceVariant,
                 style = MaterialTheme.typography.bodySmall,
@@ -474,7 +484,7 @@ private fun ActionsJobCard(
 
             job.runnerName?.let {
                 Text(
-                    text = "Runner: " + it,
+                    text = stringResource(R.string.workflow_runner, it),
                     color =
                         MaterialTheme.colorScheme.onSurfaceVariant,
                     style = MaterialTheme.typography.bodySmall,
@@ -492,7 +502,7 @@ private fun ActionsJobCard(
                 enabled = !busy,
                 onClick = onOpenLog,
             ) {
-                Text("View logs")
+                Text(stringResource(R.string.workflow_view_logs))
             }
         }
     }
@@ -588,7 +598,7 @@ private fun ArtifactCard(
 
             artifact.expiresAt?.let {
                 Text(
-                    text = "Expires: " + it,
+                    text = stringResource(R.string.workflow_expires, it),
                     color =
                         MaterialTheme.colorScheme.onSurfaceVariant,
                     style = MaterialTheme.typography.bodySmall,
@@ -605,7 +615,7 @@ private fun ArtifactCard(
                     imageVector = Icons.Outlined.Download,
                     contentDescription = null,
                 )
-                Text("Download ZIP")
+                Text(stringResource(R.string.workflow_download_zip))
             }
         }
     }
@@ -623,7 +633,7 @@ private fun JobLogDialog(
         onDismissRequest = onDismiss,
         confirmButton = {
             TextButton(onClick = onDismiss) {
-                Text("Close")
+                Text(stringResource(R.string.action_close))
             }
         },
         title = {
@@ -660,7 +670,7 @@ private fun JobLogDialog(
                     ) {
                         if (truncated) {
                             Text(
-                                text = "Preview truncated at 2 MiB to protect app memory.",
+                                text = stringResource(R.string.workflow_preview_truncated),
                                 color =
                                     MaterialTheme.colorScheme.onSurfaceVariant,
                                 style =
@@ -680,7 +690,7 @@ private fun JobLogDialog(
                 }
 
                 else -> {
-                    Text("No log output was returned.")
+                    Text(stringResource(R.string.workflow_no_logs))
                 }
             }
         },

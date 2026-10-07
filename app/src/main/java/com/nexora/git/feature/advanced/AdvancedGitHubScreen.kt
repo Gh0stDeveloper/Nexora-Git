@@ -1,5 +1,7 @@
 package com.nexora.git.feature.advanced
 
+import com.nexora.git.R
+
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -35,6 +37,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
@@ -167,7 +170,7 @@ fun AdvancedGitHubScreen(
                         viewModel.deleteGist(gistId)
                     },
                 ) {
-                    Text("Delete")
+                    Text(stringResource(R.string.action_delete))
                 }
             },
             dismissButton = {
@@ -177,11 +180,11 @@ fun AdvancedGitHubScreen(
                         pendingGistDelete = null
                     },
                 ) {
-                    Text("Cancel")
+                    Text(stringResource(R.string.action_cancel))
                 }
             },
             title = {
-                Text("Delete Gist?")
+                Text(stringResource(R.string.advanced_delete_gist))
             },
             text = {
                 Text(
@@ -204,7 +207,7 @@ fun AdvancedGitHubScreen(
                         viewModel.deleteCodespace(codespaceName)
                     },
                 ) {
-                    Text("Delete")
+                    Text(stringResource(R.string.action_delete))
                 }
             },
             dismissButton = {
@@ -214,11 +217,11 @@ fun AdvancedGitHubScreen(
                         pendingCodespaceDelete = null
                     },
                 ) {
-                    Text("Cancel")
+                    Text(stringResource(R.string.action_cancel))
                 }
             },
             title = {
-                Text("Delete Codespace?")
+                Text(stringResource(R.string.advanced_delete_codespace))
             },
             text = {
                 Text(
@@ -237,7 +240,7 @@ fun AdvancedGitHubScreen(
                 TextButton(
                     onClick = viewModel::dismissMessages,
                 ) {
-                    Text("OK")
+                    Text(stringResource(R.string.action_ok))
                 }
             },
             title = {
@@ -295,14 +298,14 @@ internal fun AdvancedGitHubContent(
                     Icon(
                         imageVector =
                             Icons.AutoMirrored.Outlined.ArrowBack,
-                        contentDescription = "Back",
+                        contentDescription = stringResource(R.string.advanced_back),
                     )
                 }
                 Column(
                     modifier = Modifier.weight(1f),
                 ) {
                     Text(
-                        text = "Advanced GitHub",
+                        text = stringResource(R.string.advanced_title),
                         style =
                             MaterialTheme.typography.titleLarge,
                     )
@@ -602,7 +605,7 @@ private fun PagesSection(
                     enabled = !operationInProgress,
                     onClick = onBuild,
                 ) {
-                    Text("Request Pages build")
+                    Text(stringResource(R.string.advanced_pages_build))
                 }
             } else {
                 Text(
@@ -616,7 +619,7 @@ private fun PagesSection(
                     enabled = !operationInProgress,
                     onClick = onEnable,
                 ) {
-                    Text("Enable from default branch")
+                    Text(stringResource(R.string.advanced_enable_default))
                 }
             }
         }
@@ -640,15 +643,15 @@ private fun SecuritySection(
                 fontWeight = FontWeight.SemiBold,
             )
             SecurityFeedRow(
-                label = "Dependabot",
+                label = stringResource(R.string.advanced_dependabot),
                 feed = overview.dependabot,
             )
             SecurityFeedRow(
-                label = "Code scanning",
+                label = stringResource(R.string.advanced_code_scanning),
                 feed = overview.codeScanning,
             )
             SecurityFeedRow(
-                label = "Secret scanning",
+                label = stringResource(R.string.advanced_secret_scanning),
                 feed = overview.secretScanning,
             )
 
@@ -825,7 +828,7 @@ private fun GistRow(
         ) {
             Icon(
                 imageVector = Icons.Outlined.Delete,
-                contentDescription = "Delete gist",
+                contentDescription = stringResource(R.string.advanced_delete_gist_cd),
             )
         }
     }
@@ -930,7 +933,7 @@ private fun CodespaceRow(
                     onDelete(codespace.name)
                 },
             ) {
-                Text("Delete")
+                Text(stringResource(R.string.action_delete))
             }
         }
     }
@@ -965,7 +968,7 @@ private fun SectionCard(
                         Arrangement.spacedBy(10.dp),
                 ) {
                     CircularProgressIndicator()
-                    Text("Loading…")
+                    Text(stringResource(R.string.advanced_loading))
                 }
             }
             if (errorMessage != null) {
@@ -1064,7 +1067,7 @@ private fun DiscussionDialog(
                     }
                 },
             ) {
-                Text("Create")
+                Text(stringResource(R.string.action_create))
             }
         },
         dismissButton = {
@@ -1072,11 +1075,11 @@ private fun DiscussionDialog(
                 enabled = enabled,
                 onClick = onDismiss,
             ) {
-                Text("Cancel")
+                Text(stringResource(R.string.action_cancel))
             }
         },
         title = {
-            Text("New discussion")
+            Text(stringResource(R.string.advanced_new_discussion))
         },
         text = {
             Column(
@@ -1118,7 +1121,7 @@ private fun DiscussionDialog(
                         title = it
                     },
                     label = {
-                        Text("Title")
+                        Text(stringResource(R.string.issues_title_field))
                     },
                     singleLine = true,
                 )
@@ -1129,7 +1132,7 @@ private fun DiscussionDialog(
                         body = it
                     },
                     label = {
-                        Text("Body")
+                        Text(stringResource(R.string.advanced_content))
                     },
                     minLines = 5,
                     maxLines = 10,
@@ -1159,7 +1162,7 @@ private fun ProjectDialog(
                     onCreate(title)
                 },
             ) {
-                Text("Create")
+                Text(stringResource(R.string.action_create))
             }
         },
         dismissButton = {
@@ -1167,11 +1170,11 @@ private fun ProjectDialog(
                 enabled = enabled,
                 onClick = onDismiss,
             ) {
-                Text("Cancel")
+                Text(stringResource(R.string.action_cancel))
             }
         },
         title = {
-            Text("New Project")
+            Text(stringResource(R.string.advanced_new_project))
         },
         text = {
             OutlinedTextField(
@@ -1181,7 +1184,7 @@ private fun ProjectDialog(
                     title = it
                 },
                 label = {
-                    Text("Project title")
+                    Text(stringResource(R.string.advanced_project_title))
                 },
                 singleLine = true,
             )
@@ -1229,7 +1232,7 @@ private fun GistDialog(
                     )
                 },
             ) {
-                Text("Create")
+                Text(stringResource(R.string.action_create))
             }
         },
         dismissButton = {
@@ -1237,11 +1240,11 @@ private fun GistDialog(
                 enabled = enabled,
                 onClick = onDismiss,
             ) {
-                Text("Cancel")
+                Text(stringResource(R.string.action_cancel))
             }
         },
         title = {
-            Text("New Gist")
+            Text(stringResource(R.string.advanced_new_gist))
         },
         text = {
             Column(
@@ -1258,7 +1261,7 @@ private fun GistDialog(
                         fileName = it
                     },
                     label = {
-                        Text("File name")
+                        Text(stringResource(R.string.advanced_file_name))
                     },
                     singleLine = true,
                 )
@@ -1269,7 +1272,7 @@ private fun GistDialog(
                         description = it
                     },
                     label = {
-                        Text("Description")
+                        Text(stringResource(R.string.repo_description))
                     },
                     maxLines = 2,
                 )
@@ -1280,7 +1283,7 @@ private fun GistDialog(
                         content = it
                     },
                     label = {
-                        Text("Content")
+                        Text(stringResource(R.string.advanced_content))
                     },
                     minLines = 5,
                     maxLines = 10,
@@ -1292,7 +1295,7 @@ private fun GistDialog(
                     horizontalArrangement =
                         Arrangement.SpaceBetween,
                 ) {
-                    Text("Public Gist")
+                    Text(stringResource(R.string.advanced_public_gist))
                     Switch(
                         checked = publicGist,
                         onCheckedChange = {

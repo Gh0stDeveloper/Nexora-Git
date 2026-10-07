@@ -36,9 +36,11 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import com.nexora.git.R
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.nexora.git.core.issues.CreateIssueRequest
 import com.nexora.git.core.issues.IssueLabel
@@ -97,11 +99,11 @@ fun IssuesScreen(
             onDismissRequest = viewModel::dismissError,
             confirmButton = {
                 TextButton(onClick = viewModel::dismissError) {
-                    Text("OK")
+                    Text(stringResource(R.string.action_ok))
                 }
             },
             title = {
-                Text("Issues")
+                Text(stringResource(R.string.issues_title))
             },
             text = {
                 Text(message)
@@ -114,11 +116,11 @@ fun IssuesScreen(
             onDismissRequest = viewModel::dismissSuccess,
             confirmButton = {
                 TextButton(onClick = viewModel::dismissSuccess) {
-                    Text("Done")
+                    Text(stringResource(R.string.action_done))
                 }
             },
             title = {
-                Text("Nexora Git")
+                Text(stringResource(R.string.app_name))
             },
             text = {
                 Text(message)
@@ -166,7 +168,7 @@ internal fun IssuesContent(
                 IconButton(onClick = onBack) {
                     Icon(
                         imageVector = Icons.AutoMirrored.Outlined.ArrowBack,
-                        contentDescription = "Back",
+                        contentDescription = stringResource(R.string.action_back),
                     )
                 }
 
@@ -174,7 +176,7 @@ internal fun IssuesContent(
                     modifier = Modifier.weight(1f),
                 ) {
                     Text(
-                        text = "Issues",
+                        text = stringResource(R.string.issues_title),
                         style = MaterialTheme.typography.titleLarge,
                     )
                     Text(
@@ -190,7 +192,7 @@ internal fun IssuesContent(
                 ) {
                     Icon(
                         imageVector = Icons.Outlined.Refresh,
-                        contentDescription = "Refresh issues",
+                        contentDescription = stringResource(R.string.issues_refresh),
                     )
                 }
             }
@@ -218,7 +220,7 @@ internal fun IssuesContent(
                             )
                         },
                         label = {
-                            Text("Search issues")
+                            Text(stringResource(R.string.issues_search))
                         },
                     )
 
@@ -234,7 +236,7 @@ internal fun IssuesContent(
                                 onSearch(search)
                             },
                         ) {
-                            Text("Search")
+                            Text(stringResource(R.string.action_search))
                         }
 
                         OutlinedButton(
@@ -245,7 +247,7 @@ internal fun IssuesContent(
                                 onClearFilters()
                             },
                         ) {
-                            Text("Clear")
+                            Text(stringResource(R.string.action_clear))
                         }
                     }
                 }
@@ -272,7 +274,7 @@ internal fun IssuesContent(
                     imageVector = Icons.Outlined.Add,
                     contentDescription = null,
                 )
-                Text("New issue")
+                Text(stringResource(R.string.issues_new))
             }
         }
 
@@ -292,7 +294,7 @@ internal fun IssuesContent(
                 ) {
                     Text(
                         modifier = Modifier.padding(18.dp),
-                        text = "No issues match the current filters.",
+                        text = stringResource(R.string.issues_no_matches),
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
                 }
@@ -329,7 +331,7 @@ private fun FilterSection(
             verticalArrangement = Arrangement.spacedBy(10.dp),
         ) {
             Text(
-                text = "Filters",
+                text = stringResource(R.string.issues_filters),
                 style = MaterialTheme.typography.titleMedium,
             )
 
@@ -360,7 +362,7 @@ private fun FilterSection(
 
             if (state.labels.isNotEmpty()) {
                 Text(
-                    text = "Labels",
+                    text = stringResource(R.string.issues_labels),
                     style = MaterialTheme.typography.labelLarge,
                 )
                 Row(
@@ -386,7 +388,7 @@ private fun FilterSection(
 
             if (state.assignees.isNotEmpty()) {
                 Text(
-                    text = "Assignee",
+                    text = stringResource(R.string.issues_assignee),
                     style = MaterialTheme.typography.labelLarge,
                 )
                 Row(
@@ -401,7 +403,7 @@ private fun FilterSection(
                             onSetAssignee(null)
                         },
                         label = {
-                            Text("Anyone")
+                            Text(stringResource(R.string.issues_anyone))
                         },
                     )
                     state.assignees.forEach { user ->
@@ -421,7 +423,7 @@ private fun FilterSection(
 
             if (state.milestones.isNotEmpty()) {
                 Text(
-                    text = "Milestone",
+                    text = stringResource(R.string.issues_milestone),
                     style = MaterialTheme.typography.labelLarge,
                 )
                 Row(
@@ -436,7 +438,7 @@ private fun FilterSection(
                             onSetMilestone(null)
                         },
                         label = {
-                            Text("Any")
+                            Text(stringResource(R.string.issues_any))
                         },
                     )
                     state.milestones.forEach { milestone ->
@@ -514,7 +516,7 @@ private fun IssueRow(
 
             issue.milestone?.let {
                 Text(
-                    text = "Milestone: " + it.title,
+                    text = stringResource(R.string.issue_milestone, it.title),
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     style = MaterialTheme.typography.bodySmall,
                 )
@@ -568,7 +570,7 @@ private fun CreateIssueDialog(
                     )
                 },
             ) {
-                Text("Create")
+                Text(stringResource(R.string.action_create))
             }
         },
         dismissButton = {
@@ -576,11 +578,11 @@ private fun CreateIssueDialog(
                 enabled = !operationInProgress,
                 onClick = onDismiss,
             ) {
-                Text("Cancel")
+                Text(stringResource(R.string.action_cancel))
             }
         },
         title = {
-            Text("New issue")
+            Text(stringResource(R.string.issues_new))
         },
         text = {
             LazyColumn(
@@ -595,7 +597,7 @@ private fun CreateIssueDialog(
                             title = it
                         },
                         label = {
-                            Text("Title")
+                            Text(stringResource(R.string.issues_title_field))
                         },
                     )
                 }
@@ -609,14 +611,14 @@ private fun CreateIssueDialog(
                             body = it
                         },
                         label = {
-                            Text("Description")
+                            Text(stringResource(R.string.issues_description))
                         },
                     )
                 }
                 if (labels.isNotEmpty()) {
                     item {
                         Text(
-                            text = "Labels",
+                            text = stringResource(R.string.issues_labels),
                             style = MaterialTheme.typography.labelLarge,
                         )
                     }
@@ -637,7 +639,7 @@ private fun CreateIssueDialog(
                 if (assignees.isNotEmpty()) {
                     item {
                         Text(
-                            text = "Assignees",
+                            text = stringResource(R.string.issues_assignees),
                             style = MaterialTheme.typography.labelLarge,
                         )
                     }
@@ -663,7 +665,7 @@ private fun CreateIssueDialog(
                 if (milestones.isNotEmpty()) {
                     item {
                         Text(
-                            text = "Milestone",
+                            text = stringResource(R.string.issues_milestone),
                             style = MaterialTheme.typography.labelLarge,
                         )
                     }
