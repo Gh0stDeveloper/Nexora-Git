@@ -1,6 +1,10 @@
 name: Dependency Review
 
 on:
+  push:
+    branches:
+      - main
+      - "phase-s/**"
   pull_request:
     branches:
       - main
@@ -16,6 +20,7 @@ concurrency:
 
 jobs:
   dependency-review:
+    if: github.event_name == 'pull_request'
     name: Review dependency changes
     runs-on: ubuntu-latest
     timeout-minutes: 20
@@ -84,3 +89,23 @@ jobs:
             --new=new-results.json
             --gh-annotations=true
             --fail-on-vuln=true
+
+
+  dependency-scan-main:
+    if: github.event_name == 'push'
+    name: Scan full dependency graph
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          submodules: recursive
+
+      - name: Scan all known dependency vulnerabilities
+        uses: google/osv-scanner-action/osv-scanner-action@7f58dd6750d78fc29a900ba64b1a0f946f62fba4 # v2.6.0
+        with:
+          scan-args: |-
+            --recursive
+            ./
