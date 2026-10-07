@@ -105,4 +105,12 @@
     <string name="home_quick_clone">Clone</string>
     <string name="home_quick_import">Import</string>
     <string name="home_quick_create">Create</string>
+
+    <string name="git_durable_title">Durable Git operation</string>
+    <string name="git_durable_queued">Queued; it will continue if Android recreates the screen.</string>
+    <string name="git_durable_fetch">Fetching remote changes…</string>
+    <string name="git_durable_pull">Integrating remote changes…</string>
+    <string name="git_durable_push">Pushing commits…</string>
+    <string name="git_durable_lfs">Uploading Git LFS objects…</string>
+    <string name="git_durable_cancel">Cancel operation</string>
 </resources>
