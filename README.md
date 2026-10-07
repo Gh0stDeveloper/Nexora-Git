@@ -1,5 +1,7 @@
 <div align="center">
 
+<img src="docs/assets/nexora-git-icon.svg" alt="Nexora Git app icon" width="128" height="128">
+
 # Nexora Git
 
 **Advanced open-source Git and GitHub workspace for Android**
