@@ -89,4 +89,20 @@
     <string name="clone_durable_running">Cloning repository in durable background work…</string>
     <string name="clone_durable_resolving">Preparing repository and credentials…</string>
     <string name="clone_durable_cancel">Cancel clone</string>
+
+    <string name="home_recent_workspaces">Continue working</string>
+    <string name="home_recent_repositories">Recent GitHub repositories</string>
+    <string name="home_no_workspaces">No local workspaces yet.</string>
+    <string name="home_no_repositories">No cached repositories for this account yet.</string>
+    <string name="home_workspace_summary">%1$d local workspaces · %2$d GitHub repositories</string>
+    <string name="home_branch">Branch: %1$s</string>
+    <string name="home_changes">%1$d changes</string>
+    <string name="home_conflicts">%1$d conflicts</string>
+    <string name="home_ahead_behind">↑%1$d ↓%2$d</string>
+    <string name="home_open_workspace">Open workspace</string>
+    <string name="home_open_repository">Open repository</string>
+    <string name="home_quick_actions">Quick actions</string>
+    <string name="home_quick_clone">Clone</string>
+    <string name="home_quick_import">Import</string>
+    <string name="home_quick_create">Create</string>
 </resources>
