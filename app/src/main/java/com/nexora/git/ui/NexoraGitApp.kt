@@ -17,6 +17,8 @@ import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -159,6 +161,16 @@ private fun AuthenticatedNexoraGitApp(
 ) {
     val activeAccount = requireNotNull(state.activeAccount)
     val navController = rememberNavController()
+    var repositoryEntryAction by remember {
+        mutableStateOf(
+            when (initialOnboardingAction) {
+                OnboardingAction.CLONE -> RepositoryEntryAction.CLONE
+                OnboardingAction.IMPORT -> RepositoryEntryAction.IMPORT
+                OnboardingAction.CREATE -> RepositoryEntryAction.CREATE
+                else -> RepositoryEntryAction.NONE
+            },
+        )
+    }
     val startDestination = remember(initialOnboardingAction) {
         if (initialOnboardingAction == null) {
             NexoraDestination.HOME.route
@@ -210,10 +222,31 @@ private fun AuthenticatedNexoraGitApp(
             composable(NexoraDestination.HOME.route) {
                 HomeScreen(
                     contentPadding = paddingValues,
+                    activeLogin = activeAccount.login,
                     onOpenRepositories = {
                         navController.navigate(
                             NexoraDestination.REPOSITORIES.route,
                         )
+                    },
+                    onOpenWorkspace = { workspaceId ->
+                        navController.navigate("git/" + workspaceId)
+                    },
+                    onOpenRepository = { owner, name ->
+                        navController.navigate(
+                            "repository/" + owner + "/" + name,
+                        )
+                    },
+                    onClone = {
+                        repositoryEntryAction = RepositoryEntryAction.CLONE
+                        navController.navigate(NexoraDestination.REPOSITORIES.route)
+                    },
+                    onImport = {
+                        repositoryEntryAction = RepositoryEntryAction.IMPORT
+                        navController.navigate(NexoraDestination.REPOSITORIES.route)
+                    },
+                    onCreate = {
+                        repositoryEntryAction = RepositoryEntryAction.CREATE
+                        navController.navigate(NexoraDestination.REPOSITORIES.route)
                     },
                     onOpenExplore = {
                         navController.navigate(
@@ -240,13 +273,11 @@ private fun AuthenticatedNexoraGitApp(
             composable(NexoraDestination.REPOSITORIES.route) {
                 RepositoriesScreen(
                     contentPadding = paddingValues,
-                    initialAction = when (initialOnboardingAction) {
-                        OnboardingAction.CLONE -> RepositoryEntryAction.CLONE
-                        OnboardingAction.IMPORT -> RepositoryEntryAction.IMPORT
-                        OnboardingAction.CREATE -> RepositoryEntryAction.CREATE
-                        else -> RepositoryEntryAction.NONE
+                    initialAction = repositoryEntryAction,
+                    onInitialActionConsumed = {
+                        repositoryEntryAction = RepositoryEntryAction.NONE
+                        onInitialActionConsumed()
                     },
-                    onInitialActionConsumed = onInitialActionConsumed,
                     onOpenRepository = { owner, name ->
                         navController.navigate(
                             "repository/" + owner + "/" + name,
