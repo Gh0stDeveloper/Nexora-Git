@@ -56,5 +56,25 @@ aab_fp="$(
   exit 1
 }
 
-jarsigner -verify -strict "$aab" >/dev/null 2>&1
+verify_output="$(mktemp)"
+trap 'rm -f "$verify_output"' EXIT
+set +e
+LC_ALL=C jarsigner -verify -strict "$aab" >"$verify_output" 2>&1
+verify_status=$?
+set -e
+
+grep -q '^jar verified' "$verify_output" || {
+  printf 'AAB/JAR cryptographic verification failed.\n' >&2
+  exit 1
+}
+
+# Strict exit 4 is expected for Android's self-signed app-signing certificate.
+# Identity is pinned above by exact SHA-256 fingerprint.
+if [[ "$verify_status" -ne 0 && "$verify_status" -ne 4 ]]; then
+  printf 'AAB/JAR strict verification failed with status %s.\n' "$verify_status" >&2
+  exit 1
+fi
+
+rm -f "$verify_output"
+trap - EXIT
 printf 'Release signing and broker/callback parity verified.\n'

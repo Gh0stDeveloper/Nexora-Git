@@ -368,6 +368,33 @@ android_release_aab_fingerprint() {
     awk -F': ' '/SHA256:/ {print toupper($2); exit}'
 }
 
+android_release_verify_aab_signature() {
+  local aab="$1"
+  local jarsigner="$NEXORA_ANDROID_JAVA_HOME/bin/jarsigner"
+  local output status
+
+  output="$(mktemp)"
+  set +e
+  LC_ALL=C "$jarsigner" -verify -strict "$aab" >"$output" 2>&1
+  status=$?
+  set -e
+
+  if ! grep -q '^jar verified' "$output"; then
+    rm -f "$output"
+    return 1
+  fi
+
+  # jarsigner strict exit code 4 means the signer chain is not anchored in a
+  # public PKI trust store. Android application signing keys are intentionally
+  # self-signed; certificate identity is enforced separately by SHA-256.
+  if [[ "$status" -ne 0 && "$status" -ne 4 ]]; then
+    rm -f "$output"
+    return 1
+  fi
+
+  rm -f "$output"
+}
+
 android_release_verify_signed() {
   local job_id="$1"
   android_artifact_valid_job_id "$job_id" || die "Invalid Android build job ID."
@@ -402,8 +429,8 @@ android_release_verify_signed() {
   jarsigner="$NEXORA_ANDROID_JAVA_HOME/bin/jarsigner"
   "$apksigner" verify --verbose --print-certs "$apk" >/dev/null ||
     die "Signed APK verification failed."
-  "$jarsigner" -verify -strict "$aab" >/dev/null 2>&1 ||
-    die "Signed AAB/JAR verification failed."
+  android_release_verify_aab_signature "$aab" ||
+    die "Signed AAB/JAR cryptographic verification failed."
 
   apk_fp="$(android_release_apk_fingerprint "$apk")"
   aab_fp="$(android_release_aab_fingerprint "$aab")"
