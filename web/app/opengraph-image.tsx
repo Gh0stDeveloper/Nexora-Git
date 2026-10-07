@@ -4,9 +4,6 @@ export const alt = "Nexora Git — Git & GitHub workspace for Android";
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
 
-const icon = `<svg xmlns="http://www.w3.org/2000/svg" width="108" height="108" viewBox="0 0 108 108"><path fill="#6F42C1" d="M0 0h108v108H0z"/><path fill="#FFF" d="M30 24a7 7 0 1 0 0 14 7 7 0 0 0 0-14zm48 46a7 7 0 1 0 0 14 7 7 0 0 0 0-14zm-48 0a7 7 0 1 0 0 14 7 7 0 0 0 0-14z"/><path fill="none" stroke="#FFF" stroke-width="6" stroke-linecap="round" stroke-linejoin="round" d="M30 38v32M37 31h14c15 0 27 12 27 27v12"/></svg>`;
-const iconData = `data:image/svg+xml;base64,${Buffer.from(icon).toString("base64")}`;
-
 export default function OpenGraphImage() {
   return new ImageResponse(
     (
@@ -25,7 +22,11 @@ export default function OpenGraphImage() {
         }}
       >
         <div style={{ display: "flex", alignItems: "center", gap: 28 }}>
-          <img src={iconData} width="108" height="108" style={{ borderRadius: 22 }} alt="" />
+          <svg width={108} height={108} viewBox="0 0 108 108" style={{ borderRadius: 22 }}>
+            <path fill="#6F42C1" d="M0 0h108v108H0z" />
+            <path fill="#FFFFFF" d="M30 24a7 7 0 1 0 0 14 7 7 0 0 0 0-14zm48 46a7 7 0 1 0 0 14 7 7 0 0 0 0-14zm-48 0a7 7 0 1 0 0 14 7 7 0 0 0 0-14z" />
+            <path fill="none" stroke="#FFFFFF" strokeWidth={6} strokeLinecap="round" strokeLinejoin="round" d="M30 38v32M37 31h14c15 0 27 12 27 27v12" />
+          </svg>
           <div style={{ display: "flex", flexDirection: "column" }}>
             <div style={{ fontSize: 30, color: "#8b949e" }}>Gh0stDeveloper /</div>
             <div style={{ fontSize: 58, fontWeight: 700, letterSpacing: -2 }}>Nexora Git</div>

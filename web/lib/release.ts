@@ -36,7 +36,7 @@ function isReleaseInfo(value: unknown): value is ReleaseInfo {
 
 export async function getLatestRelease(): Promise<ReleaseInfo | null> {
   try {
-    const raw = await readFile(metadataPath, "utf8");
+    const raw = await readFile(/* turbopackIgnore: true */ metadataPath, "utf8");
     const parsed: unknown = JSON.parse(raw);
     return isReleaseInfo(parsed) ? parsed : null;
   } catch {
