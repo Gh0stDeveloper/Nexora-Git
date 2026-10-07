@@ -14,6 +14,7 @@ set(NEXORA_TREE_SITTER_PYTHON_REF "26855eabccb19c6abf499fbc5b8dc7cc9ab8bc64" CAC
 set(NEXORA_TREE_SITTER_JAVASCRIPT_REF "58404d8cf191d69f2674a8fd507bd5776f46cb11" CACHE STRING "Pinned JavaScript grammar commit")
 set(NEXORA_TREE_SITTER_TYPESCRIPT_REF "75b3874edb2dc714fb1fd77a32013d0f8699989f" CACHE STRING "Pinned TypeScript grammar commit")
 option(NEXORA_BUILD_NATIVE_TESTS "Build host native Git tests" OFF)
+option(NEXORA_BUILD_NATIVE_FUZZERS "Build project-owned host fuzz targets" OFF)
 
 set(NEXORA_CONFIG_SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/../config")
 include("${NEXORA_CONFIG_SOURCE_DIR}/cmake/NexoraSecureConfig.cmake")
@@ -314,5 +315,33 @@ if(NEXORA_BUILD_NATIVE_TESTS AND NOT ANDROID)
     add_test(
         NAME nexoragit_native_tests
         COMMAND nexoragit_native_tests
+    )
+endif()
+
+
+if(NEXORA_BUILD_NATIVE_FUZZERS AND NOT ANDROID)
+    if(NOT CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+        message(FATAL_ERROR "NEXORA_BUILD_NATIVE_FUZZERS requires Clang.")
+    endif()
+
+    add_executable(
+        nexora_secure_config_fuzzer
+        "${NEXORA_CONFIG_SOURCE_DIR}/fuzz/secure_config_decode_fuzz.cpp"
+    )
+    target_include_directories(
+        nexora_secure_config_fuzzer
+        PRIVATE
+        "${NEXORA_SECURE_CONFIG_GENERATED_DIR}"
+    )
+    target_compile_options(
+        nexora_secure_config_fuzzer
+        PRIVATE
+        -fsanitize=fuzzer,address,undefined
+        -fno-omit-frame-pointer
+    )
+    target_link_options(
+        nexora_secure_config_fuzzer
+        PRIVATE
+        -fsanitize=fuzzer,address,undefined
     )
 endif()
