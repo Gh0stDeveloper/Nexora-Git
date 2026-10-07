@@ -1294,8 +1294,11 @@ internal fun AdvancedGitPanel(
                     state.stashes.forEach { stash ->
                         HorizontalDivider()
                         Text(
-                            "stash@{" + stash.index + "} · " +
+                            stringResource(
+                                R.string.git_stash_ref,
+                                stash.index,
                                 stash.oid.take(7),
+                            ),
                             style = MaterialTheme.typography.titleSmall,
                         )
                         Text(
