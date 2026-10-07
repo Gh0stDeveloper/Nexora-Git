@@ -68,4 +68,34 @@ android_signing_restore_internal "$backup" "$passphrase"
 restored_hash_after="$(sha256sum "$NEXORA_SIGNING_KEYSTORE" | awk '{print $1}')"
 [[ "$restored_hash_before" == "$restored_hash_after" ]]
 
+# A different valid identity must never overwrite the installed release key.
+restored_root="$NEXORA_SIGNING_ROOT"
+different_root="$TEMP_ROOT/different-vault"
+export NEXORA_SIGNING_ROOT="$different_root"
+export NEXORA_SIGNING_KEYSTORE="$NEXORA_SIGNING_ROOT/release.p12"
+export NEXORA_SIGNING_SECRETS="$NEXORA_SIGNING_ROOT/secrets.env"
+export NEXORA_SIGNING_METADATA="$NEXORA_SIGNING_ROOT/identity.conf"
+export NEXORA_SIGNING_CERTIFICATE="$NEXORA_SIGNING_ROOT/certificate.pem"
+export NEXORA_SIGNING_BACKUP_DIR="$NEXORA_SIGNING_ROOT/backups"
+
+android_signing_create_identity
+different_backup="$TEMP_ROOT/different-signing-backup.nxbk"
+android_signing_backup_internal "$different_backup" "$passphrase" >/dev/null
+
+export NEXORA_SIGNING_ROOT="$restored_root"
+export NEXORA_SIGNING_KEYSTORE="$NEXORA_SIGNING_ROOT/release.p12"
+export NEXORA_SIGNING_SECRETS="$NEXORA_SIGNING_ROOT/secrets.env"
+export NEXORA_SIGNING_METADATA="$NEXORA_SIGNING_ROOT/identity.conf"
+export NEXORA_SIGNING_CERTIFICATE="$NEXORA_SIGNING_ROOT/certificate.pem"
+export NEXORA_SIGNING_BACKUP_DIR="$NEXORA_SIGNING_ROOT/backups"
+
+if (android_signing_restore_internal "$different_backup" "$passphrase") >/dev/null 2>&1; then
+  printf 'Expected a different signing identity restore to be rejected.\n' >&2
+  exit 1
+fi
+
+android_signing_verify
+final_fingerprint="$(android_signing_cert_fingerprint "$NEXORA_SIGNING_CERTIFICATE" sha256)"
+[[ "$final_fingerprint" == "$first_fingerprint" ]]
+
 printf 'Android Signing Vault tests passed.\n'
