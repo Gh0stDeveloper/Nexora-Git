@@ -20,7 +20,7 @@ cat > "$INSTALL_DIR/auth-broker/.env" <<'EOF'
 GITHUB_APP_CLIENT_ID=Iv1.test
 GITHUB_APP_CLIENT_SECRET=super-secret-must-survive
 GITHUB_CALLBACK_URL=https://nexora.example.com/oauth/callback
-APP_CALLBACK_URI=nexoragit://oauth/callback
+APP_CALLBACK_URI=https://nexora.example.com/oauth/android/callback
 PORT=18080
 WEB_PORT=18181
 SITE_URL=https://old.example.com
