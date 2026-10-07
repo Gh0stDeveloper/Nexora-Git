@@ -1,5 +1,7 @@
 package com.nexora.build
 
+import java.net.URI
+import java.util.Properties
 import org.gradle.api.GradleException
 import org.gradle.api.Project
 
@@ -17,6 +19,50 @@ object NexoraBuildSecrets {
         "NEXORA_SIGNING_KEY_ALIAS",
         "NEXORA_SIGNING_KEY_PASSWORD",
     )
+
+
+    fun authBrokerHost(project: Project): String {
+        val environmentValue = project.providers
+            .environmentVariable("NEXORA_AUTH_BROKER_BASE_URL")
+            .orNull
+            ?.trim()
+            .orEmpty()
+
+        val localValue = project.rootProject
+            .file("nexora.local.properties")
+            .takeIf { it.isFile }
+            ?.inputStream()
+            ?.use { input ->
+                Properties().apply { load(input) }
+                    .getProperty("NEXORA_AUTH_BROKER_BASE_URL")
+                    ?.trim()
+            }
+            .orEmpty()
+
+        val raw = environmentValue.ifBlank { localValue }
+        if (raw.isBlank()) {
+            return "nexora.invalid"
+        }
+
+        val uri = runCatching { URI(raw) }
+            .getOrElse {
+                throw GradleException("NEXORA_AUTH_BROKER_BASE_URL is not a valid URI.")
+            }
+
+        if (!uri.scheme.equals("https", ignoreCase = true) ||
+            uri.host.isNullOrBlank() ||
+            uri.userInfo != null ||
+            uri.query != null ||
+            uri.fragment != null ||
+            (uri.path.isNotBlank() && uri.path != "/")
+        ) {
+            throw GradleException(
+                "NEXORA_AUTH_BROKER_BASE_URL must be an HTTPS origin without path, query or fragment.",
+            )
+        }
+
+        return uri.host
+    }
 
     fun releaseSigning(project: Project): ReleaseSigningSecrets? {
         val values = requiredSigningVariables.associateWith { name ->
