@@ -417,8 +417,10 @@ internal fun ReleaseDetailContent(
 
             item {
                 Text(
-                    text = "Assets (" +
-                        release.assets.size + ")",
+                    text = stringResource(
+                        R.string.release_assets,
+                        release.assets.size,
+                    ),
                     style = MaterialTheme.typography.titleMedium,
                 )
             }
@@ -426,7 +428,7 @@ internal fun ReleaseDetailContent(
             if (release.assets.isEmpty()) {
                 item {
                     ReleaseDetailEmptyCard(
-                        "This release has no assets.",
+                        stringResource(R.string.release_no_assets),
                     )
                 }
             } else {
@@ -539,8 +541,10 @@ private fun ReleaseHeaderCard(
             )
 
             Text(
-                text = "Target: " +
+                text = stringResource(
+                    R.string.release_target,
                     release.targetCommitish,
+                ),
                 fontFamily = FontFamily.Monospace,
                 color =
                     MaterialTheme.colorScheme.onSurfaceVariant,
