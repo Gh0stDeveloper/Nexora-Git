@@ -84,4 +84,9 @@
     <string name="onboarding_create">Crear repositorio</string>
     <string name="onboarding_skip">Omitir por ahora</string>
     <string name="onboarding_replay">Repetir introducción</string>
+
+    <string name="clone_durable_queued">Clone en cola; continuará aunque Android recree la pantalla.</string>
+    <string name="clone_durable_running">Clonando repositorio en segundo plano…</string>
+    <string name="clone_durable_resolving">Preparando repositorio y credenciales…</string>
+    <string name="clone_durable_cancel">Cancelar clone</string>
 </resources>
