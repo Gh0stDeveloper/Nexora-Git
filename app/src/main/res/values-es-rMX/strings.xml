@@ -634,4 +634,10 @@
     <string name="pulls_create_draft">Crear como borrador</string>
     <string name="pulls_maintainer_edits">Permitir ediciones del mantenedor</string>
     <string name="releases_generate_notes">Generar notas del release</string>
+
+    <string name="repository_language_not_detected">No detectado</string>
+    <string name="pr_checks_summary">%1$d correctos · %2$d fallidos</string>
+    <string name="workflow_run_attempt">Ejecución #%1$d · intento %2$d</string>
+    <string name="workflow_branch_sha">%1$s · %2$s</string>
+    <string name="release_no_assets">Este release no tiene assets.</string>
 </resources>
