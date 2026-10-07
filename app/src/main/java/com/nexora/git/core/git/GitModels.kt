@@ -121,6 +121,7 @@ data class GitPushResult(
 data class GitCloneRequest(
     val url: String,
     val destinationPath: String,
+    val accountId: Long? = null,
 )
 
 data class GitPullRequest(
