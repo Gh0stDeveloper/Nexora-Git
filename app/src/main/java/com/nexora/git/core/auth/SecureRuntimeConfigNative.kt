@@ -9,7 +9,7 @@ internal data class SecureRuntimeAuthConfig(
 
 internal object SecureRuntimeConfigNative {
     private val nativeLoaded: Boolean = runCatching {
-        System.loadLibrary("nexoraconfig")
+        System.loadLibrary("nexoragit")
         true
     }.getOrDefault(false)
 
