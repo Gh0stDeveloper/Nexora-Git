@@ -1,4 +1,4 @@
-name: Stable Release
+name: Signed Release
 
 on:
   push:
@@ -14,7 +14,7 @@ concurrency:
 
 jobs:
   release:
-    name: Build, verify and publish stable release
+    name: Build, verify and publish signed release
     runs-on: ubuntu-latest
     timeout-minutes: 45
     environment: production
@@ -33,12 +33,22 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Validate release policy and tag
+      - name: Validate release channel, policy and tag
         shell: bash
         run: |
+          set -euo pipefail
           bash scripts/ci/validate-production.sh
-          bash scripts/ci/validate-release-tag.sh "$GITHUB_REF_NAME"
-          git fetch origin main --no-tags
+          git fetch origin main --tags --force
+
+          if [[ "$GITHUB_REF_NAME" =~ -(beta|rc)\.[0-9]+$ ]]; then
+            echo "RELEASE_CHANNEL=prerelease" >> "$GITHUB_ENV"
+            bash scripts/ci/validate-release-tag.sh "$GITHUB_REF_NAME" prerelease
+          else
+            echo "RELEASE_CHANNEL=stable" >> "$GITHUB_ENV"
+            bash scripts/ci/validate-release-tag.sh "$GITHUB_REF_NAME" stable
+            bash scripts/ci/validate-stable-promotion.sh "$GITHUB_REF_NAME"
+          fi
+
           git merge-base --is-ancestor "$GITHUB_SHA" origin/main
 
       - name: Validate production configuration
@@ -111,6 +121,13 @@ jobs:
             :app:testDebugUnitTest \
             :app:lintRelease
 
+      - name: Scan built artifacts for embedded secrets
+        shell: bash
+        env:
+          NEXORA_FORBIDDEN_SIGNING_STORE_PASSWORD: ${{ secrets.NEXORA_SIGNING_STORE_PASSWORD }}
+          NEXORA_FORBIDDEN_SIGNING_KEY_PASSWORD: ${{ secrets.NEXORA_SIGNING_KEY_PASSWORD }}
+        run: bash scripts/ci/scan-android-artifacts-for-secrets.sh
+
       - name: Verify APK signature
         shell: bash
         run: |
@@ -167,6 +184,12 @@ jobs:
           VERSION="${GITHUB_REF_NAME#v}"
           if gh release view "$GITHUB_REF_NAME" >/dev/null 2>&1; then
             gh release upload "$GITHUB_REF_NAME" dist/* --clobber
+          elif [[ "$RELEASE_CHANNEL" == "prerelease" ]]; then
+            gh release create "$GITHUB_REF_NAME" dist/* \
+              --verify-tag \
+              --prerelease \
+              --title "Nexora Git $VERSION" \
+              --generate-notes
           else
             gh release create "$GITHUB_REF_NAME" dist/* \
               --verify-tag \
