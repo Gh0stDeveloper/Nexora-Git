@@ -20,24 +20,11 @@ android {
 
     targetProjectPath = ":app"
 
-    testOptions {
-        managedDevices {
-            devices {
-                maybeCreate<com.android.build.api.dsl.ManagedVirtualDevice>(
-                    "pixel6Api35",
-                ).apply {
-                    device = "Pixel 6"
-                    apiLevel = 35
-                    systemImageSource = "aosp"
-                }
-            }
-        }
-    }
 }
 
+
 baselineProfile {
-    managedDevices += "pixel6Api35"
-    useConnectedDevices = false
+    useConnectedDevices = true
 }
 
 dependencies {
