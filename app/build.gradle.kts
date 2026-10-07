@@ -162,6 +162,7 @@ dependencies {
     implementation(libs.androidx.browser)
     implementation(libs.androidx.appcompat)
     implementation(libs.androidx.work.runtime)
+    implementation(libs.androidx.work.runtime.ktx)
 
     implementation(libs.retrofit.core)
     implementation(libs.okhttp.core)
