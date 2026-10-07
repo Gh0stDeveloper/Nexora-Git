@@ -42,6 +42,8 @@ class SettingsContentTest {
                     onConfirmForcePush = {},
                     onWifiOnly = {},
                     onReplayOnboarding = {},
+                    onOpenPrivacy = {},
+                    onOpenSource = {},
                     onReset = {},
                 )
             }
