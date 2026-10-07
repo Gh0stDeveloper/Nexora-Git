@@ -16,6 +16,7 @@ import java.util.concurrent.TimeUnit
 import javax.inject.Inject
 import javax.inject.Singleton
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.first
 
 @Singleton
@@ -98,7 +99,7 @@ class DurableWorkspaceOperations @Inject constructor(
     }
 
     fun observe(id: UUID): Flow<WorkInfo> =
-        workManager.getWorkInfoByIdFlow(id)
+        workManager.getWorkInfoByIdFlow(id).filterNotNull()
 
     fun cancel(id: UUID) {
         workManager.cancelWorkById(id)
