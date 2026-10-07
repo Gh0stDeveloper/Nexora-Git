@@ -31,6 +31,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import com.nexora.git.R
 import com.nexora.git.feature.activity.ActivityScreen
 import com.nexora.git.feature.actions.ActionsScreen
 import com.nexora.git.feature.actions.WorkflowRunDetailScreen
@@ -85,11 +86,11 @@ fun NexoraGitApp(
             onDismissRequest = authViewModel::clearError,
             confirmButton = {
                 TextButton(onClick = authViewModel::clearError) {
-                    Text("OK")
+                    Text(stringResource(R.string.action_ok))
                 }
             },
             title = {
-                Text("GitHub authentication")
+                Text(stringResource(R.string.auth_dialog_title))
             },
             text = {
                 Text(message)
