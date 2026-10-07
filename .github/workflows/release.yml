@@ -201,14 +201,20 @@ jobs:
         shell: bash
         run: |
           VERSION="${GITHUB_REF_NAME#v}"
-          python3 scripts/ci/generate-release-sbom.py             "$VERSION"             dist/NexoraGit-$VERSION-SBOM.spdx.json
+          python3 scripts/ci/generate-release-sbom.py \
+            "$VERSION" \
+            "dist/NexoraGit-$VERSION-SBOM.spdx.json"
 
       - name: Generate release checksums
         shell: bash
         run: |
           (
             cd dist
-            sha256sum NexoraGit-* > SHA256SUMS.txt
+            sha256sum \
+              NexoraGit-* \
+              SIGNING-CERT-SHA256.txt \
+              SOURCE-COMMIT.txt \
+              > SHA256SUMS.txt
           )
 
       - name: Attest release build provenance
@@ -218,6 +224,8 @@ jobs:
             dist/*.apk
             dist/*.aab
             dist/*-SBOM.spdx.json
+            dist/SIGNING-CERT-SHA256.txt
+            dist/SOURCE-COMMIT.txt
             dist/SHA256SUMS.txt
 
       - name: Upload verified release artifacts
@@ -235,6 +243,12 @@ jobs:
         run: |
           set -euo pipefail
           VERSION="${GITHUB_REF_NAME#v}"
+          NOTES_FILE="docs/release/notes/$VERSION.md"
+          notes_args=(--generate-notes)
+          if [[ -s "$NOTES_FILE" ]]; then
+            notes_args=(--notes-file "$NOTES_FILE")
+          fi
+
           if gh release view "$GITHUB_REF_NAME" >/dev/null 2>&1; then
             gh release upload "$GITHUB_REF_NAME" dist/* --clobber
           elif [[ "$RELEASE_CHANNEL" == "prerelease" ]]; then
@@ -242,10 +256,10 @@ jobs:
               --verify-tag \
               --prerelease \
               --title "Nexora Git $VERSION" \
-              --generate-notes
+              "${notes_args[@]}"
           else
             gh release create "$GITHUB_REF_NAME" dist/* \
               --verify-tag \
               --title "Nexora Git $VERSION" \
-              --generate-notes
+              "${notes_args[@]}"
           fi
