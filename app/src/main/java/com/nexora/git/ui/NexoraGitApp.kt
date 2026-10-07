@@ -43,6 +43,7 @@ import com.nexora.git.feature.files.CodeBrowserScreen
 import com.nexora.git.feature.git.GitWorkspaceScreen
 import com.nexora.git.feature.issues.IssueDetailScreen
 import com.nexora.git.feature.issues.IssuesScreen
+import com.nexora.git.feature.onboarding.OnboardingScreen
 import com.nexora.git.feature.profile.ProfileScreen
 import com.nexora.git.feature.pulls.PullRequestDetailScreen
 import com.nexora.git.feature.pulls.PullRequestsScreen
@@ -50,10 +51,13 @@ import com.nexora.git.feature.repositories.RepositoriesScreen
 import com.nexora.git.feature.repositories.RepositoryDetailScreen
 import com.nexora.git.feature.releases.ReleaseDetailScreen
 import com.nexora.git.feature.releases.ReleasesScreen
+import com.nexora.git.feature.settings.SettingsScreen
 import com.nexora.git.ui.navigation.NexoraDestination
 
 @Composable
 fun NexoraGitApp(
+    onboardingCompleted: Boolean? = true,
+    onCompleteOnboarding: () -> Unit = {},
     modifier: Modifier = Modifier,
     authViewModel: AuthViewModel = hiltViewModel(),
 ) {
@@ -89,6 +93,22 @@ fun NexoraGitApp(
     }
 
     when {
+        onboardingCompleted == null -> {
+            Box(
+                modifier = modifier.fillMaxSize(),
+                contentAlignment = Alignment.Center,
+            ) {
+                CircularProgressIndicator()
+            }
+        }
+
+        !onboardingCompleted -> {
+            OnboardingScreen(
+                onComplete = onCompleteOnboarding,
+                modifier = modifier,
+            )
+        }
+
         state.loading -> {
             Box(
                 modifier = modifier.fillMaxSize(),
@@ -599,10 +619,21 @@ private fun AuthenticatedNexoraGitApp(
                     onSwitchAccount = onSwitchAccount,
                     onAddAccount = onAddAccount,
                     onSignOut = onSignOut,
+                    onOpenSettings = {
+                        navController.navigate("settings")
+                    },
                     onOpenRepository = { owner, name ->
                         navController.navigate(
                             "repository/" + owner + "/" + name,
                         )
+                    },
+                )
+            }
+            composable("settings") {
+                SettingsScreen(
+                    contentPadding = paddingValues,
+                    onBack = {
+                        navController.popBackStack()
                     },
                 )
             }
