@@ -48,10 +48,12 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.nexora.git.R
 import com.nexora.git.core.auth.AuthAccountSummary
 import com.nexora.git.core.git.GitBranch
 import com.nexora.git.core.git.GitConflictResolution
@@ -465,6 +467,43 @@ fun GitWorkspaceScreen(
         } else {
             item {
                 RepositorySummaryCard(state)
+            }
+
+            if (state.durableOperationId != null) {
+                item {
+                    Card(modifier = Modifier.fillMaxWidth()) {
+                        Column(
+                            modifier = Modifier.padding(16.dp),
+                            verticalArrangement = Arrangement.spacedBy(10.dp),
+                        ) {
+                            Text(
+                                text = stringResource(R.string.git_durable_title),
+                                style = MaterialTheme.typography.titleMedium,
+                            )
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(12.dp),
+                            ) {
+                                CircularProgressIndicator()
+                                Text(
+                                    text = when (state.durableOperationPhase) {
+                                        "fetch" -> stringResource(R.string.git_durable_fetch)
+                                        "pull" -> stringResource(R.string.git_durable_pull)
+                                        "push" -> stringResource(R.string.git_durable_push)
+                                        "lfs-upload" -> stringResource(R.string.git_durable_lfs)
+                                        else -> stringResource(R.string.git_durable_queued)
+                                    },
+                                )
+                            }
+                            OutlinedButton(
+                                modifier = Modifier.fillMaxWidth(),
+                                onClick = viewModel::cancelDurableOperation,
+                            ) {
+                                Text(stringResource(R.string.git_durable_cancel))
+                            }
+                        }
+                    }
+                }
             }
 
             item {
