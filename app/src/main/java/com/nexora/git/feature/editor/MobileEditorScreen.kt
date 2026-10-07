@@ -377,7 +377,7 @@ private fun EditorHeader(
             modifier = Modifier.weight(1f),
         ) {
             Text(
-                text = state.file?.name ?: "Editor",
+                text = state.file?.name ?: stringResource(R.string.editor_title),
                 style = MaterialTheme.typography.titleMedium,
                 maxLines = 1,
             )
