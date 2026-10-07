@@ -17,6 +17,14 @@ FILES = [
     "app/src/main/java/com/nexora/git/feature/actions/ActionsScreen.kt",
     "app/src/main/java/com/nexora/git/feature/releases/ReleasesScreen.kt",
     "app/src/main/java/com/nexora/git/feature/editor/MobileEditorScreen.kt",
+    "app/src/main/java/com/nexora/git/feature/activity/ActivityScreen.kt",
+    "app/src/main/java/com/nexora/git/feature/explore/ExploreScreen.kt",
+    "app/src/main/java/com/nexora/git/feature/repositories/RepositoryDetailScreen.kt",
+    "app/src/main/java/com/nexora/git/feature/issues/IssueDetailScreen.kt",
+    "app/src/main/java/com/nexora/git/feature/pulls/PullRequestDetailScreen.kt",
+    "app/src/main/java/com/nexora/git/feature/releases/ReleaseDetailScreen.kt",
+    "app/src/main/java/com/nexora/git/feature/actions/WorkflowRunDetailScreen.kt",
+    "app/src/main/java/com/nexora/git/feature/advanced/AdvancedGitHubScreen.kt",
 ]
 
 PATTERNS = [
