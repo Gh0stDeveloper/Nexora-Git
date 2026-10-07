@@ -63,7 +63,7 @@ jobjectArray ReadConfig(JNIEnv* env, jobject /* thiz */) {
     return result;
 }
 
-constexpr JNINativeMethod kMethods[] = {
+JNINativeMethod kMethods[] = {
     {
         const_cast<char*>("readConfig"),
         const_cast<char*>("()[Ljava/lang/String;"),

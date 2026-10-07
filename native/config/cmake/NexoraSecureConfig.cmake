@@ -104,6 +104,14 @@ function(nexora_encode_value VALUE OFFSET KEY_A_HEX KEY_B_HEX OUTPUT_ARRAY OUTPU
 endfunction()
 
 function(nexora_generate_secure_runtime_config OUTPUT_DIR)
+    if(EXISTS "${NEXORA_LOCAL_CONFIG_FILE}")
+        set_property(
+            DIRECTORY
+            APPEND
+            PROPERTY CMAKE_CONFIGURE_DEPENDS "${NEXORA_LOCAL_CONFIG_FILE}"
+        )
+    endif()
+
     nexora_config_value("NEXORA_GITHUB_CLIENT_ID" github_client_id)
     nexora_config_value("NEXORA_AUTH_BROKER_BASE_URL" broker_base_url)
     nexora_config_value("NEXORA_GITHUB_CALLBACK_URL" github_callback_url)
