@@ -171,7 +171,7 @@ internal fun IssueDetailContent(
                     modifier = Modifier.weight(1f),
                 ) {
                     Text(
-                        text = "Issue #" + state.number,
+                        text = stringResource(R.string.issue_number, state.number),
                         style = MaterialTheme.typography.titleLarge,
                     )
                     Text(
@@ -279,7 +279,7 @@ internal fun IssueDetailContent(
                     ) {
                         Text(
                             modifier = Modifier.padding(16.dp),
-                            text = "No comments yet.",
+                            text = stringResource(R.string.issue_no_comments),
                             color =
                                 MaterialTheme.colorScheme.onSurfaceVariant,
                         )
@@ -500,7 +500,7 @@ private fun IssueHeaderCard(
 
             summary.milestone?.let {
                 Text(
-                    text = "Milestone: " + it.title,
+                    text = stringResource(R.string.issue_milestone, it.title),
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
             }
