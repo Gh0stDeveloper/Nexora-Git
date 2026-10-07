@@ -20,7 +20,7 @@ Nexora Git is being extended so the same Android application can be built both b
 | --- | --- | --- |
 | A | persistent Android toolchain, isolated builder user, storage layout, setup/status/doctor | implemented on the feature branch |
 | B | persistent Signing Vault, one-time keystore generation, fingerprint, encrypted backup/restore guards | implemented on the feature branch |
-| C | systemd background build worker, queue, cancellation and detached execution | planned |
+| C | systemd background build worker, persistent queue, immutable snapshots, cancellation and detached execution | implemented on the feature branch |
 | D | APK/AAB staging, logs, metadata, checksums, retention and diagnostics | planned |
 | E | secure GitHub Actions secret export and signing/config parity verification | planned |
 | F | update/autobuild integration, coalescing, disaster recovery and final hardening | planned |
@@ -159,6 +159,118 @@ Restore is deliberately conservative:
 - restoring over partial/corrupt local signing state is refused.
 
 This prevents an update or operator mistake from silently changing the application signing identity.
+
+## Phase C — detached background build worker
+
+Phase C is split into six internal delivery gates:
+
+| Subphase | Scope |
+| --- | --- |
+| C1 | persistent FIFO queue and job state model |
+| C2 | immutable Git snapshot per job |
+| C3 | hardened systemd worker under the non-login build account |
+| C4 | cancellation, crash/reboot recovery and single-build locking |
+| C5 | build/job/worker CLI and journald diagnostics |
+| C6 | security isolation and CI tests |
+
+### Queue and immutable source snapshot
+
+A build request receives a sortable unique ID such as:
+
+```text
+20261007T010000Z-a1b2c3d4
+```
+
+The root-side manager resolves the requested Git ref to an exact 40-character commit SHA and exports that commit with `git archive` into:
+
+```text
+/var/lib/nexora-git/android/builds/BUILD_ID/source/
+```
+
+The background worker compiles that immutable snapshot. Updating or changing the managed checkout while a build is running cannot mutate the job's source tree.
+
+Queue state is persisted outside Git:
+
+```text
+/var/lib/nexora-git/android/
+├── queue/
+│   ├── pending/
+│   ├── running/
+│   ├── completed/
+│   ├── failed/
+│   └── cancelled/
+├── cancel/
+├── locks/
+├── current-job
+└── builds/
+    └── BUILD_ID/
+        ├── source/
+        └── job.conf
+```
+
+Only one Gradle build is allowed at a time. The service model already provides a single worker, and an additional `flock` lock prevents accidental duplicate worker processes.
+
+### Detached systemd execution
+
+The installer enables:
+
+```text
+nexora-git-android-worker.service
+```
+
+The service runs continuously as the isolated `nexora-build` account and starts automatically after a reboot. SSH is not part of the worker lifecycle: once a request is queued, the terminal can disconnect without affecting the build.
+
+Hardening includes:
+
+- `NoNewPrivileges=yes`;
+- empty capability bounding and ambient capability sets;
+- private `/tmp` and device namespace;
+- read-only system filesystem except the Android state and Gradle-cache paths;
+- protected home, hostname, clock, kernel tunables/modules/logs and control groups;
+- control-group kill semantics so cancelling a build also terminates Gradle/native child processes;
+- reduced CPU/I/O priority so application builds do not unnecessarily compete with hosted services.
+
+### Signing isolation
+
+The Phase C worker intentionally receives **no Signing Vault credential and no keystore**.
+
+Release mode runs the existing release/lint/test Gradle tasks without signing variables. This produces the release build outputs while keeping the authoritative release identity outside the execution boundary of repository-controlled Gradle scripts.
+
+Controlled artifact staging/signing and final identity parity are handled by later phases. This separation prevents a modified build script from simply reading or exfiltrating the release signing key.
+
+### Build commands
+
+```bash
+sudo nexora-git android build release
+sudo nexora-git android build debug
+sudo nexora-git android build release main
+sudo nexora-git android builds
+sudo nexora-git android builds 50
+sudo nexora-git android job BUILD_ID
+sudo nexora-git android cancel BUILD_ID
+sudo nexora-git android worker status
+sudo nexora-git android worker logs
+```
+
+The optional ref may be a branch, tag or commit that resolves in the managed repository. The resolved commit SHA is persisted in the job and cannot change afterwards.
+
+### Cancellation and recovery
+
+Queued jobs can be cancelled without touching the worker. For a running job, the manager writes a cancellation marker and asks systemd to terminate the complete worker control group. Because the service uses `Restart=always`, systemd starts a clean worker process again and the remaining queue continues.
+
+If a process or host stops without an explicit cancellation marker, a request left in `running/` is considered orphaned on startup and is returned to `pending/` with status `QUEUED_RECOVERED`. An explicit cancellation marker instead moves it to `cancelled/`.
+
+This distinction prevents host reboots or service crashes from silently losing jobs.
+
+### Public application configuration
+
+Each queue request captures only the public Android configuration required by the app:
+
+- GitHub App Client ID;
+- HTTPS Auth Broker base URL;
+- HTTPS callback URL.
+
+The GitHub App Client Secret is never copied into a build request or worker environment.
 
 ## Why the VPS and GitHub builds can match
 

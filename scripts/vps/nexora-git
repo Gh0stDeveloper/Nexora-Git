@@ -9,6 +9,8 @@ source "$SCRIPT_DIR/lib.sh"
 source "$SCRIPT_DIR/android-build-lib.sh"
 # shellcheck source=android-signing-lib.sh
 source "$SCRIPT_DIR/android-signing-lib.sh"
+# shellcheck source=android-worker-lib.sh
+source "$SCRIPT_DIR/android-worker-lib.sh"
 
 usage() {
   cat <<'EOF'
@@ -37,6 +39,12 @@ Usage:
   nexora-git android signing certificate
   nexora-git android signing backup [PATH]
   nexora-git android signing restore <PATH>
+  nexora-git android build [release|debug] [REF]
+  nexora-git android builds [LIMIT]
+  nexora-git android job <JOB_ID>
+  nexora-git android cancel <JOB_ID>
+  nexora-git android worker status
+  nexora-git android worker logs
   nexora-git help
 EOF
 }
@@ -159,16 +167,45 @@ cmd_android() {
       android_status
       printf '\nSigning Vault:\n'
       android_signing_status || true
+      printf '\nBackground worker:\n'
+      android_worker_service_status
       ;;
     doctor)
       local failed=0
       android_doctor || failed=1
       android_signing_verify || failed=1
+      android_worker_doctor || failed=1
       return "$failed"
       ;;
     setup)
       ensure_android_foundation
       ensure_android_signing_vault
+      android_worker_install_service
+      ;;
+    build)
+      android_worker_enqueue "${2:-release}" "${3:-HEAD}"
+      ;;
+    builds)
+      android_worker_list_jobs "${2:-20}"
+      ;;
+    job)
+      android_worker_show_job "${2:-}"
+      ;;
+    cancel)
+      android_worker_cancel "${2:-}"
+      ;;
+    worker)
+      case "${2:-status}" in
+        status)
+          android_worker_service_status
+          ;;
+        logs)
+          journalctl -u "$NEXORA_ANDROID_WORKER_SERVICE" -n 200 -f
+          ;;
+        *)
+          die "Unknown android worker command: ${2:-}"
+          ;;
+      esac
       ;;
     config)
       android_config
@@ -186,9 +223,16 @@ Usage:
   nexora-git android doctor
   nexora-git android setup
   nexora-git android config
+  nexora-git android build [release|debug] [REF]
+  nexora-git android builds [LIMIT]
+  nexora-git android job <JOB_ID>
+  nexora-git android cancel <JOB_ID>
+  nexora-git android worker status
+  nexora-git android worker logs
 
-The Signing Vault commands never print signing passwords. Build, logs and
-artifact commands are added by the next Android Builder rollout phases.
+Builds run under the isolated nexora-build account and continue after SSH
+disconnects. The worker never receives the Android Signing Vault credentials;
+release outputs remain unsigned until the controlled signing phase.
 EOF
       ;;
     *)

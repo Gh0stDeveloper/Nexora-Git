@@ -100,7 +100,7 @@ https://YOUR_DOMAIN/oauth/callback
 
 ## Installation lifecycle
 
-The installer executes ten explicit stages:
+The installer executes eleven explicit stages:
 
 | Stage | Action |
 | ---: | --- |
@@ -112,7 +112,9 @@ The installer executes ten explicit stages:
 | 6 | Obtain or reuse the Let's Encrypt certificate |
 | 7 | Integrate firewall/management command safely |
 | 8 | Provision/reuse the isolated Android build-host foundation |
-| 9 | Create or verify/reuse the persistent Android Signing Vault |\n| 10 | Run final local/public health verification |
+| 9 | Create or verify/reuse the persistent Android Signing Vault |
+| 10 | Install/enable the isolated Android background build worker |
+| 11 | Run final local/public health verification |
 
 A failed prerequisite aborts rather than applying destructive workarounds.
 
@@ -131,6 +133,7 @@ The installer checks before installing packages. Core dependencies include:
 | OpenSSL | certificate diagnostics |
 | OpenJDK 17 | pinned JVM toolchain for Android/Gradle builds |
 | unzip | verified Android command-line tools extraction |
+| util-linux / `flock` | single-worker build locking |
 
 Existing dependencies are reused. Updating Nexora Git does **not** reinstall Nginx, Docker, Certbot or the operating-system packages.
 
@@ -207,7 +210,19 @@ The installer creates:
 | `nexora-git android status` | Show pinned Android host paths and component state |
 | `nexora-git android doctor` | Validate JDK, SDK, Build Tools, NDK, CMake, Gradle wrapper and persistent paths |
 | `nexora-git android setup` | Idempotently repair/reuse the Android build foundation |
-| `nexora-git android config` | Show non-secret Android build-host configuration |\n| `nexora-git android signing status` | Show public signing identity metadata without passwords |\n| `nexora-git android signing verify` | Strictly validate keystore, credentials, fingerprints and integrity |\n| `nexora-git android signing fingerprint` | Print public SHA-256/SHA-1 certificate fingerprints |\n| `nexora-git android signing certificate` | Print the public release certificate in PEM form |\n| `nexora-git android signing backup [PATH]` | Create an encrypted off-host-capable signing backup |\n| `nexora-git android signing restore <PATH>` | Restore only when no conflicting signing identity exists |
+| `nexora-git android config` | Show non-secret Android build-host configuration |
+| `nexora-git android signing status` | Show public signing identity metadata without passwords |
+| `nexora-git android signing verify` | Strictly validate keystore, credentials, fingerprints and integrity |
+| `nexora-git android signing fingerprint` | Print public SHA-256/SHA-1 certificate fingerprints |
+| `nexora-git android signing certificate` | Print the public release certificate in PEM form |
+| `nexora-git android signing backup [PATH]` | Create an encrypted off-host-capable signing backup |
+| `nexora-git android signing restore <PATH>` | Restore only when no conflicting signing identity exists |
+| `nexora-git android build [release\|debug] [REF]` | Queue an immutable background build and return its job ID |
+| `nexora-git android builds [LIMIT]` | List recent persistent build jobs |
+| `nexora-git android job <JOB_ID>` | Show one build's mode, commit and state |
+| `nexora-git android cancel <JOB_ID>` | Cancel a queued or running build |
+| `nexora-git android worker status` | Show worker and queue state |
+| `nexora-git android worker logs` | Follow the worker journal |
 | `nexora-git help` | Show command usage |
 
 `config` intentionally hides confidential values.
@@ -288,7 +303,10 @@ Reconfiguration preserves the same safety rules: no unrelated Nginx site is over
 | `/etc/nexora-git/android-builder.conf` | non-secret pinned Android toolchain configuration |
 | `/opt/nexora-android-sdk` | persistent Android SDK/NDK/CMake toolchain |
 | `/var/cache/nexora-git/gradle` | persistent Gradle cache owned by the isolated builder user |
-| `/var/lib/nexora-git/android` | persistent Android builder state, future logs/builds/artifacts |\n| `/var/lib/nexora-git/signing` | root-only Android release Signing Vault and encrypted backups |
+| `/var/lib/nexora-git/android` | persistent Android builder state, future logs/builds/artifacts |
+| `/var/lib/nexora-git/signing` | root-only Android release Signing Vault and encrypted backups |
+| `/etc/systemd/system/nexora-git-android-worker.service` | hardened detached Android build worker |
+| `/usr/local/libexec/nexora-git-android-worker` | stable worker executable symlink |
 | `/etc/letsencrypt/live/DOMAIN/` | TLS material managed by Certbot |
 
 ---
