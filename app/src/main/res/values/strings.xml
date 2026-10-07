@@ -1,4 +1,58 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">Nexora Git</string>
+
+    <string name="common_ok">OK</string>
+    <string name="common_back">Back</string>
+    <string name="common_next">Next</string>
+
+    <string name="nav_home">Home</string>
+    <string name="nav_explore">Explore</string>
+    <string name="nav_repositories">Repositories</string>
+    <string name="nav_activity">Activity</string>
+    <string name="nav_profile">Profile</string>
+
+    <string name="auth_dialog_title">GitHub authentication</string>
+    <string name="login_title">Sign in to GitHub</string>
+    <string name="login_description">Nexora Git uses GitHub&apos;s official authorization page. Passwords, passkeys and 2FA are handled only by GitHub.</string>
+    <string name="login_continue">Continue with GitHub</string>
+    <string name="login_not_configured">Authentication is disabled in this build until the GitHub App client ID, broker URL and callback URL are configured.</string>
+
+    <string name="home_description">A complete Android workspace for local Git and GitHub development.</string>
+    <string name="home_repositories_title">Repositories</string>
+    <string name="home_repositories_description">Create, clone or import a project, then browse code and use the full local Git workflow.</string>
+    <string name="home_repositories_action">Open repositories</string>
+    <string name="home_explore_title">Explore GitHub</string>
+    <string name="home_explore_description">Search repositories, users and code using the active GitHub account.</string>
+    <string name="home_explore_action">Search GitHub</string>
+    <string name="home_activity_title">Activity</string>
+    <string name="home_activity_description">Review recent account activity and open the GitHub notification inbox when needed.</string>
+    <string name="home_activity_action">View activity</string>
+    <string name="home_auth_note">GitHub authentication uses the official web flow. Nexora Git never asks for your GitHub password or passkey.</string>
+
+    <string name="onboarding_page_one_title">A real Git workspace on Android</string>
+    <string name="onboarding_page_one_description">Nexora Git works with real local repositories, branches, commits, diffs and GitHub workflows without requiring Termux.</string>
+    <string name="onboarding_page_two_title">GitHub authentication stays on GitHub</string>
+    <string name="onboarding_page_two_description">Sign-in uses GitHub&apos;s official authorization page, PKCE and a verified HTTPS callback. Nexora Git never asks for your GitHub password, passkey or 2FA secret.</string>
+    <string name="onboarding_page_three_title">Start with the workflow you already use</string>
+    <string name="onboarding_page_three_description">After sign-in you can clone a repository, import an existing local project or create a new repository and continue from your phone.</string>
+    <string name="onboarding_continue">Continue to sign in</string>
+    <string name="onboarding_skip">Skip introduction</string>
+    <string name="onboarding_progress">%1$d / %2$d</string>
+
+    <string name="settings_title">Settings</string>
+    <string name="settings_appearance">Appearance</string>
+    <string name="settings_appearance_description">Choose how Nexora Git looks on this device.</string>
+    <string name="settings_theme_system">System</string>
+    <string name="settings_theme_light">Light</string>
+    <string name="settings_theme_dark">Dark</string>
+    <string name="settings_theme_amoled">AMOLED</string>
+    <string name="settings_dynamic_color">Dynamic color</string>
+    <string name="settings_dynamic_color_description">Use Android system colors when supported.</string>
+    <string name="settings_help_onboarding">Help and onboarding</string>
+    <string name="settings_help_onboarding_description">Replay the first-run introduction without changing your GitHub session or repositories.</string>
+    <string name="settings_replay_onboarding">Replay onboarding</string>
+    <string name="settings_about">About</string>
+    <string name="settings_about_description">Open-source Git and GitHub workspace for Android.</string>
+    <string name="settings_open">Settings</string>
 </resources>
