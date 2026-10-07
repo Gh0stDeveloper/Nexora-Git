@@ -45,10 +45,13 @@ jobs:
 
       - name: Typecheck
         working-directory: web
+        env:
+          NEXT_TELEMETRY_DISABLED: "1"
         run: npm run typecheck
 
       - name: Build
         working-directory: web
         env:
+          NEXT_TELEMETRY_DISABLED: "1"
           NEXT_PUBLIC_SITE_URL: https://nexora-git.example
         run: npm run build
