@@ -14,6 +14,13 @@ grep -q 'android:allowBackup="false"' "$manifest"
 grep -q 'android:usesCleartextTraffic="false"' "$manifest"
 grep -q 'android:networkSecurityConfig="@xml/network_security_config"' "$manifest"
 grep -q 'cleartextTrafficPermitted="false"' "$network_config"
+grep -q 'android:autoVerify="true"' "$manifest"
+grep -q 'android:scheme="https"' "$manifest"
+grep -q 'android:path="/oauth/android/callback"' "$manifest"
+if grep -q 'android:scheme="nexoragit"' "$manifest"; then
+  echo "Production OAuth callback must not use an unverified custom URI scheme."
+  exit 1
+fi
 
 if grep -q 'android:debuggable="true"' "$manifest"; then
   echo "Production manifest must not be debuggable."
