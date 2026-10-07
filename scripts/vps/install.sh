@@ -160,8 +160,6 @@ log_ok "Auth Broker is healthy on 127.0.0.1:$LOCAL_PORT."
 
 phase 5 "$TOTAL_PHASES" "Nginx website and Auth Broker routing"
 NGINX_AVAILABLE="/etc/nginx/sites-available/nexora-git-auth.conf"
-NGINX_ENABLED="/etc/nginx/sites-enabled/nexora-git-auth.conf"
-
 conflicts=""
 while IFS= read -r candidate; do
   [[ -z "$candidate" ]] && continue
