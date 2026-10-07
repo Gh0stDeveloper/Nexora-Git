@@ -47,7 +47,7 @@ class OnboardingViewModel @Inject constructor(
 
     fun complete(action: OnboardingAction) {
         mutableState.update {
-            it.copy(pendingAction = action)
+            it.copy(pendingAction = action.takeUnless { selected -> selected == OnboardingAction.SKIP })
         }
         viewModelScope.launch {
             settingsRepository.setOnboardingCompleted(true)
