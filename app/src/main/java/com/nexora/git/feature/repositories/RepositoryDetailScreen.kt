@@ -1,5 +1,7 @@
 package com.nexora.git.feature.repositories
 
+import com.nexora.git.R
+
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -41,6 +43,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -105,11 +108,11 @@ fun RepositoryDetailScreen(
             onDismissRequest = viewModel::dismissError,
             confirmButton = {
                 TextButton(onClick = viewModel::dismissError) {
-                    Text("OK")
+                    Text(stringResource(R.string.action_ok))
                 }
             },
             title = {
-                Text("Repository")
+                Text(stringResource(R.string.repository_title))
             },
             text = {
                 Text(message)
@@ -122,11 +125,11 @@ fun RepositoryDetailScreen(
             onDismissRequest = viewModel::dismissSuccess,
             confirmButton = {
                 TextButton(onClick = viewModel::dismissSuccess) {
-                    Text("Done")
+                    Text(stringResource(R.string.action_done))
                 }
             },
             title = {
-                Text("Nexora Git")
+                Text(stringResource(R.string.app_name))
             },
             text = {
                 Text(message)
@@ -173,12 +176,12 @@ internal fun RepositoryDetailContent(
                 IconButton(onClick = onBack) {
                     Icon(
                         imageVector = Icons.AutoMirrored.Outlined.ArrowBack,
-                        contentDescription = "Back",
+                        contentDescription = stringResource(R.string.repository_back),
                     )
                 }
 
                 Text(
-                    text = "Repository",
+                    text = stringResource(R.string.repository_title),
                     style = MaterialTheme.typography.titleLarge,
                 )
 
@@ -190,7 +193,7 @@ internal fun RepositoryDetailContent(
                 ) {
                     Icon(
                         imageVector = Icons.Outlined.Refresh,
-                        contentDescription = "Refresh repository",
+                        contentDescription = stringResource(R.string.repository_refresh),
                     )
                 }
             }
@@ -207,7 +210,7 @@ internal fun RepositoryDetailContent(
                         horizontalArrangement = Arrangement.spacedBy(12.dp),
                     ) {
                         CircularProgressIndicator()
-                        Text("Loading repository…")
+                        Text(stringResource(R.string.repository_loading))
                     }
                 }
             }
@@ -224,7 +227,7 @@ internal fun RepositoryDetailContent(
                         modifier = Modifier.fillMaxWidth(),
                     ) {
                         Text(
-                            text = "Offline snapshot. Metadata is cached; social actions and repository settings require GitHub connectivity.",
+                            text = stringResource(R.string.repository_offline),
                             modifier = Modifier.padding(16.dp),
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                         )
@@ -266,7 +269,7 @@ internal fun RepositoryDetailContent(
                             )
                         },
                     ) {
-                        Text("Issues")
+                        Text(stringResource(R.string.repository_issues))
                     }
                 }
             }
@@ -284,7 +287,7 @@ internal fun RepositoryDetailContent(
                         )
                     },
                 ) {
-                    Text("Pull requests")
+                    Text(stringResource(R.string.repository_pulls))
                 }
             }
 
@@ -301,7 +304,7 @@ internal fun RepositoryDetailContent(
                         )
                     },
                 ) {
-                    Text("GitHub Actions")
+                    Text(stringResource(R.string.repository_actions))
                 }
             }
 
@@ -318,7 +321,7 @@ internal fun RepositoryDetailContent(
                         )
                     },
                 ) {
-                    Text("Releases")
+                    Text(stringResource(R.string.repository_releases))
                 }
             }
 
@@ -335,7 +338,7 @@ internal fun RepositoryDetailContent(
                         )
                     },
                 ) {
-                    Text("Advanced GitHub")
+                    Text(stringResource(R.string.repository_advanced))
                 }
             }
 
@@ -352,7 +355,7 @@ internal fun RepositoryDetailContent(
                             imageVector = Icons.Outlined.Settings,
                             contentDescription = null,
                         )
-                        Text("Repository settings")
+                        Text(stringResource(R.string.repository_settings))
                     }
                 }
             }
@@ -485,7 +488,7 @@ private fun RepositoryActionCard(
             verticalArrangement = Arrangement.spacedBy(10.dp),
         ) {
             Text(
-                text = "Actions",
+                text = stringResource(R.string.repository_actions_section),
                 style = MaterialTheme.typography.titleMedium,
             )
 
@@ -559,7 +562,7 @@ private fun RepositoryActionCard(
                         imageVector = Icons.Outlined.ForkRight,
                         contentDescription = null,
                     )
-                    Text("Fork")
+                    Text(stringResource(R.string.repository_fork))
                 }
 
                 Button(
@@ -571,13 +574,13 @@ private fun RepositoryActionCard(
                         imageVector = Icons.Outlined.CloudDownload,
                         contentDescription = null,
                     )
-                    Text("Clone")
+                    Text(stringResource(R.string.repository_clone))
                 }
             }
 
             if (viewerCapabilitiesUnavailable) {
                 Text(
-                    text = "Star/watch state is unavailable for the current GitHub App permissions or connection.",
+                    text = stringResource(R.string.repository_star_watch_unavailable),
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     style = MaterialTheme.typography.bodyMedium,
                 )
@@ -600,7 +603,7 @@ private fun RepositoryStatsCard(
             verticalArrangement = Arrangement.spacedBy(10.dp),
         ) {
             Text(
-                text = "Repository details",
+                text = stringResource(R.string.repository_details),
                 style = MaterialTheme.typography.titleMedium,
             )
 
@@ -714,7 +717,7 @@ private fun RepositorySettingsDialog(
                     )
                 },
             ) {
-                Text("Save")
+                Text(stringResource(R.string.action_save))
             }
         },
         dismissButton = {
@@ -722,11 +725,11 @@ private fun RepositorySettingsDialog(
                 enabled = !operationInProgress,
                 onClick = onDismiss,
             ) {
-                Text("Cancel")
+                Text(stringResource(R.string.action_cancel))
             }
         },
         title = {
-            Text("Repository settings")
+            Text(stringResource(R.string.repository_settings))
         },
         text = {
             Column(
@@ -739,7 +742,7 @@ private fun RepositorySettingsDialog(
                         description = it
                     },
                     label = {
-                        Text("Description")
+                        Text(stringResource(R.string.repo_description))
                     },
                     minLines = 2,
                     maxLines = 4,
@@ -752,7 +755,7 @@ private fun RepositorySettingsDialog(
                         homepage = it
                     },
                     label = {
-                        Text("Homepage")
+                        Text(stringResource(R.string.repository_homepage))
                     },
                 )
                 SettingsSwitchRow(
