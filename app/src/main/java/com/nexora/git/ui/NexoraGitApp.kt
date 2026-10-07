@@ -20,6 +20,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavGraph.Companion.findStartDestination
@@ -29,6 +30,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import com.nexora.git.R
 import com.nexora.git.feature.activity.ActivityScreen
 import com.nexora.git.feature.actions.ActionsScreen
 import com.nexora.git.feature.actions.WorkflowRunDetailScreen
@@ -80,11 +82,11 @@ fun NexoraGitApp(
             onDismissRequest = authViewModel::clearError,
             confirmButton = {
                 TextButton(onClick = authViewModel::clearError) {
-                    Text("OK")
+                    Text(stringResource(R.string.common_ok))
                 }
             },
             title = {
-                Text("GitHub authentication")
+                Text(stringResource(R.string.auth_dialog_title))
             },
             text = {
                 Text(message)
@@ -160,6 +162,7 @@ private fun AuthenticatedNexoraGitApp(
             if (destinations.any { it.route == currentRoute }) {
                 NavigationBar {
                     destinations.forEach { destination ->
+                        val label = stringResource(destination.labelRes)
                         NavigationBarItem(
                             selected = currentRoute == destination.route,
                             onClick = {
@@ -174,11 +177,11 @@ private fun AuthenticatedNexoraGitApp(
                             icon = {
                                 Icon(
                                     imageVector = destination.icon,
-                                    contentDescription = destination.label,
+                                    contentDescription = label,
                                 )
                             },
                             label = {
-                                Text(destination.label)
+                                Text(label)
                             },
                         )
                     }
