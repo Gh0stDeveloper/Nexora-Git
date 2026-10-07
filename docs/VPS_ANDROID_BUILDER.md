@@ -18,12 +18,12 @@ Nexora Git is being extended so the same Android application can be built both b
 
 | Phase | Scope | State |
 | --- | --- | --- |
-| A | persistent Android toolchain, isolated builder user, storage layout, setup/status/doctor | implemented on the feature branch |
-| B | persistent Signing Vault, one-time keystore generation, fingerprint, encrypted backup/restore guards | implemented on the feature branch |
-| C | systemd background build worker, persistent queue, immutable snapshots, cancellation and detached execution | implemented on the feature branch |
-| D | APK/AAB staging, persistent logs, metadata, checksums, retention and diagnostics | implemented on the feature branch |
-| E | secure GitHub Actions secret export, isolated release signing and VPS/GitHub parity verification | implemented on the feature branch |
-| F | update/autobuild integration, coalescing, disaster recovery and final hardening | planned |
+| A | persistent Android toolchain, isolated builder user, storage layout, setup/status/doctor | complete |
+| B | persistent Signing Vault, one-time keystore generation, fingerprint, encrypted backup/restore guards | complete |
+| C | systemd background build worker, persistent queue, immutable snapshots, cancellation and detached execution | complete |
+| D | APK/AAB staging, persistent logs, metadata, checksums, retention and diagnostics | complete |
+| E | secure GitHub Actions secret export, isolated release signing and VPS/GitHub parity verification | complete |
+| F | update/autobuild integration, coalescing, operational recovery and final hardening | complete |
 
 The phases are intentionally layered. No phase is allowed to regenerate a signing identity merely because a source update occurs.
 
