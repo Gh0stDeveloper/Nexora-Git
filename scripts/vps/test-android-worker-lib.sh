@@ -57,6 +57,11 @@ android_worker_process_one
 android_worker_load_state "$job1"
 [[ "$STATUS" == "COMPLETED" ]]
 [[ "$EXIT_CODE" == "0" ]]
+job1_log="$NEXORA_ANDROID_LOG_ROOT/$job1.log"
+job1_manifest="$NEXORA_ANDROID_ARTIFACT_ROOT/$job1/manifest.json"
+[[ -s "$job1_log" && -s "$job1_manifest" ]]
+expected_log_sha="$(sha256sum "$job1_log" | awk '{print $1}')"
+grep -q "\"build_log_sha256\": \"$expected_log_sha\"" "$job1_manifest"
 
 job2="20261007T010001Z-b1c2d3e4"
 job2_dir="$(android_worker_job_dir "$job2")"
@@ -73,6 +78,7 @@ android_worker_process_one
 android_worker_load_state "$job2"
 [[ "$STATUS" == "FAILED" ]]
 [[ "$EXIT_CODE" == "7" ]]
+grep -q 'status=FAILED gradle_exit=7' "$NEXORA_ANDROID_LOG_ROOT/$job2.log"
 
 job3="20261007T010002Z-c1d2e3f4"
 job3_dir="$(android_worker_job_dir "$job3")"

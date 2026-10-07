@@ -37,13 +37,12 @@ if grep -RInE --exclude-dir=.git --exclude='*.md' '(gh[pousr]_[A-Za-z0-9_]{20,}|
   exit 1
 fi
 
-bash -n scripts/vps/lib.sh
-bash -n scripts/vps/android-build-lib.sh
-bash -n scripts/vps/install.sh
-bash -n scripts/vps/nexora-git
-bash -n scripts/vps/update.sh
+bash -n scripts/vps/*.sh scripts/vps/nexora-git
 bash scripts/vps/test-lib.sh
 bash scripts/vps/test-android-build-lib.sh
+bash scripts/vps/test-android-signing-lib.sh
+bash scripts/vps/test-android-worker-lib.sh
+bash scripts/vps/test-android-artifacts-lib.sh
 
 if [[ -f gradlew ]]; then
   chmod +x gradlew

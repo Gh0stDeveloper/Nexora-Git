@@ -531,6 +531,9 @@ android_worker_signal() {
     local running="$NEXORA_ANDROID_QUEUE_RUNNING/$ANDROID_WORKER_CURRENT_JOB.job"
     if [[ -f "$NEXORA_ANDROID_CANCEL_ROOT/$ANDROID_WORKER_CURRENT_JOB" && -f "$running" ]]; then
       if android_worker_load_request "$running"; then
+        local signal_log
+        signal_log="$(android_artifacts_init_log "$ANDROID_JOB_ID")"
+        printf '[%s] job=%s status=CANCELLED signal=TERM\n' "$(date -u +%Y-%m-%dT%H:%M:%SZ)" "$ANDROID_JOB_ID" >> "$signal_log"
         android_worker_finish_job "$running" "$NEXORA_ANDROID_QUEUE_CANCELLED" "CANCELLED" "143"
       fi
     fi
@@ -585,22 +588,24 @@ android_worker_process_one() {
   fi
 
   if [[ -f "$NEXORA_ANDROID_CANCEL_ROOT/$ANDROID_JOB_ID" ]]; then
+    printf '[%s] job=%s status=CANCELLED exit=%s\n' "$(date -u +%Y-%m-%dT%H:%M:%SZ)" "$ANDROID_JOB_ID" "$result" >> "$build_log"
     android_worker_finish_job "$running" "$NEXORA_ANDROID_QUEUE_CANCELLED" "CANCELLED" "$result"
     log_warn "Android build cancelled: $ANDROID_JOB_ID"
   elif (( result == 0 )); then
     local source_dir
     source_dir="$(android_worker_job_dir "$ANDROID_JOB_ID")/source"
+    printf '[%s] job=%s status=GRADLE_SUCCESS staging=STARTED\n' "$(date -u +%Y-%m-%dT%H:%M:%SZ)" "$ANDROID_JOB_ID" >> "$build_log"
     if android_artifacts_stage "$ANDROID_JOB_ID" "$ANDROID_JOB_MODE" "$ANDROID_JOB_COMMIT" "$ANDROID_JOB_CREATED_AT" "$source_dir"; then
       android_worker_finish_job "$running" "$NEXORA_ANDROID_QUEUE_COMPLETED" "COMPLETED" "0"
-      printf '[%s] job=%s status=COMPLETED artifacts=%s\n' "$(date -u +%Y-%m-%dT%H:%M:%SZ)" "$ANDROID_JOB_ID" "$(android_artifacts_job_dir "$ANDROID_JOB_ID")" >> "$build_log"
       log_ok "Android build completed: $ANDROID_JOB_ID"
     else
       result=90
-      android_worker_finish_job "$running" "$NEXORA_ANDROID_QUEUE_FAILED" "FAILED" "$result"
       printf '[%s] job=%s status=FAILED stage_exit=%s\n' "$(date -u +%Y-%m-%dT%H:%M:%SZ)" "$ANDROID_JOB_ID" "$result" >> "$build_log"
+      android_worker_finish_job "$running" "$NEXORA_ANDROID_QUEUE_FAILED" "FAILED" "$result"
       log_error "Android build outputs failed artifact staging: $ANDROID_JOB_ID"
     fi
   else
+    printf '[%s] job=%s status=FAILED gradle_exit=%s\n' "$(date -u +%Y-%m-%dT%H:%M:%SZ)" "$ANDROID_JOB_ID" "$result" >> "$build_log"
     android_worker_finish_job "$running" "$NEXORA_ANDROID_QUEUE_FAILED" "FAILED" "$result"
     log_error "Android build failed: $ANDROID_JOB_ID (exit $result)"
   fi
