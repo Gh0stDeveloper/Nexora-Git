@@ -29,8 +29,10 @@ class RepositoryWorkspaceCoordinator @Inject constructor(
 
     suspend fun clone(
         repository: RepositorySummary,
+        requestedAccountId: Long? = null,
     ): AppResult<Workspace> {
-        val accountId = authSessionRepository.getActiveAccountId()
+        val accountId = requestedAccountId
+            ?: authSessionRepository.getActiveAccountId()
             ?: return AppResult.Failure(
                 AppError.Authentication(
                     "No active GitHub account",
@@ -65,6 +67,7 @@ class RepositoryWorkspaceCoordinator @Inject constructor(
                 GitCloneRequest(
                     url = repository.cloneUrl,
                     destinationPath = reserved.workspacePath,
+                    accountId = accountId,
                 ),
             )
 
