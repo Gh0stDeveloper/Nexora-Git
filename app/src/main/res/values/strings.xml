@@ -241,4 +241,9 @@
     <string name="editor_indent">Insert indentation</string>
     <string name="editor_format">Format document</string>
     <string name="editor_view_diff">View diff</string>
+
+    <string name="workspace_durable_import">Importing project as durable work…</string>
+    <string name="workspace_durable_sync">Synchronizing workspace as durable work…</string>
+    <string name="workspace_durable_queued">Operation queued; it will continue if Android recreates the screen.</string>
+    <string name="workspace_durable_cancel">Cancel operation</string>
 </resources>
