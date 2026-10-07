@@ -227,7 +227,7 @@ internal fun PullRequestsContent(
                 ) {
                     Text(
                         modifier = Modifier.padding(18.dp),
-                        text = "No pull requests match this state.",
+                        text = stringResource(R.string.pulls_no_matches),
                         color =
                             MaterialTheme.colorScheme.onSurfaceVariant,
                     )
@@ -435,12 +435,12 @@ private fun CreatePullRequestDialog(
                     label = { Text(stringResource(R.string.pulls_base_branch)) },
                 )
                 ToggleRow(
-                    label = "Create as draft",
+                    label = stringResource(R.string.pulls_create_draft),
                     checked = draft,
                     onCheckedChange = { draft = it },
                 )
                 ToggleRow(
-                    label = "Allow maintainer edits",
+                    label = stringResource(R.string.pulls_maintainer_edits),
                     checked = maintainersCanModify,
                     onCheckedChange = {
                         maintainersCanModify = it
