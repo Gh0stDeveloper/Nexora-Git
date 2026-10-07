@@ -338,14 +338,21 @@ private fun WorkflowRunSummaryCard(
             )
 
             Text(
-                text = "Run #" + run.runNumber +
-                    " · attempt " + run.runAttempt,
+                text = stringResource(
+                    R.string.workflow_run_attempt,
+                    run.runNumber,
+                    run.runAttempt,
+                ),
                 fontFamily = FontFamily.Monospace,
             )
 
             Text(
-                text = (run.headBranch ?: "detached") +
-                    " · " + run.headSha.take(12),
+                text = stringResource(
+                    R.string.workflow_branch_sha,
+                    run.headBranch
+                        ?: stringResource(R.string.workflow_detached),
+                    run.headSha.take(12),
+                ),
                 fontFamily = FontFamily.Monospace,
                 style = MaterialTheme.typography.bodySmall,
                 color =
