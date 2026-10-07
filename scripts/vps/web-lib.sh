@@ -219,6 +219,8 @@ EOF
 web_render_nginx_https() {
   local destination="$1"
   cat > "$destination" <<EOF
+$(web_render_rate_limit_zones)
+
 server {
     listen 80;
     listen [::]:80;
