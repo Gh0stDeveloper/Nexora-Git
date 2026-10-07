@@ -366,4 +366,10 @@
     <string name="git_upstream_tracks">%1$s sigue %2$s.</string>
     <string name="git_commit_history_count">Historial de commits (%1$d)</string>
     <string name="git_no_commits">Aún no hay commits.</string>
+
+    <string name="git_no_message">Sin mensaje</string>
+    <string name="git_remotes">Remotos</string>
+    <string name="git_no_remotes">No hay remotos configurados. Agrega un remoto de GitHub para usar fetch, pull o push.</string>
+    <string name="git_branch_upstream">Upstream: %1$s</string>
+    <string name="git_commit_paths">Commit de %1$d ruta(s)</string>
 </resources>
