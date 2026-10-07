@@ -15,6 +15,12 @@ set(NEXORA_TREE_SITTER_JAVASCRIPT_REF "58404d8cf191d69f2674a8fd507bd5776f46cb11"
 set(NEXORA_TREE_SITTER_TYPESCRIPT_REF "75b3874edb2dc714fb1fd77a32013d0f8699989f" CACHE STRING "Pinned TypeScript grammar commit")
 option(NEXORA_BUILD_NATIVE_TESTS "Build host native Git tests" OFF)
 
+set(NEXORA_CONFIG_SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/../config")
+include("${NEXORA_CONFIG_SOURCE_DIR}/cmake/NexoraSecureConfig.cmake")
+nexora_generate_secure_runtime_config(
+    "${CMAKE_CURRENT_BINARY_DIR}/generated/nexora-secure-config"
+)
+
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 set(CMAKE_C_STANDARD 11 CACHE STRING "" FORCE)
 set(CMAKE_C_STANDARD_REQUIRED ON)
@@ -228,6 +234,35 @@ if(ANDROID)
     find_library(log-lib log)
 
     add_library(
+        nexoraconfig
+        SHARED
+        "${NEXORA_CONFIG_SOURCE_DIR}/src/secure_config_jni.cpp"
+    )
+    target_include_directories(
+        nexoraconfig
+        PRIVATE
+        "${NEXORA_SECURE_CONFIG_GENERATED_DIR}"
+    )
+    set_target_properties(
+        nexoraconfig
+        PROPERTIES
+        CXX_VISIBILITY_PRESET hidden
+        VISIBILITY_INLINES_HIDDEN YES
+    )
+    target_compile_options(
+        nexoraconfig
+        PRIVATE
+        -fvisibility=hidden
+        -ffunction-sections
+        -fdata-sections
+    )
+    target_link_options(
+        nexoraconfig
+        PRIVATE
+        -Wl,--gc-sections
+    )
+
+    add_library(
         nexoragit_native
         SHARED
         src/git_jni.cpp
@@ -250,6 +285,20 @@ endif()
 
 if(NEXORA_BUILD_NATIVE_TESTS AND NOT ANDROID)
     enable_testing()
+
+    add_executable(
+        nexora_secure_config_tests
+        "${NEXORA_CONFIG_SOURCE_DIR}/tests/secure_config_smoke.cpp"
+    )
+    target_include_directories(
+        nexora_secure_config_tests
+        PRIVATE
+        "${NEXORA_SECURE_CONFIG_GENERATED_DIR}"
+    )
+    add_test(
+        NAME nexora_secure_config_tests
+        COMMAND nexora_secure_config_tests
+    )
 
     add_executable(
         nexoragit_native_tests

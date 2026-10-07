@@ -1,0 +1,13 @@
+# Nexora Git local Android runtime configuration
+#
+# Copy this file to nexora.local.properties and edit the values below.
+# nexora.local.properties is intentionally ignored by Git.
+#
+# These three values are public OAuth/runtime configuration, not confidential
+# secrets. Production CI/VPS builds should prefer environment variables.
+
+NEXORA_GITHUB_CLIENT_ID=Iv1.your-client-id
+NEXORA_AUTH_BROKER_BASE_URL=https://your-nexora-git-domain.example
+NEXORA_GITHUB_CALLBACK_URL=https://your-nexora-git-domain.example/oauth/callback
+
+# Never place GITHUB_APP_CLIENT_SECRET or Android signing passwords here.

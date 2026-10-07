@@ -72,12 +72,24 @@ jobs:
 
       - name: Build, lint and test
         shell: bash
+        env:
+          NEXORA_GITHUB_CLIENT_ID: Iv1.NexoraObfuscationSentinel
+          NEXORA_AUTH_BROKER_BASE_URL: https://obfuscation-sentinel.example
+          NEXORA_GITHUB_CALLBACK_URL: https://obfuscation-sentinel.example/oauth/callback
         run: |
           ./gradlew --no-daemon \
             :app:assembleDebug \
             :app:assembleDebugAndroidTest \
             :app:testDebugUnitTest \
             :app:lintDebug
+
+      - name: Verify runtime configuration obfuscation
+        shell: bash
+        env:
+          NEXORA_GITHUB_CLIENT_ID: Iv1.NexoraObfuscationSentinel
+          NEXORA_AUTH_BROKER_BASE_URL: https://obfuscation-sentinel.example
+          NEXORA_GITHUB_CALLBACK_URL: https://obfuscation-sentinel.example/oauth/callback
+        run: bash scripts/ci/validate-runtime-config-obfuscation.sh
 
       - name: Upload debug APK
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
