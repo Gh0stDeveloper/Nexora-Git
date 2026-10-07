@@ -28,7 +28,10 @@ class Libgit2GitEngine @Inject constructor(
         request: GitCloneRequest,
     ): GitRepository = native {
         val credentials = credentialProvider
-            .credentialsFor(request.url)
+            .credentialsFor(
+                remoteUrl = request.url,
+                accountId = request.accountId,
+            )
             .orEmpty()
 
         parser.repository(
