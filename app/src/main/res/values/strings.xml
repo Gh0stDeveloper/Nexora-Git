@@ -372,4 +372,20 @@
     <string name="git_no_remotes">No remotes configured. Add a GitHub remote to fetch, pull or push.</string>
     <string name="git_branch_upstream">Upstream: %1$s</string>
     <string name="git_commit_paths">Commit %1$d path(s)</string>
+
+    <string name="git_stash_ref">stash@{%1$d} · %2$s</string>
+    <string name="repo_github_section">GitHub</string>
+    <string name="repo_no_github">No GitHub repositories</string>
+    <string name="repo_device_section">On this device</string>
+    <string name="repo_no_local">No local workspaces</string>
+    <string name="repo_loading_github">Loading GitHub repositories…</string>
+    <string name="repo_branch">Branch: %1$s</string>
+    <string name="actions_triggered_by">Triggered by %1$s</string>
+    <string name="actions_dispatch_workflow">Dispatch %1$s</string>
+    <string name="releases_tags_count">Tags (%1$d)</string>
+    <string name="releases_delete_tag_cd">Delete tag %1$s</string>
+    <string name="editor_tree_sitter">Tree-sitter · %1$s</string>
+    <string name="editor_line_prefix">Ln %1$d</string>
+    <string name="editor_diff_summary">Diff  +%1$d  -%2$d</string>
+    <string name="editor_commit_summary">Commit changes  +%1$d  -%2$d</string>
 </resources>
