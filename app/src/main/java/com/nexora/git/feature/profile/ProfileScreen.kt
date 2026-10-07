@@ -18,6 +18,7 @@ import androidx.compose.material.icons.outlined.Edit
 import androidx.compose.material.icons.automirrored.outlined.Logout
 import androidx.compose.material.icons.outlined.Refresh
 import androidx.compose.material.icons.outlined.Star
+import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
@@ -61,6 +62,7 @@ fun ProfileScreen(
     onAddAccount: () -> Unit,
     onSignOut: () -> Unit,
     onOpenRepository: (String, String) -> Unit,
+    onOpenSettings: () -> Unit = {},
     viewModel: ProfileViewModel = hiltViewModel(),
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
@@ -88,6 +90,7 @@ fun ProfileScreen(
         onAddAccount = onAddAccount,
         onSignOut = onSignOut,
         onOpenRepository = onOpenRepository,
+        onOpenSettings = onOpenSettings,
         onUnstar = viewModel::unstar,
         onSetFollowing = viewModel::setFollowing,
     )
@@ -149,6 +152,7 @@ internal fun ProfileContent(
     onAddAccount: () -> Unit,
     onSignOut: () -> Unit,
     onOpenRepository: (String, String) -> Unit,
+    onOpenSettings: () -> Unit = {},
     onUnstar: (StarredRepository) -> Unit,
     onSetFollowing: (GitHubSocialUser, Boolean) -> Unit,
 ) {
@@ -180,6 +184,15 @@ internal fun ProfileContent(
                         text = "@" + activeAccount.login,
                         color =
                             MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
+
+                IconButton(
+                    onClick = onOpenSettings,
+                ) {
+                    Icon(
+                        imageVector = Icons.Outlined.Settings,
+                        contentDescription = "Settings",
                     )
                 }
 
