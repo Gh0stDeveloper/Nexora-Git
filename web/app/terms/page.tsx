@@ -14,7 +14,7 @@ export default function TermsPage() {
       <div className="mb-8 border-b border-[#30363d] pb-6">
         <p className="mb-2 text-sm font-semibold text-[#58a6ff]">Nexora Git</p>
         <h1 className="text-3xl font-bold tracking-tight">Terms & Conditions</h1>
-        <p className="mt-3 text-sm text-[#8b949e]">Last updated: October 7, 2026</p>
+        <p className="mt-3 text-sm text-[#8b949e]">Last updated: October 6, 2026</p>
       </div>
 
       <div className="space-y-8 text-[15px] leading-7 text-[#c9d1d9]">

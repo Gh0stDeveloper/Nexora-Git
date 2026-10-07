@@ -24,7 +24,7 @@ export function SiteHeader() {
           rel="noreferrer"
         >
           <CodeIcon />
-          <span className="hidden xs:inline">Source</span>
+          <span className="hidden sm:inline">Source</span>
           <ExternalIcon className="h-3.5 w-3.5 text-[#8b949e]" />
         </a>
       </div>
