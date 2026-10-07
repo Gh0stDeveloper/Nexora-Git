@@ -244,7 +244,7 @@ internal fun ExploreContent(
                 ) {
                     Text(
                         modifier = Modifier.padding(16.dp),
-                        text = "No matching results.",
+                        text = stringResource(R.string.explore_no_results),
                         color =
                             MaterialTheme.colorScheme.onSurfaceVariant,
                     )
@@ -325,7 +325,7 @@ private fun UserSearchCard(
                     style = MaterialTheme.typography.titleMedium,
                 )
                 Text(
-                    text = user.type ?: "GitHub user",
+                    text = user.type ?: stringResource(R.string.explore_github_user),
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
             }
