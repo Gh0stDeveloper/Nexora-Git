@@ -608,46 +608,46 @@ private fun RepositoryStatsCard(
             )
 
             RepositoryDetailRow(
-                label = "Stars",
+                label = stringResource(R.string.repository_metric_stars),
                 value = repository.stars.toString(),
             )
             RepositoryDetailRow(
-                label = "Forks",
+                label = stringResource(R.string.repository_metric_forks),
                 value = repository.forks.toString(),
             )
             RepositoryDetailRow(
-                label = "Open issues",
+                label = stringResource(R.string.repository_metric_open_issues),
                 value = repository.openIssues.toString(),
             )
             RepositoryDetailRow(
-                label = "Watchers",
+                label = stringResource(R.string.repository_metric_watchers),
                 value = details.subscribers.toString(),
             )
             RepositoryDetailRow(
-                label = "Size",
+                label = stringResource(R.string.repository_metric_size),
                 value = humanRepositorySize(repository.sizeKb),
             )
             RepositoryDetailRow(
-                label = "Permission",
+                label = stringResource(R.string.repository_metric_permission),
                 value = permissionLabel(details),
             )
 
             HorizontalDivider()
 
             RepositoryDetailRow(
-                label = "Issues",
+                label = stringResource(R.string.repository_feature_issues),
                 value = enabledLabel(details.hasIssues),
             )
             RepositoryDetailRow(
-                label = "Wiki",
+                label = stringResource(R.string.repository_feature_wiki),
                 value = enabledLabel(details.hasWiki),
             )
             RepositoryDetailRow(
-                label = "Projects",
+                label = stringResource(R.string.repository_feature_projects),
                 value = enabledLabel(details.hasProjects),
             )
             RepositoryDetailRow(
-                label = "Pages",
+                label = stringResource(R.string.repository_feature_pages),
                 value = enabledLabel(details.hasPages),
             )
         }
@@ -759,21 +759,21 @@ private fun RepositorySettingsDialog(
                     },
                 )
                 SettingsSwitchRow(
-                    label = "Issues",
+                    label = stringResource(R.string.repository_feature_issues),
                     checked = hasIssues,
                     onCheckedChange = {
                         hasIssues = it
                     },
                 )
                 SettingsSwitchRow(
-                    label = "Wiki",
+                    label = stringResource(R.string.repository_feature_wiki),
                     checked = hasWiki,
                     onCheckedChange = {
                         hasWiki = it
                     },
                 )
                 SettingsSwitchRow(
-                    label = "Delete branch after merge",
+                    label = stringResource(R.string.repository_delete_branch_after_merge),
                     checked = deleteBranchOnMerge,
                     onCheckedChange = {
                         deleteBranchOnMerge = it
