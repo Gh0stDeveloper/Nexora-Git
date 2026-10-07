@@ -39,6 +39,9 @@ job1_dir="$(android_worker_job_dir "$job1")"
 mkdir -p "$job1_dir/source"
 cat > "$job1_dir/source/gradlew" <<'EOF'
 #!/usr/bin/env bash
+set -euo pipefail
+mkdir -p app/build/outputs/apk/debug
+printf 'worker-debug-apk' > app/build/outputs/apk/debug/app-debug.apk
 exit 0
 EOF
 chmod +x "$job1_dir/source/gradlew"
