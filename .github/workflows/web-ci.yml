@@ -39,9 +39,21 @@ jobs:
           cache: npm
           cache-dependency-path: web/package.json
 
-      - name: Install dependencies
+      - name: Resolve reproducible npm lockfile
         working-directory: web
-        run: npm install --no-audit --no-fund
+        run: npm install --package-lock-only --ignore-scripts --no-audit --no-fund
+
+      - name: Upload resolved npm lockfile
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7
+        with:
+          name: nexora-web-package-lock
+          path: web/package-lock.json
+          if-no-files-found: error
+          retention-days: 1
+
+      - name: Install dependencies from lockfile
+        working-directory: web
+        run: npm ci --ignore-scripts --no-audit --no-fund
 
       - name: Typecheck
         working-directory: web
