@@ -21,9 +21,9 @@ tmp="$(mktemp -d)"
 trap 'rm -rf "$tmp"' EXIT
 unzip -q "$apk" -d "$tmp/apk"
 
-mapfile -t config_libs < <(find "$tmp/apk/lib" -type f -name 'libnexoraconfig.so' | sort)
-if (( ${#config_libs[@]} != 3 )); then
-  printf 'Expected libnexoraconfig.so for exactly 3 Android ABIs; found %s.\n' "${#config_libs[@]}" >&2
+mapfile -t runtime_libs < <(find "$tmp/apk/lib" -type f -name 'libnexoragit.so' | sort)
+if (( ${#runtime_libs[@]} != 3 )); then
+  printf 'Expected native runtime library for exactly 3 Android ABIs; found %s.\n' "${#runtime_libs[@]}" >&2
   exit 1
 fi
 
@@ -34,7 +34,7 @@ sentinels=(
   "nexoragit://oauth/callback"
 )
 
-for file in "$tmp"/apk/classes*.dex "${config_libs[@]}"; do
+for file in "$tmp"/apk/classes*.dex "${runtime_libs[@]}"; do
   [[ -f "$file" ]] || continue
   for value in "${sentinels[@]}"; do
     if strings "$file" | grep -Fqx "$value"; then
@@ -44,13 +44,13 @@ for file in "$tmp"/apk/classes*.dex "${config_libs[@]}"; do
   done
 done
 
-for so in "${config_libs[@]}"; do
+for so in "${runtime_libs[@]}"; do
   if readelf -Ws "$so" | grep -q 'Java_com_nexora_git_core_auth_SecureRuntimeConfigNative'; then
-    printf 'Native config library exposes name-based JNI symbols instead of RegisterNatives.\n' >&2
+    printf 'Native runtime library exposes name-based JNI symbols instead of RegisterNatives.\n' >&2
     exit 1
   fi
   readelf -Ws "$so" | grep -q 'JNI_OnLoad' || {
-    printf 'Native config library is missing JNI_OnLoad registration entrypoint.\n' >&2
+    printf 'Native runtime library is missing JNI_OnLoad registration entrypoint.\n' >&2
     exit 1
   }
 done
