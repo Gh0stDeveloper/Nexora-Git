@@ -13,6 +13,7 @@ export function Footer() {
             <a className="hover:text-[#58a6ff]" href={source}>Source code</a>
             <a className="hover:text-[#58a6ff]" href={`${source}/blob/main/CONTRIBUTING.md`}>Contributing</a>
             <a className="hover:text-[#58a6ff]" href={`${source}/blob/main/SECURITY.md`}>Security</a>
+            <a className="hover:text-[#58a6ff]" href="/privacy">Privacy</a>
             <a className="hover:text-[#58a6ff]" href="/terms">Terms</a>
           </nav>
         </div>
