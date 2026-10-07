@@ -14,6 +14,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalView
 import androidx.core.view.WindowCompat
+import com.nexora.git.core.settings.AppThemeMode
 
 private val DarkColors = darkColorScheme(
     primary = DarkPrimary,
@@ -42,16 +43,9 @@ private val LightColors = lightColorScheme(
     outline = LightOutline,
 )
 
-enum class NexoraThemeMode {
-    SYSTEM,
-    LIGHT,
-    DARK,
-    AMOLED,
-}
-
 @Composable
 fun NexoraGitTheme(
-    mode: NexoraThemeMode = NexoraThemeMode.SYSTEM,
+    mode: AppThemeMode = AppThemeMode.SYSTEM,
     dynamicColor: Boolean = false,
     content: @Composable () -> Unit,
 ) {
@@ -59,15 +53,15 @@ fun NexoraGitTheme(
     val systemDark = isSystemInDarkTheme()
 
     val dark = when (mode) {
-        NexoraThemeMode.SYSTEM -> systemDark
-        NexoraThemeMode.LIGHT -> false
-        NexoraThemeMode.DARK,
-        NexoraThemeMode.AMOLED,
+        AppThemeMode.SYSTEM -> systemDark
+        AppThemeMode.LIGHT -> false
+        AppThemeMode.DARK,
+        AppThemeMode.AMOLED,
         -> true
     }
 
     val colorScheme = when {
-        mode == NexoraThemeMode.AMOLED -> AmoledColors
+        mode == AppThemeMode.AMOLED -> AmoledColors
         dynamicColor && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S && dark ->
             dynamicDarkColorScheme(context)
         dynamicColor && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S ->
