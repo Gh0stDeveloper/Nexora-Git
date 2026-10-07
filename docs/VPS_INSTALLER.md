@@ -100,7 +100,7 @@ https://YOUR_DOMAIN/oauth/callback
 
 ## Installation lifecycle
 
-The installer executes nine explicit stages:
+The installer executes ten explicit stages:
 
 | Stage | Action |
 | ---: | --- |
@@ -112,7 +112,7 @@ The installer executes nine explicit stages:
 | 6 | Obtain or reuse the Let's Encrypt certificate |
 | 7 | Integrate firewall/management command safely |
 | 8 | Provision/reuse the isolated Android build-host foundation |
-| 9 | Run final local/public health verification |
+| 9 | Create or verify/reuse the persistent Android Signing Vault |\n| 10 | Run final local/public health verification |
 
 A failed prerequisite aborts rather than applying destructive workarounds.
 
@@ -207,7 +207,7 @@ The installer creates:
 | `nexora-git android status` | Show pinned Android host paths and component state |
 | `nexora-git android doctor` | Validate JDK, SDK, Build Tools, NDK, CMake, Gradle wrapper and persistent paths |
 | `nexora-git android setup` | Idempotently repair/reuse the Android build foundation |
-| `nexora-git android config` | Show non-secret Android build-host configuration |
+| `nexora-git android config` | Show non-secret Android build-host configuration |\n| `nexora-git android signing status` | Show public signing identity metadata without passwords |\n| `nexora-git android signing verify` | Strictly validate keystore, credentials, fingerprints and integrity |\n| `nexora-git android signing fingerprint` | Print public SHA-256/SHA-1 certificate fingerprints |\n| `nexora-git android signing certificate` | Print the public release certificate in PEM form |\n| `nexora-git android signing backup [PATH]` | Create an encrypted off-host-capable signing backup |\n| `nexora-git android signing restore <PATH>` | Restore only when no conflicting signing identity exists |
 | `nexora-git help` | Show command usage |
 
 `config` intentionally hides confidential values.
@@ -288,7 +288,7 @@ Reconfiguration preserves the same safety rules: no unrelated Nginx site is over
 | `/etc/nexora-git/android-builder.conf` | non-secret pinned Android toolchain configuration |
 | `/opt/nexora-android-sdk` | persistent Android SDK/NDK/CMake toolchain |
 | `/var/cache/nexora-git/gradle` | persistent Gradle cache owned by the isolated builder user |
-| `/var/lib/nexora-git/android` | persistent Android builder state, future logs/builds/artifacts |
+| `/var/lib/nexora-git/android` | persistent Android builder state, future logs/builds/artifacts |\n| `/var/lib/nexora-git/signing` | root-only Android release Signing Vault and encrypted backups |
 | `/etc/letsencrypt/live/DOMAIN/` | TLS material managed by Certbot |
 
 ---

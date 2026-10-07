@@ -7,6 +7,8 @@ SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
 source "$SCRIPT_DIR/lib.sh"
 # shellcheck source=android-build-lib.sh
 source "$SCRIPT_DIR/android-build-lib.sh"
+# shellcheck source=android-signing-lib.sh
+source "$SCRIPT_DIR/android-signing-lib.sh"
 
 usage() {
   cat <<'EOF'
@@ -28,6 +30,13 @@ Usage:
   nexora-git android doctor
   nexora-git android setup
   nexora-git android config
+  nexora-git android signing status
+  nexora-git android signing setup
+  nexora-git android signing verify
+  nexora-git android signing fingerprint
+  nexora-git android signing certificate
+  nexora-git android signing backup [PATH]
+  nexora-git android signing restore <PATH>
   nexora-git help
 EOF
 }
@@ -80,6 +89,9 @@ cmd_doctor() {
     if ! android_doctor; then
       failed=1
     fi
+    if ! android_signing_verify; then
+      failed=1
+    fi
   else
     log_error "Android builder configuration missing: $NEXORA_ANDROID_CONFIG_FILE"
     failed=1
@@ -88,21 +100,82 @@ cmd_doctor() {
   return "$failed"
 }
 
+cmd_android_signing() {
+  local subcommand="${1:-status}"
+  shift || true
+
+  case "$subcommand" in
+    status)
+      android_signing_status
+      ;;
+    setup)
+      ensure_android_foundation
+      ensure_android_signing_vault
+      ;;
+    verify)
+      android_signing_verify
+      ;;
+    fingerprint)
+      android_signing_fingerprint
+      ;;
+    certificate)
+      android_signing_certificate
+      ;;
+    backup)
+      android_signing_backup "${1:-}"
+      ;;
+    restore)
+      android_signing_restore "${1:-}"
+      ;;
+    help|-h|--help)
+      cat <<'EOF'
+Nexora Git Android Signing Vault
+
+Usage:
+  nexora-git android signing status
+  nexora-git android signing setup
+  nexora-git android signing verify
+  nexora-git android signing fingerprint
+  nexora-git android signing certificate
+  nexora-git android signing backup [PATH]
+  nexora-git android signing restore <PATH>
+
+The release identity is generated only when no identity exists. Existing or
+partial signing state is never overwritten automatically. Backup files are
+encrypted and their passphrases are entered through the TTY.
+EOF
+      ;;
+    *)
+      die "Unknown android signing command: $subcommand"
+      ;;
+  esac
+}
+
 cmd_android() {
   require_install
   local subcommand="${1:-status}"
   case "$subcommand" in
     status)
       android_status
+      printf '\nSigning Vault:\n'
+      android_signing_status || true
       ;;
     doctor)
-      android_doctor
+      local failed=0
+      android_doctor || failed=1
+      android_signing_verify || failed=1
+      return "$failed"
       ;;
     setup)
       ensure_android_foundation
+      ensure_android_signing_vault
       ;;
     config)
       android_config
+      ;;
+    signing)
+      shift
+      cmd_android_signing "$@"
       ;;
     help|-h|--help)
       cat <<'EOF'
@@ -114,8 +187,8 @@ Usage:
   nexora-git android setup
   nexora-git android config
 
-Build, signing, logs and artifact commands are added by the next Android
-Builder rollout phases. This foundation command never exposes credentials.
+The Signing Vault commands never print signing passwords. Build, logs and
+artifact commands are added by the next Android Builder rollout phases.
 EOF
       ;;
     *)

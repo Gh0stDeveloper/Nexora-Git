@@ -7,6 +7,8 @@ SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
 source "$SCRIPT_DIR/lib.sh"
 # shellcheck source=android-build-lib.sh
 source "$SCRIPT_DIR/android-build-lib.sh"
+# shellcheck source=android-signing-lib.sh
+source "$SCRIPT_DIR/android-signing-lib.sh"
 
 RECONFIGURE=0
 if [[ "${1:-}" == "--reconfigure" ]]; then
@@ -19,7 +21,7 @@ require_root
 detect_supported_os
 banner
 
-TOTAL_PHASES=9
+TOTAL_PHASES=10
 phase 1 "$TOTAL_PHASES" "Repository installation"
 
 SOURCE_ROOT="$(git -C "$SCRIPT_DIR/../.." rev-parse --show-toplevel 2>/dev/null || true)"
@@ -267,13 +269,17 @@ chmod +x \
   "$INSTALL_DIR/scripts/vps/nexora-git" \
   "$INSTALL_DIR/scripts/vps/update.sh" \
   "$INSTALL_DIR/scripts/vps/install.sh" \
-  "$INSTALL_DIR/scripts/vps/test-android-build-lib.sh"
+  "$INSTALL_DIR/scripts/vps/test-android-build-lib.sh" \
+  "$INSTALL_DIR/scripts/vps/test-android-signing-lib.sh"
 log_ok "Installed command: nexora-git"
 
 phase 8 "$TOTAL_PHASES" "Android build foundation"
 ensure_android_foundation
 
-phase 9 "$TOTAL_PHASES" "Final verification"
+phase 9 "$TOTAL_PHASES" "Android Signing Vault"
+ensure_android_signing_vault
+
+phase 10 "$TOTAL_PHASES" "Final verification"
 curl -fsS --max-time 10 "https://$DOMAIN/health" >/dev/null || die "Public HTTPS health check failed."
 compose ps
 printf '\n'
@@ -288,4 +294,7 @@ printf '  nexora-git update\n'
 printf '  nexora-git doctor\n'
 printf '  nexora-git android status\n'
 printf '  nexora-git android doctor\n'
+printf '  nexora-git android signing status\n'
+printf '  nexora-git android signing fingerprint\n'
+printf '  nexora-git android signing backup\n'
 printf '  nexora-git logs\n'

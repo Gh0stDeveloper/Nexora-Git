@@ -19,7 +19,7 @@ Nexora Git is being extended so the same Android application can be built both b
 | Phase | Scope | State |
 | --- | --- | --- |
 | A | persistent Android toolchain, isolated builder user, storage layout, setup/status/doctor | implemented on the feature branch |
-| B | persistent Signing Vault, one-time keystore generation, fingerprint, backup/restore guards | next |
+| B | persistent Signing Vault, one-time keystore generation, fingerprint, encrypted backup/restore guards | implemented on the feature branch |
 | C | systemd background build worker, queue, cancellation and detached execution | planned |
 | D | APK/AAB staging, logs, metadata, checksums, retention and diagnostics | planned |
 | E | secure GitHub Actions secret export and signing/config parity verification | planned |
@@ -93,13 +93,72 @@ sudo nexora-git android config
 
 `status` is informational. `doctor` is strict and returns a failing exit status when the configured JDK, SDK, Build Tools, NDK, CMake, Gradle wrapper or persistent directories are missing.
 
-`config` exposes only non-secret toolchain configuration. Signing material does not exist in Phase A and will be introduced behind a separate vault boundary in Phase B.
+`config` exposes only non-secret toolchain configuration. Signing credentials live behind the separate root-only Signing Vault described below.
 
 ## Security boundary
 
 The installer creates the system account `nexora-build` with `/usr/sbin/nologin`. Build-owned mutable directories are writable by that account. The Android SDK itself is provisioned by root and reused read-only by future workers.
 
-The future signing vault will not live inside the Git repository, Gradle project or ordinary artifact directories. It will use tighter permissions than this non-secret toolchain configuration.
+The Signing Vault does not live inside the Git repository, Gradle project or ordinary artifact directories. It uses a root-only directory and protected files so ordinary repository updates cannot replace the application identity.
+
+## Phase B — Signing Vault
+
+The installer now creates the Android release identity automatically after the build-host foundation is healthy.
+
+The identity is stored outside Git:
+
+```text
+/var/lib/nexora-git/signing/
+├── release.p12
+├── secrets.env
+├── identity.conf
+├── certificate.pem
+└── backups/
+```
+
+Security properties:
+
+- the vault directory is mode `0700`;
+- the keystore, secret file and identity metadata are mode `0600`;
+- the public certificate is mode `0644` inside the root-only vault;
+- passwords are generated from 32 random bytes and are never printed by status or doctor commands;
+- the keystore uses PKCS#12 with RSA-4096 and SHA-256;
+- the same release identity is reused on every installer/update run;
+- an incomplete vault causes a hard failure instead of silent key regeneration;
+- verification checks the keystore credentials, alias, certificate fingerprints, keystore SHA-256 and certificate lifetime.
+
+The PKCS#12 store uses the same randomly generated store/key password because modern PKCS#12 providers do not reliably support separate key passwords. GitHub Actions can still receive the two required secret names with the same value during the later export phase.
+
+### Signing commands
+
+```bash
+sudo nexora-git android signing status
+sudo nexora-git android signing verify
+sudo nexora-git android signing fingerprint
+sudo nexora-git android signing certificate
+sudo nexora-git android signing backup
+sudo nexora-git android signing restore /secure/path/backup.nxbk
+```
+
+`fingerprint` exposes only public certificate fingerprints. `certificate` prints the public PEM certificate.
+
+### Encrypted backup
+
+`signing backup` asks for a backup passphrase through the controlling TTY, requires at least 16 characters, creates an internal checksum manifest, and encrypts the archive using AES-256-CBC with PBKDF2-SHA256 and 600,000 iterations. A SHA-256 file checksum is also created beside the encrypted backup.
+
+Backups should be copied off the VPS and the backup passphrase stored separately.
+
+Restore is deliberately conservative:
+
+- archive paths and file types are allow-listed;
+- internal SHA-256 checksums are verified;
+- the embedded keystore must open with the embedded protected credentials;
+- the certificate must match the recorded identity fingerprint;
+- restoring the same identity is an idempotent no-op;
+- restoring a different identity over an existing valid vault is refused;
+- restoring over partial/corrupt local signing state is refused.
+
+This prevents an update or operator mistake from silently changing the application signing identity.
 
 ## Why the VPS and GitHub builds can match
 
