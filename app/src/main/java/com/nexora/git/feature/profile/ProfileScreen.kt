@@ -17,6 +17,7 @@ import androidx.compose.material.icons.outlined.Add
 import androidx.compose.material.icons.outlined.Edit
 import androidx.compose.material.icons.automirrored.outlined.Logout
 import androidx.compose.material.icons.outlined.Refresh
+import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.material.icons.outlined.Star
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
@@ -39,11 +40,13 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.nexora.git.R
 import com.nexora.git.core.auth.AuthAccountSummary
 import com.nexora.git.core.social.GitHubOrganizationSummary
 import com.nexora.git.core.social.GitHubSocialUser
@@ -61,6 +64,7 @@ fun ProfileScreen(
     onAddAccount: () -> Unit,
     onSignOut: () -> Unit,
     onOpenRepository: (String, String) -> Unit,
+    onOpenSettings: () -> Unit,
     viewModel: ProfileViewModel = hiltViewModel(),
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
@@ -88,6 +92,7 @@ fun ProfileScreen(
         onAddAccount = onAddAccount,
         onSignOut = onSignOut,
         onOpenRepository = onOpenRepository,
+        onOpenSettings = onOpenSettings,
         onUnstar = viewModel::unstar,
         onSetFollowing = viewModel::setFollowing,
     )
@@ -149,6 +154,7 @@ internal fun ProfileContent(
     onAddAccount: () -> Unit,
     onSignOut: () -> Unit,
     onOpenRepository: (String, String) -> Unit,
+    onOpenSettings: () -> Unit,
     onUnstar: (StarredRepository) -> Unit,
     onSetFollowing: (GitHubSocialUser, Boolean) -> Unit,
 ) {
@@ -190,6 +196,15 @@ internal fun ProfileContent(
                     Icon(
                         imageVector = Icons.Outlined.Refresh,
                         contentDescription = "Refresh profile",
+                    )
+                }
+
+                IconButton(
+                    onClick = onOpenSettings,
+                ) {
+                    Icon(
+                        imageVector = Icons.Outlined.Settings,
+                        contentDescription = stringResource(R.string.action_settings),
                     )
                 }
             }
