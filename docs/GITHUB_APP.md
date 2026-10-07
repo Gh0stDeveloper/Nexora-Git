@@ -34,7 +34,7 @@ Use an exact production HTTPS broker callback:
 https://AUTH_HOST/oauth/callback
 ```
 
-The broker then forwards the short-lived code and state to the fixed native callback `nexoragit://oauth/callback`. Keep development and production callbacks separate and do not use wildcard callback domains.
+The broker then forwards the short-lived code and state to the fixed native callback `https://AUTH_HOST/oauth/android/callback`. Keep development and production callbacks separate and do not use wildcard callback domains.
 
 ## Permission strategy
 

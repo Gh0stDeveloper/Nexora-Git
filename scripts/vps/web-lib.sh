@@ -151,9 +151,29 @@ web_proxy_block() {
 EOF
 }
 
+web_render_rate_limit_zones() {
+  cat <<'EOF'
+limit_req_zone $binary_remote_addr zone=nexora_oauth_callback:10m rate=30r/m;
+limit_req_zone $binary_remote_addr zone=nexora_oauth_sensitive:10m rate=10r/m;
+EOF
+}
+
+web_render_rate_limited_response() {
+  cat <<'EOF'
+    location @nexora_oauth_rate_limited {
+        default_type application/json;
+        add_header Cache-Control "no-store" always;
+        add_header Retry-After "60" always;
+        return 429 '{"error":"rate_limited"}';
+    }
+EOF
+}
+
 web_render_nginx_http() {
   local destination="$1"
   cat > "$destination" <<EOF
+$(web_render_rate_limit_zones)
+
 server {
     listen 80;
     listen [::]:80;
@@ -166,12 +186,20 @@ $(web_proxy_block "$LOCAL_PORT")
     }
 
     location = /oauth/callback {
+        limit_req zone=nexora_oauth_callback burst=10 nodelay;
+        limit_req_status 429;
+        error_page 429 = @nexora_oauth_rate_limited;
 $(web_proxy_block "$LOCAL_PORT")
     }
 
     location ^~ /v1/oauth/ {
+        limit_req zone=nexora_oauth_sensitive burst=5 nodelay;
+        limit_req_status 429;
+        error_page 429 = @nexora_oauth_rate_limited;
 $(web_proxy_block "$LOCAL_PORT")
     }
+
+$(web_render_rate_limited_response)
 
     location = /download/nexora-git.apk {
         alias $NEXORA_WEB_RELEASE_ROOT/current/Nexora-Git.apk;
@@ -191,6 +219,8 @@ EOF
 web_render_nginx_https() {
   local destination="$1"
   cat > "$destination" <<EOF
+$(web_render_rate_limit_zones)
+
 server {
     listen 80;
     listen [::]:80;
@@ -223,12 +253,20 @@ $(web_proxy_block "$LOCAL_PORT")
     }
 
     location = /oauth/callback {
+        limit_req zone=nexora_oauth_callback burst=10 nodelay;
+        limit_req_status 429;
+        error_page 429 = @nexora_oauth_rate_limited;
 $(web_proxy_block "$LOCAL_PORT")
     }
 
     location ^~ /v1/oauth/ {
+        limit_req zone=nexora_oauth_sensitive burst=5 nodelay;
+        limit_req_status 429;
+        error_page 429 = @nexora_oauth_rate_limited;
 $(web_proxy_block "$LOCAL_PORT")
     }
+
+$(web_render_rate_limited_response)
 
     location = /download/nexora-git.apk {
         alias $NEXORA_WEB_RELEASE_ROOT/current/Nexora-Git.apk;
@@ -405,6 +443,21 @@ web_doctor() {
   else
     log_error "Website public HTTPS root failed"
     failed=1
+  fi
+
+  local app_link_fingerprint
+  app_link_fingerprint="$(web_env_value NEXORA_ANDROID_APP_LINK_SHA256_CERT_FINGERPRINT 2>/dev/null || true)"
+  if [[ -n "$app_link_fingerprint" ]]; then
+    local assetlinks
+    assetlinks="$(curl -fsS --max-time 10 "https://$DOMAIN/.well-known/assetlinks.json" 2>/dev/null || true)"
+    if [[ "$assetlinks" == *"$app_link_fingerprint"* ]]; then
+      log_ok "Android App Link signing association OK"
+    else
+      log_error "Android App Link signing association missing or stale"
+      failed=1
+    fi
+  else
+    log_warn "Android App Link signing fingerprint is not configured yet."
   fi
 
   if grep -q 'location = /oauth/callback' "$NEXORA_WEB_NGINX_CONFIG" 2>/dev/null &&

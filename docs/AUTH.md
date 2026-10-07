@@ -221,14 +221,14 @@ The production GitHub callback points to the broker, not directly to an arbitrar
 ```text
 GitHub
   → https://AUTH_HOST/oauth/callback
-  → nexoragit://oauth/callback
+  → https://AUTH_HOST/oauth/android/callback
   → Android validates state
   → Android sends code + code_verifier to broker
   → broker adds the client_secret
   → GitHub token endpoint
 ```
 
-The native deep link can safely carry the short-lived authorization code because PKCE prevents the code from being exchanged without the original verifier retained by Nexora Git.
+The Android return path is a verified HTTPS App Link bound to the production package and release-signing certificate through `/.well-known/assetlinks.json`. PKCE and strict OAuth state validation remain mandatory even with domain verification.
 
 ### Durable identity
 

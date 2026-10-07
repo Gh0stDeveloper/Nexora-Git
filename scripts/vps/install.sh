@@ -123,7 +123,7 @@ else
 GITHUB_APP_CLIENT_ID=$GITHUB_APP_CLIENT_ID
 GITHUB_APP_CLIENT_SECRET=$GITHUB_APP_CLIENT_SECRET
 GITHUB_CALLBACK_URL=$CALLBACK_URL
-APP_CALLBACK_URI=nexoragit://oauth/callback
+APP_CALLBACK_URI=https://$DOMAIN/oauth/android/callback
 PORT=$LOCAL_PORT
 WEB_PORT=$WEB_PORT
 SITE_URL=$SITE_URL
@@ -138,6 +138,7 @@ EOF
 fi
 
 web_ensure_config
+web_upsert_env_value APP_CALLBACK_URI "https://$DOMAIN/oauth/android/callback"
 web_ensure_layout
 
 phase 4 "$TOTAL_PHASES" "Auth Broker and download website containers"
@@ -237,6 +238,11 @@ ensure_android_foundation
 
 phase 9 "$TOTAL_PHASES" "Android Signing Vault"
 ensure_android_signing_vault
+android_signing_load_metadata_from "$NEXORA_SIGNING_METADATA" ||
+  die "Signing metadata is invalid after Signing Vault verification."
+web_upsert_env_value NEXORA_ANDROID_APP_LINK_SHA256_CERT_FINGERPRINT "$NEXORA_SIGNING_CERT_SHA256"
+web_deploy 0
+log_ok "Published Android App Link signing association from the public release certificate fingerprint."
 
 phase 10 "$TOTAL_PHASES" "Android background build worker"
 android_worker_install_service
@@ -258,6 +264,10 @@ web_doctor
 phase 15 "$TOTAL_PHASES" "Final verification"
 curl -fsS --max-time 10 "https://$DOMAIN/health" >/dev/null || die "Public Auth Broker HTTPS health check failed."
 curl -fsS --max-time 10 "https://$DOMAIN/api/health" >/dev/null || die "Public website HTTPS health check failed."
+assetlinks="$(curl -fsS --max-time 10 "https://$DOMAIN/.well-known/assetlinks.json")" ||
+  die "Android App Link association endpoint is unavailable."
+printf '%s' "$assetlinks" | grep -Fq "$NEXORA_SIGNING_CERT_SHA256" ||
+  die "Android App Link association does not contain the active release signing fingerprint."
 compose ps
 printf '\n'
 log_ok "Nexora Git Auth Broker VPS installation completed."

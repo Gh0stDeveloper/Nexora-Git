@@ -1,30 +1,50 @@
 #!/usr/bin/env bash
-set -euo pipefail
+set -Eeuo pipefail
 
 tag="${1:-}"
-test -n "$tag" || {
-  echo "Release tag is required."
+channel="${2:-}"
+[[ -n "$tag" ]] || {
+  printf 'Release tag is required.\n' >&2
   exit 1
 }
-
-if [[ ! "$tag" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
-  echo "Release tag must use vMAJOR.MINOR.PATCH."
+[[ "$channel" == "stable" || "$channel" == "prerelease" ]] || {
+  printf 'Release channel must be stable or prerelease.\n' >&2
   exit 1
-fi
+}
 
 version_name="$(sed -nE 's/^[[:space:]]*versionName = "([^"]+)".*/\1/p' app/build.gradle.kts | head -n 1)"
 version_code="$(sed -nE 's/^[[:space:]]*versionCode = ([0-9]+).*/\1/p' app/build.gradle.kts | head -n 1)"
-
-test -n "$version_name"
-test -n "$version_code"
-test "$tag" = "v$version_name" || {
-  echo "Tag $tag does not match Android versionName $version_name."
+[[ -n "$version_name" && -n "$version_code" ]] || {
+  printf 'Unable to read Android version metadata.\n' >&2
   exit 1
 }
 
-if (( version_code <= 0 )); then
-  echo "Android versionCode must be positive."
-  exit 1
-fi
+case "$channel" in
+  stable)
+    [[ "$tag" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]] || {
+      printf 'Stable release tag must use vMAJOR.MINOR.PATCH.\n' >&2
+      exit 1
+    }
+    base="${tag#v}"
+    ;;
+  prerelease)
+    [[ "$tag" =~ ^v[0-9]+\.[0-9]+\.[0-9]+-(beta|rc)\.[0-9]+$ ]] || {
+      printf 'Prerelease tag must use vMAJOR.MINOR.PATCH-beta.N or vMAJOR.MINOR.PATCH-rc.N.\n' >&2
+      exit 1
+    }
+    base="${tag#v}"
+    base="${base%%-*}"
+    ;;
+esac
 
-echo "Release tag $tag matches Android $version_name ($version_code)."
+[[ "$base" == "$version_name" ]] || {
+  printf 'Tag %s targets version %s but Android versionName is %s.\n' "$tag" "$base" "$version_name" >&2
+  exit 1
+}
+
+(( version_code > 0 )) || {
+  printf 'Android versionCode must be positive.\n' >&2
+  exit 1
+}
+
+printf 'Release tag %s accepted for %s channel and Android %s (%s).\n' "$tag" "$channel" "$version_name" "$version_code"

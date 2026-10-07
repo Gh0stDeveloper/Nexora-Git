@@ -20,7 +20,7 @@ cat > "$INSTALL_DIR/auth-broker/.env" <<'EOF'
 GITHUB_APP_CLIENT_ID=Iv1.test
 GITHUB_APP_CLIENT_SECRET=super-secret-must-survive
 GITHUB_CALLBACK_URL=https://nexora.example.com/oauth/callback
-APP_CALLBACK_URI=nexoragit://oauth/callback
+APP_CALLBACK_URI=https://nexora.example.com/oauth/android/callback
 PORT=18080
 WEB_PORT=18181
 SITE_URL=https://old.example.com
@@ -42,6 +42,15 @@ grep -q 'location ^~ /v1/oauth/' "$TEMP_ROOT/rendered.conf"
 grep -q 'location = /download/nexora-git.apk' "$TEMP_ROOT/rendered.conf"
 grep -q 'proxy_pass http://127.0.0.1:18181;' "$TEMP_ROOT/rendered.conf"
 grep -q 'proxy_pass http://127.0.0.1:18080;' "$TEMP_ROOT/rendered.conf"
+# The dollar-prefixed Nginx variable is intentionally matched literally.
+# shellcheck disable=SC2016
+grep -q 'limit_req_zone $binary_remote_addr zone=nexora_oauth_callback:10m rate=30r/m;' "$TEMP_ROOT/rendered.conf"
+# shellcheck disable=SC2016
+grep -q 'limit_req_zone $binary_remote_addr zone=nexora_oauth_sensitive:10m rate=10r/m;' "$TEMP_ROOT/rendered.conf"
+grep -q 'limit_req zone=nexora_oauth_callback burst=10 nodelay;' "$TEMP_ROOT/rendered.conf"
+grep -q 'limit_req zone=nexora_oauth_sensitive burst=5 nodelay;' "$TEMP_ROOT/rendered.conf"
+grep -q 'location @nexora_oauth_rate_limited' "$TEMP_ROOT/rendered.conf"
+grep -q 'Retry-After "60"' "$TEMP_ROOT/rendered.conf"
 
 job="20261007T040000Z-a1b2c3d4"
 commit="0123456789abcdef0123456789abcdef01234567"

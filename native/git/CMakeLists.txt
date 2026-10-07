@@ -14,6 +14,8 @@ set(NEXORA_TREE_SITTER_PYTHON_REF "26855eabccb19c6abf499fbc5b8dc7cc9ab8bc64" CAC
 set(NEXORA_TREE_SITTER_JAVASCRIPT_REF "58404d8cf191d69f2674a8fd507bd5776f46cb11" CACHE STRING "Pinned JavaScript grammar commit")
 set(NEXORA_TREE_SITTER_TYPESCRIPT_REF "75b3874edb2dc714fb1fd77a32013d0f8699989f" CACHE STRING "Pinned TypeScript grammar commit")
 option(NEXORA_BUILD_NATIVE_TESTS "Build host native Git tests" OFF)
+option(NEXORA_BUILD_NATIVE_FUZZERS "Build project-owned host fuzz targets" OFF)
+option(NEXORA_ENABLE_PROJECT_SANITIZERS "Instrument project-owned native code with ASan/UBSan" OFF)
 
 set(NEXORA_CONFIG_SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/../config")
 include("${NEXORA_CONFIG_SOURCE_DIR}/cmake/NexoraSecureConfig.cmake")
@@ -230,6 +232,20 @@ target_link_libraries(
     nexora_ts_tsx
 )
 
+
+if(NEXORA_ENABLE_PROJECT_SANITIZERS AND NOT ANDROID)
+    if(NOT CMAKE_CXX_COMPILER_ID MATCHES "Clang|GNU")
+        message(FATAL_ERROR "NEXORA_ENABLE_PROJECT_SANITIZERS requires Clang or GCC.")
+    endif()
+
+    target_compile_options(
+        nexoragit_core
+        PRIVATE
+        -fsanitize=address,undefined
+        -fno-omit-frame-pointer
+    )
+endif()
+
 if(ANDROID)
     find_library(log-lib log)
 
@@ -311,8 +327,50 @@ if(NEXORA_BUILD_NATIVE_TESTS AND NOT ANDROID)
         nexoragit_core
     )
 
+    if(NEXORA_ENABLE_PROJECT_SANITIZERS)
+        target_compile_options(
+            nexoragit_native_tests
+            PRIVATE
+            -fsanitize=address,undefined
+            -fno-omit-frame-pointer
+        )
+        target_link_options(
+            nexoragit_native_tests
+            PRIVATE
+            -fsanitize=address,undefined
+        )
+    endif()
+
     add_test(
         NAME nexoragit_native_tests
         COMMAND nexoragit_native_tests
+    )
+endif()
+
+
+if(NEXORA_BUILD_NATIVE_FUZZERS AND NOT ANDROID)
+    if(NOT CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+        message(FATAL_ERROR "NEXORA_BUILD_NATIVE_FUZZERS requires Clang.")
+    endif()
+
+    add_executable(
+        nexora_secure_config_fuzzer
+        "${NEXORA_CONFIG_SOURCE_DIR}/fuzz/secure_config_decode_fuzz.cpp"
+    )
+    target_include_directories(
+        nexora_secure_config_fuzzer
+        PRIVATE
+        "${NEXORA_SECURE_CONFIG_GENERATED_DIR}"
+    )
+    target_compile_options(
+        nexora_secure_config_fuzzer
+        PRIVATE
+        -fsanitize=fuzzer,address,undefined
+        -fno-omit-frame-pointer
+    )
+    target_link_options(
+        nexora_secure_config_fuzzer
+        PRIVATE
+        -fsanitize=fuzzer,address,undefined
     )
 endif()

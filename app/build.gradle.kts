@@ -8,6 +8,7 @@ plugins {
 }
 
 val releaseSigning = NexoraBuildSecrets.releaseSigning(project)
+val authBrokerHost = NexoraBuildSecrets.authBrokerHost(project)
 
 android {
     namespace = "com.nexora.git"
@@ -25,6 +26,7 @@ android {
         versionName = "1.0.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+        manifestPlaceholders["nexoraAuthHost"] = authBrokerHost
         vectorDrawables {
             useSupportLibrary = true
         }

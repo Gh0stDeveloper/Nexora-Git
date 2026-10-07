@@ -115,7 +115,7 @@ function(nexora_generate_secure_runtime_config OUTPUT_DIR)
     nexora_config_value("NEXORA_GITHUB_CLIENT_ID" github_client_id)
     nexora_config_value("NEXORA_AUTH_BROKER_BASE_URL" broker_base_url)
     nexora_config_value("NEXORA_GITHUB_CALLBACK_URL" github_callback_url)
-    set(app_callback_uri "nexoragit://oauth/callback")
+    set(app_callback_uri "")
 
     set(configured_count 0)
     foreach(value IN ITEMS "${github_client_id}" "${broker_base_url}" "${github_callback_url}")
@@ -142,6 +142,8 @@ function(nexora_generate_secure_runtime_config OUTPUT_DIR)
         if(NOT github_callback_url STREQUAL "${broker_base_url}/oauth/callback")
             message(FATAL_ERROR "NEXORA_GITHUB_CALLBACK_URL must equal broker base URL plus /oauth/callback.")
         endif()
+
+        set(app_callback_uri "${broker_base_url}/oauth/android/callback")
     endif()
 
     string(RANDOM LENGTH 64 ALPHABET 0123456789abcdef key_a_hex)

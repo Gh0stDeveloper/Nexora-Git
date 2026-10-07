@@ -18,7 +18,7 @@ int main() {
     );
     assert(
         nexora::secure_config::AppCallbackUri() ==
-        "nexoragit://oauth/callback"
+        "https://native-config.example/oauth/android/callback"
     );
     return 0;
 }

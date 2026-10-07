@@ -31,7 +31,7 @@ sentinels=(
   "$NEXORA_GITHUB_CLIENT_ID"
   "$NEXORA_AUTH_BROKER_BASE_URL"
   "$NEXORA_GITHUB_CALLBACK_URL"
-  "nexoragit://oauth/callback"
+  "$NEXORA_AUTH_BROKER_BASE_URL/oauth/android/callback"
 )
 
 for file in "$tmp"/apk/classes*.dex "${runtime_libs[@]}"; do

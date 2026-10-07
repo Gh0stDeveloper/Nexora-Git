@@ -30,7 +30,7 @@ Server environment:
 GITHUB_APP_CLIENT_ID=Iv1....
 GITHUB_APP_CLIENT_SECRET=...
 GITHUB_CALLBACK_URL=https://auth.example.com/oauth/callback
-APP_CALLBACK_URI=nexoragit://oauth/callback
+APP_CALLBACK_URI=https://auth.example.com/oauth/android/callback
 PORT=8080
 ```
 
@@ -70,7 +70,7 @@ The release keystore, store password, key alias and key password are **not accep
 
 > Native XOR encoding is obfuscation, not a cryptographic secret store. A determined reverse engineer can still recover public runtime values from a running application. The confidential GitHub App Client Secret must remain on the Auth Broker and must never be embedded in the APK, DEX, resources or native libraries.
 
-## 5. Expected authorization path
+The production site must publish `/.well-known/assetlinks.json` with package `com.nexora.git` and the SHA-256 fingerprint of the active release signing certificate. The VPS installer derives this public fingerprint from the Signing Vault and injects it into the website container.\n\n## 5. Expected authorization path
 
 ```text
 Nexora Git

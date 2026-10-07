@@ -16,7 +16,7 @@ func testConfig() config {
 		ClientID:          "Iv1.test",
 		ClientSecret:      "server-secret",
 		GitHubCallbackURL: "https://auth.example.test/oauth/callback",
-		AppCallbackURI:    "nexoragit://oauth/callback",
+		AppCallbackURI:    "https://auth.example.test/oauth/android/callback",
 		GitHubOAuthBase:   "https://github.invalid",
 		GitHubAPIBase:     "https://api.github.invalid",
 		Port:              "8080",
@@ -44,7 +44,7 @@ func TestOAuthCallbackForwardsCodeAndState(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if parsed.Scheme != "nexoragit" || parsed.Host != "oauth" || parsed.Path != "/callback" {
+	if parsed.Scheme != "https" || parsed.Host != "auth.example.test" || parsed.Path != "/oauth/android/callback" {
 		t.Fatalf("unexpected callback target: %s", location)
 	}
 	if parsed.Query().Get("code") != "abc123" || parsed.Query().Get("state") != "state123" {
@@ -127,5 +127,33 @@ func TestSecurityHeadersDisableCaching(t *testing.T) {
 
 	if response.Header().Get("Cache-Control") != "no-store" {
 		t.Fatal("expected Cache-Control: no-store")
+	}
+}
+
+func TestLoadConfigRejectsCrossOriginAppCallback(t *testing.T) {
+	t.Setenv("GITHUB_APP_CLIENT_ID", "Iv1.test")
+	t.Setenv("GITHUB_APP_CLIENT_SECRET", "server-secret")
+	t.Setenv("GITHUB_CALLBACK_URL", "https://auth.example.test/oauth/callback")
+	t.Setenv("APP_CALLBACK_URI", "https://evil.example.test/oauth/android/callback")
+	t.Setenv("PORT", "8080")
+
+	if _, err := loadConfig(); err == nil {
+		t.Fatal("expected cross-origin APP_CALLBACK_URI to be rejected")
+	}
+}
+
+func TestLoadConfigAcceptsVerifiedAppLinkShape(t *testing.T) {
+	t.Setenv("GITHUB_APP_CLIENT_ID", "Iv1.test")
+	t.Setenv("GITHUB_APP_CLIENT_SECRET", "server-secret")
+	t.Setenv("GITHUB_CALLBACK_URL", "https://auth.example.test/oauth/callback")
+	t.Setenv("APP_CALLBACK_URI", "https://auth.example.test/oauth/android/callback")
+	t.Setenv("PORT", "8080")
+
+	cfg, err := loadConfig()
+	if err != nil {
+		t.Fatalf("expected valid configuration, got %v", err)
+	}
+	if cfg.AppCallbackURI != "https://auth.example.test/oauth/android/callback" {
+		t.Fatalf("unexpected app callback URI: %s", cfg.AppCallbackURI)
 	}
 }
