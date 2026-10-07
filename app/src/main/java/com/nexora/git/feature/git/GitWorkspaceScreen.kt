@@ -365,8 +365,10 @@ fun GitWorkspaceScreen(
             title = { Text(stringResource(R.string.git_drop_stash_title)) },
             text = {
                 Text(
-                    "stash@{" + stash.index + "} will be removed from " +
-                        "the local stash list.",
+                    stringResource(
+                        R.string.git_stash_drop_body,
+                        stash.index,
+                    ),
                 )
             },
         )
@@ -424,7 +426,7 @@ fun GitWorkspaceScreen(
                 IconButton(onClick = onBack) {
                     Icon(
                         imageVector = Icons.AutoMirrored.Outlined.ArrowBack,
-                        contentDescription = "Back",
+                        contentDescription = stringResource(R.string.action_back),
                     )
                 }
 
@@ -454,7 +456,7 @@ fun GitWorkspaceScreen(
                 ) {
                     Icon(
                         imageVector = Icons.Outlined.Refresh,
-                        contentDescription = "Refresh Git state",
+                        contentDescription = stringResource(R.string.git_refresh_state),
                     )
                 }
             }
@@ -710,14 +712,16 @@ fun GitWorkspaceScreen(
                 GitWorkspaceTab.HISTORY -> {
                     item {
                         SectionTitle(
-                            "Commit history (" +
-                                state.history.size + ")",
+                            stringResource(
+                                R.string.git_commit_history_count,
+                                state.history.size,
+                            ),
                         )
                     }
 
                     if (state.history.isEmpty()) {
                         item {
-                            EmptyGitCard("No commits yet.")
+                            EmptyGitCard(stringResource(R.string.git_no_commits))
                         }
                     } else {
                         items(
@@ -1123,7 +1127,7 @@ internal fun AdvancedGitPanel(
                 modifier = Modifier.padding(16.dp),
                 verticalArrangement = Arrangement.spacedBy(10.dp),
             ) {
-                Text("Rebase", style = MaterialTheme.typography.titleMedium)
+                Text(stringResource(R.string.git_rebase), style = MaterialTheme.typography.titleMedium)
                 OutlinedTextField(
                     value = rebaseRef,
                     onValueChange = onRebaseRefChange,
@@ -1251,7 +1255,7 @@ internal fun AdvancedGitPanel(
                 modifier = Modifier.padding(16.dp),
                 verticalArrangement = Arrangement.spacedBy(10.dp),
             ) {
-                Text("Stash", style = MaterialTheme.typography.titleMedium)
+                Text(stringResource(R.string.git_stash), style = MaterialTheme.typography.titleMedium)
                 OutlinedTextField(
                     value = stashMessage,
                     onValueChange = onStashMessageChange,
@@ -1334,7 +1338,7 @@ internal fun AdvancedGitPanel(
                 modifier = Modifier.padding(16.dp),
                 verticalArrangement = Arrangement.spacedBy(10.dp),
             ) {
-                Text("Reset", style = MaterialTheme.typography.titleMedium)
+                Text(stringResource(R.string.git_reset), style = MaterialTheme.typography.titleMedium)
                 OutlinedTextField(
                     value = resetRef,
                     onValueChange = onResetRefChange,
@@ -2164,9 +2168,16 @@ private fun UpstreamCard(
             )
             Text(
                 text = if (upstream.isBlank()) {
-                    currentBranch + " is not tracking a remote branch."
+                    stringResource(
+                        R.string.git_upstream_not_tracking,
+                        currentBranch,
+                    )
                 } else {
-                    currentBranch + " tracks " + upstream + "."
+                    stringResource(
+                        R.string.git_upstream_tracks,
+                        currentBranch,
+                        upstream,
+                    )
                 },
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
