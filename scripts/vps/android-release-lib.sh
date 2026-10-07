@@ -387,7 +387,7 @@ android_release_verify_signed() {
     sha256sum --check --strict SHA256SUMS.txt >/dev/null
   ) || die "Signed release checksum verification failed: $job_id"
 
-  # shellcheck disable=SC1090
+  # shellcheck disable=SC1090,SC1091
   source "$signed_dir/signing-manifest.conf"
   [[ "${JOB_ID:-}" == "$job_id" ]] || die "Signed release manifest job mismatch."
   [[ "${SIGNING_CERT_SHA256:-}" == "$NEXORA_SIGNING_CERT_SHA256" ]] ||
@@ -574,12 +574,33 @@ android_release_doctor() {
   apksigner="$(android_component_path build-tools)"
   jarsigner="$NEXORA_ANDROID_JAVA_HOME/bin/jarsigner"
   keytool="$NEXORA_ANDROID_JAVA_HOME/bin/keytool"
-  [[ -x "$apksigner" ]] && log_ok "apksigner available" || { log_error "apksigner missing"; failed=1; }
-  [[ -x "$jarsigner" ]] && log_ok "jarsigner available" || { log_error "jarsigner missing"; failed=1; }
-  [[ -x "$keytool" ]] && log_ok "keytool available" || { log_error "keytool missing"; failed=1; }
+  if [[ -x "$apksigner" ]]; then
+    log_ok "apksigner available"
+  else
+    log_error "apksigner missing"
+    failed=1
+  fi
 
-  android_release_workflow_parity && log_ok "Stable Release workflow references all required production secrets." ||
-    { log_error "Stable Release workflow production secret wiring is incomplete."; failed=1; }
+  if [[ -x "$jarsigner" ]]; then
+    log_ok "jarsigner available"
+  else
+    log_error "jarsigner missing"
+    failed=1
+  fi
+
+  if [[ -x "$keytool" ]]; then
+    log_ok "keytool available"
+  else
+    log_error "keytool missing"
+    failed=1
+  fi
+
+  if android_release_workflow_parity; then
+    log_ok "Stable Release workflow references all required production secrets."
+  else
+    log_error "Stable Release workflow production secret wiring is incomplete."
+    failed=1
+  fi
 
   return "$failed"
 }
