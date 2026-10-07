@@ -185,11 +185,11 @@ fun RepositoriesScreen(
             onDismissRequest = viewModel::dismissError,
             confirmButton = {
                 TextButton(onClick = viewModel::dismissError) {
-                    Text("OK")
+                    Text(stringResource(R.string.action_ok))
                 }
             },
             title = {
-                Text("Repository operation")
+                Text(stringResource(R.string.repo_operation))
             },
             text = {
                 Text(message)
@@ -202,11 +202,11 @@ fun RepositoriesScreen(
             onDismissRequest = viewModel::dismissSuccess,
             confirmButton = {
                 TextButton(onClick = viewModel::dismissSuccess) {
-                    Text("Done")
+                    Text(stringResource(R.string.action_done))
                 }
             },
             title = {
-                Text("Nexora Git")
+                Text(stringResource(R.string.app_name))
             },
             text = {
                 Text(message)
@@ -258,11 +258,11 @@ internal fun RepositoriesContent(
                 verticalArrangement = Arrangement.spacedBy(6.dp),
             ) {
                 Text(
-                    text = "Repositories",
+                    text = stringResource(R.string.repo_title),
                     style = MaterialTheme.typography.headlineSmall,
                 )
                 Text(
-                    text = "GitHub repositories and local development workspaces in one place.",
+                    text = stringResource(R.string.repo_subtitle),
                     style = MaterialTheme.typography.bodyLarge,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
@@ -279,7 +279,7 @@ internal fun RepositoriesContent(
                     imageVector = Icons.Outlined.Add,
                     contentDescription = null,
                 )
-                Text("Create repository")
+                Text(stringResource(R.string.repo_create))
             }
         }
 
@@ -297,7 +297,7 @@ internal fun RepositoriesContent(
                         imageVector = Icons.Outlined.Link,
                         contentDescription = null,
                     )
-                    Text("Clone URL")
+                    Text(stringResource(R.string.repo_clone_url))
                 }
 
                 OutlinedButton(
@@ -309,7 +309,7 @@ internal fun RepositoriesContent(
                         imageVector = Icons.Outlined.FolderOpen,
                         contentDescription = null,
                     )
-                    Text("Folder")
+                    Text(stringResource(R.string.repo_folder))
                 }
             }
         }
@@ -325,7 +325,7 @@ internal fun RepositoriesContent(
                     imageVector = Icons.Outlined.Code,
                     contentDescription = null,
                 )
-                Text("New from template")
+                Text(stringResource(R.string.repo_new_template))
             }
         }
 
@@ -587,7 +587,7 @@ private fun RemoteRepositoryCard(
                     imageVector = Icons.Outlined.CloudDownload,
                     contentDescription = null,
                 )
-                Text("Clone to device")
+                Text(stringResource(R.string.repo_clone_device))
             }
         }
     }
@@ -657,7 +657,7 @@ private fun WorkspaceCard(
                 ) {
                     Icon(
                         imageVector = Icons.Outlined.Delete,
-                        contentDescription = "Remove workspace",
+                        contentDescription = stringResource(R.string.repo_remove_workspace),
                     )
                 }
             }
@@ -711,7 +711,7 @@ private fun WorkspaceCard(
                     imageVector = Icons.Outlined.Code,
                     contentDescription = null,
                 )
-                Text("Browse code")
+                Text(stringResource(R.string.repo_browse_code))
             }
 
             Row(
@@ -835,7 +835,7 @@ private fun ProjectTemplateDialog(
                     onCreate(selectedId, projectName)
                 },
             ) {
-                Text("Create project")
+                Text(stringResource(R.string.repo_create_project))
             }
         },
         dismissButton = {
@@ -843,11 +843,11 @@ private fun ProjectTemplateDialog(
                 enabled = !operationInProgress,
                 onClick = onDismiss,
             ) {
-                Text("Cancel")
+                Text(stringResource(R.string.action_cancel))
             }
         },
         title = {
-            Text("New from template")
+            Text(stringResource(R.string.repo_new_template))
         },
         text = {
             Column(
@@ -861,7 +861,7 @@ private fun ProjectTemplateDialog(
                         projectName = it
                     },
                     label = {
-                        Text("Project name")
+                        Text(stringResource(R.string.repo_project_name))
                     },
                 )
 
@@ -930,7 +930,7 @@ private fun CreateRepositoryDialog(
                     )
                 },
             ) {
-                Text("Create")
+                Text(stringResource(R.string.action_create))
             }
         },
         dismissButton = {
@@ -938,11 +938,11 @@ private fun CreateRepositoryDialog(
                 enabled = !operationInProgress,
                 onClick = onDismiss,
             ) {
-                Text("Cancel")
+                Text(stringResource(R.string.action_cancel))
             }
         },
         title = {
-            Text("Create repository")
+            Text(stringResource(R.string.repo_create))
         },
         text = {
             Column(
@@ -956,7 +956,7 @@ private fun CreateRepositoryDialog(
                         name = it
                     },
                     label = {
-                        Text("Name")
+                        Text(stringResource(R.string.repo_name))
                     },
                 )
                 OutlinedTextField(
@@ -966,7 +966,7 @@ private fun CreateRepositoryDialog(
                         description = it
                     },
                     label = {
-                        Text("Description")
+                        Text(stringResource(R.string.repo_description))
                     },
                     minLines = 2,
                     maxLines = 4,
@@ -1010,7 +1010,7 @@ private fun CloneRepositoryDialog(
                     onClone(url)
                 },
             ) {
-                Text("Clone")
+                Text(stringResource(R.string.repo_clone))
             }
         },
         dismissButton = {
@@ -1018,11 +1018,11 @@ private fun CloneRepositoryDialog(
                 enabled = !operationInProgress,
                 onClick = onDismiss,
             ) {
-                Text("Cancel")
+                Text(stringResource(R.string.action_cancel))
             }
         },
         title = {
-            Text("Clone GitHub repository")
+            Text(stringResource(R.string.repo_clone_github))
         },
         text = {
             OutlinedTextField(
@@ -1033,7 +1033,7 @@ private fun CloneRepositoryDialog(
                     url = it
                 },
                 label = {
-                    Text("https://github.com/owner/repository")
+                    Text(stringResource(R.string.repo_url_hint))
                 },
             )
         },
@@ -1078,7 +1078,7 @@ private fun ImportRiskDialog(
         onDismissRequest = onDismiss,
         confirmButton = {
             TextButton(onClick = onDismiss) {
-                Text("Done")
+                Text(stringResource(R.string.action_done))
             }
         },
         title = {
