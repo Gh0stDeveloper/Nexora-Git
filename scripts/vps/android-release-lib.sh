@@ -216,7 +216,6 @@ android_release_write_secret_file() {
 
 android_release_export_secrets() {
   local destination="${1:-}"
-  require_root
   android_signing_verify || die "Signing Vault verification failed."
   android_release_read_broker_config || die "GitHub App/broker configuration is invalid."
 
@@ -419,7 +418,6 @@ android_release_verify_signed() {
 
 android_release_sign() {
   local job_id="$1"
-  require_root
   android_artifact_valid_job_id "$job_id" || die "Usage: nexora-git android sign <JOB_ID>"
   android_artifacts_verify "$job_id"
   android_signing_verify || die "Signing Vault verification failed."
