@@ -25,6 +25,11 @@ jobs:
     name: Analyze Kotlin/Java
     runs-on: ubuntu-latest
     timeout-minutes: 40
+    env:
+      # Manual builds are required for the Android/Kotlin project. Disable
+      # CodeQL's overlay optimization explicitly so the action does not emit
+      # a fallback warning while preserving full traced compilation analysis.
+      CODEQL_OVERLAY_DATABASE_MODE: none
 
     steps:
       - name: Configure Git default branch
