@@ -53,4 +53,37 @@ class AuthEndpointPolicyTest {
             ),
         )
     }
+
+    @Test
+    fun acceptsExactHttpsAndroidAppLink() {
+        assertTrue(
+            isValidAppCallbackUri(
+                brokerBaseUrl = "https://auth.example.com",
+                appCallbackUri = "https://auth.example.com/oauth/android/callback",
+            ),
+        )
+    }
+
+    @Test
+    fun rejectsCrossOriginOrCustomSchemeAndroidCallback() {
+        assertFalse(
+            isValidAppCallbackUri(
+                brokerBaseUrl = "https://auth.example.com",
+                appCallbackUri = "https://evil.example.com/oauth/android/callback",
+            ),
+        )
+        assertFalse(
+            isValidAppCallbackUri(
+                brokerBaseUrl = "https://auth.example.com",
+                appCallbackUri = "nexoragit://oauth/callback",
+            ),
+        )
+        assertFalse(
+            isValidAppCallbackUri(
+                brokerBaseUrl = "https://auth.example.com",
+                appCallbackUri = "https://auth.example.com/other",
+            ),
+        )
+    }
+
 }
