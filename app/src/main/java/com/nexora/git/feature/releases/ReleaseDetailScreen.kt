@@ -1,5 +1,7 @@
 package com.nexora.git.feature.releases
 
+import com.nexora.git.R
+
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.horizontalScroll
@@ -43,6 +45,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
@@ -184,7 +187,7 @@ fun ReleaseDetailScreen(
                             viewModel.deleteAsset(asset.id)
                         },
                     ) {
-                        Text("Delete")
+                        Text(stringResource(R.string.action_delete))
                     }
                 },
                 dismissButton = {
@@ -193,11 +196,11 @@ fun ReleaseDetailScreen(
                             deletingAssetId = null
                         },
                     ) {
-                        Text("Cancel")
+                        Text(stringResource(R.string.action_cancel))
                     }
                 },
                 title = {
-                    Text("Delete release asset?")
+                    Text(stringResource(R.string.release_delete_asset))
                 },
                 text = {
                     Text(
@@ -223,7 +226,7 @@ fun ReleaseDetailScreen(
                         viewModel.deleteRelease()
                     },
                 ) {
-                    Text("Delete release")
+                    Text(stringResource(R.string.release_delete))
                 }
             },
             dismissButton = {
@@ -232,11 +235,11 @@ fun ReleaseDetailScreen(
                         showDeleteRelease = false
                     },
                 ) {
-                    Text("Cancel")
+                    Text(stringResource(R.string.action_cancel))
                 }
             },
             title = {
-                Text("Delete release?")
+                Text(stringResource(R.string.release_delete_confirm))
             },
             text = {
                 Text(
@@ -251,10 +254,10 @@ fun ReleaseDetailScreen(
             onDismissRequest = viewModel::dismissError,
             confirmButton = {
                 TextButton(onClick = viewModel::dismissError) {
-                    Text("OK")
+                    Text(stringResource(R.string.action_ok))
                 }
             },
-            title = { Text("Release") },
+            title = { Text(stringResource(R.string.release_title)) },
             text = { Text(message) },
         )
     }
@@ -264,10 +267,10 @@ fun ReleaseDetailScreen(
             onDismissRequest = viewModel::dismissSuccess,
             confirmButton = {
                 TextButton(onClick = viewModel::dismissSuccess) {
-                    Text("Done")
+                    Text(stringResource(R.string.action_done))
                 }
             },
-            title = { Text("Nexora Git") },
+            title = { Text(stringResource(R.string.app_name)) },
             text = {
                 Column(
                     verticalArrangement = Arrangement.spacedBy(8.dp),
@@ -331,7 +334,7 @@ internal fun ReleaseDetailContent(
                 IconButton(onClick = onBack) {
                     Icon(
                         imageVector = Icons.AutoMirrored.Outlined.ArrowBack,
-                        contentDescription = "Back",
+                        contentDescription = stringResource(R.string.release_back),
                     )
                 }
 
@@ -339,7 +342,7 @@ internal fun ReleaseDetailContent(
                     modifier = Modifier.weight(1f),
                 ) {
                     Text(
-                        text = "Release",
+                        text = stringResource(R.string.release_title),
                         style = MaterialTheme.typography.titleLarge,
                     )
                     Text(
@@ -355,7 +358,7 @@ internal fun ReleaseDetailContent(
                 ) {
                     Icon(
                         imageVector = Icons.Outlined.Refresh,
-                        contentDescription = "Refresh release",
+                        contentDescription = stringResource(R.string.release_refresh),
                     )
                 }
             }
@@ -460,7 +463,7 @@ internal fun ReleaseDetailContent(
                                 Arrangement.spacedBy(6.dp),
                         ) {
                             Text(
-                                text = "Last downloaded asset",
+                                text = stringResource(R.string.release_last_downloaded),
                                 style =
                                     MaterialTheme.typography.titleSmall,
                             )
@@ -524,7 +527,7 @@ private fun ReleaseHeaderCard(
                         selected = true,
                         onClick = {},
                         label = {
-                            Text("Immutable")
+                            Text(stringResource(R.string.release_immutable))
                         },
                     )
                 }
@@ -581,7 +584,7 @@ private fun ReleaseActionsCard(
             verticalArrangement = Arrangement.spacedBy(10.dp),
         ) {
             Text(
-                text = "Release actions",
+                text = stringResource(R.string.release_actions),
                 style = MaterialTheme.typography.titleMedium,
             )
 
@@ -599,7 +602,7 @@ private fun ReleaseActionsCard(
                         imageVector = Icons.Outlined.Edit,
                         contentDescription = null,
                     )
-                    Text("Edit")
+                    Text(stringResource(R.string.action_edit))
                 }
 
                 if (release.draft) {
@@ -607,14 +610,14 @@ private fun ReleaseActionsCard(
                         enabled = enabled,
                         onClick = onPublish,
                     ) {
-                        Text("Publish")
+                        Text(stringResource(R.string.action_publish))
                     }
                 } else {
                     OutlinedButton(
                         enabled = enabled,
                         onClick = onConvertToDraft,
                     ) {
-                        Text("Convert to draft")
+                        Text(stringResource(R.string.release_convert_draft))
                     }
                 }
 
@@ -627,7 +630,7 @@ private fun ReleaseActionsCard(
                             Icons.Outlined.UploadFile,
                         contentDescription = null,
                     )
-                    Text("Upload asset")
+                    Text(stringResource(R.string.release_upload_asset))
                 }
 
                 OutlinedButton(
@@ -638,7 +641,7 @@ private fun ReleaseActionsCard(
                         imageVector = Icons.Outlined.Delete,
                         contentDescription = null,
                     )
-                    Text("Delete")
+                    Text(stringResource(R.string.action_delete))
                 }
             }
         }
@@ -657,7 +660,7 @@ private fun ReleaseNotesCard(
             verticalArrangement = Arrangement.spacedBy(8.dp),
         ) {
             Text(
-                text = "Release notes",
+                text = stringResource(R.string.release_notes),
                 style = MaterialTheme.typography.titleMedium,
             )
             HorizontalDivider()
@@ -752,7 +755,7 @@ private fun ReleaseAssetCard(
                         imageVector = Icons.Outlined.Download,
                         contentDescription = null,
                     )
-                    Text("Download")
+                    Text(stringResource(R.string.action_download))
                 }
 
                 if (canManage) {
@@ -760,14 +763,14 @@ private fun ReleaseAssetCard(
                         enabled = !downloading,
                         onClick = onEdit,
                     ) {
-                        Text("Rename")
+                        Text(stringResource(R.string.action_rename))
                     }
 
                     OutlinedButton(
                         enabled = !downloading,
                         onClick = onDelete,
                     ) {
-                        Text("Delete")
+                        Text(stringResource(R.string.action_delete))
                     }
                 }
             }
@@ -837,7 +840,7 @@ private fun EditReleaseDialog(
                     )
                 },
             ) {
-                Text("Save")
+                Text(stringResource(R.string.action_save))
             }
         },
         dismissButton = {
@@ -845,10 +848,10 @@ private fun EditReleaseDialog(
                 enabled = !busy,
                 onClick = onDismiss,
             ) {
-                Text("Cancel")
+                Text(stringResource(R.string.action_cancel))
             }
         },
-        title = { Text("Edit release") },
+        title = { Text(stringResource(R.string.release_edit)) },
         text = {
             LazyColumn(
                 verticalArrangement = Arrangement.spacedBy(10.dp),
@@ -859,7 +862,7 @@ private fun EditReleaseDialog(
                         value = tagName,
                         onValueChange = { tagName = it },
                         singleLine = true,
-                        label = { Text("Tag") },
+                        label = { Text(stringResource(R.string.releases_tag_name)) },
                     )
                 }
                 item {
@@ -868,7 +871,7 @@ private fun EditReleaseDialog(
                         value = target,
                         onValueChange = { target = it },
                         singleLine = true,
-                        label = { Text("Target") },
+                        label = { Text(stringResource(R.string.releases_target)) },
                     )
                 }
                 item {
@@ -877,7 +880,7 @@ private fun EditReleaseDialog(
                         value = name,
                         onValueChange = { name = it },
                         singleLine = true,
-                        label = { Text("Name") },
+                        label = { Text(stringResource(R.string.releases_name)) },
                     )
                 }
                 item {
@@ -887,7 +890,7 @@ private fun EditReleaseDialog(
                         onValueChange = { body = it },
                         minLines = 4,
                         maxLines = 9,
-                        label = { Text("Release notes") },
+                        label = { Text(stringResource(R.string.release_notes)) },
                     )
                 }
                 item {
@@ -910,7 +913,7 @@ private fun EditReleaseDialog(
                 if (!draft && !prerelease) {
                     item {
                         Text(
-                            text = "Latest policy",
+                            text = stringResource(R.string.release_latest_policy),
                             style =
                                 MaterialTheme.typography.labelLarge,
                         )
@@ -923,7 +926,7 @@ private fun EditReleaseDialog(
                                 latestPolicyName = null
                             },
                             label = {
-                                Text("Keep current")
+                                Text(stringResource(R.string.release_keep_current))
                             },
                         )
                     }
@@ -986,7 +989,7 @@ private fun EditAssetDialog(
                     )
                 },
             ) {
-                Text("Save")
+                Text(stringResource(R.string.action_save))
             }
         },
         dismissButton = {
@@ -994,10 +997,10 @@ private fun EditAssetDialog(
                 enabled = !busy,
                 onClick = onDismiss,
             ) {
-                Text("Cancel")
+                Text(stringResource(R.string.action_cancel))
             }
         },
-        title = { Text("Edit release asset") },
+        title = { Text(stringResource(R.string.release_edit_asset)) },
         text = {
             Column(
                 verticalArrangement = Arrangement.spacedBy(10.dp),
@@ -1007,14 +1010,14 @@ private fun EditAssetDialog(
                     value = name,
                     onValueChange = { name = it },
                     singleLine = true,
-                    label = { Text("Asset name") },
+                    label = { Text(stringResource(R.string.release_asset_name)) },
                 )
                 OutlinedTextField(
                     modifier = Modifier.fillMaxWidth(),
                     value = label,
                     onValueChange = { label = it },
                     singleLine = true,
-                    label = { Text("Label (optional)") },
+                    label = { Text(stringResource(R.string.release_label_optional)) },
                 )
             }
         },
