@@ -93,10 +93,8 @@ jobs:
             -B build/native-sanitizers \
             -G Ninja \
             -DNEXORA_BUILD_NATIVE_TESTS=ON \
-            -DCMAKE_BUILD_TYPE=RelWithDebInfo \
-            -DCMAKE_C_FLAGS="-fsanitize=address,undefined -fno-omit-frame-pointer" \
-            -DCMAKE_CXX_FLAGS="-fsanitize=address,undefined -fno-omit-frame-pointer" \
-            -DCMAKE_EXE_LINKER_FLAGS="-fsanitize=address,undefined"
+            -DNEXORA_ENABLE_PROJECT_SANITIZERS=ON \
+            -DCMAKE_BUILD_TYPE=RelWithDebInfo
 
       - name: Build sanitizer targets
         run: cmake --build build/native-sanitizers --parallel 2
