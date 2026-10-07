@@ -49,9 +49,11 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.nexora.git.R
 import com.nexora.git.core.repository.CreateRepositoryRequest
 import com.nexora.git.core.repository.RepositorySummary
 import com.nexora.git.core.storage.ProjectRisk
@@ -129,6 +131,7 @@ fun RepositoriesScreen(
         onBrowseWorkspace = onBrowseWorkspace,
         onOpenGitWorkspace = onOpenGitWorkspace,
         onCloneRepository = viewModel::cloneRepository,
+        onCancelClone = viewModel::cancelDurableClone,
         onInitializeGit = viewModel::initializeWorkspaceGit,
         onSync = viewModel::sync,
         onDelete = viewModel::delete,
@@ -233,6 +236,7 @@ internal fun RepositoriesContent(
     onBrowseWorkspace: (String) -> Unit,
     onOpenGitWorkspace: (String) -> Unit,
     onCloneRepository: (RepositorySummary) -> Unit,
+    onCancelClone: () -> Unit,
     onInitializeGit: (String) -> Unit,
     onSync: (String) -> Unit,
     onDelete: (String) -> Unit,
@@ -327,11 +331,35 @@ internal fun RepositoriesContent(
 
         if (state.operationInProgress) {
             item {
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.Center,
-                ) {
-                    CircularProgressIndicator()
+                Card(modifier = Modifier.fillMaxWidth()) {
+                    Column(
+                        modifier = Modifier.padding(16.dp),
+                        verticalArrangement = Arrangement.spacedBy(10.dp),
+                    ) {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(12.dp),
+                        ) {
+                            CircularProgressIndicator()
+                            Text(
+                                text = when (state.durableClonePhase) {
+                                    "resolve" -> stringResource(R.string.clone_durable_resolving)
+                                    "clone" -> stringResource(R.string.clone_durable_running)
+                                    "queued" -> stringResource(R.string.clone_durable_queued)
+                                    else -> stringResource(R.string.clone_durable_running)
+                                },
+                            )
+                        }
+
+                        if (state.durableCloneId != null) {
+                            OutlinedButton(
+                                modifier = Modifier.fillMaxWidth(),
+                                onClick = onCancelClone,
+                            ) {
+                                Text(stringResource(R.string.clone_durable_cancel))
+                            }
+                        }
+                    }
                 }
             }
         }
