@@ -2,6 +2,7 @@ import com.nexora.build.NexoraBuildSecrets
 
 plugins {
     alias(libs.plugins.android.application)
+    alias(libs.plugins.baselineprofile)
     alias(libs.plugins.compose.compiler)
     alias(libs.plugins.ksp)
     alias(libs.plugins.hilt)
@@ -163,6 +164,7 @@ dependencies {
     implementation(libs.androidx.appcompat)
     implementation(libs.androidx.work.runtime)
     implementation(libs.androidx.work.runtime.ktx)
+    implementation(libs.androidx.profileinstaller)
 
     implementation(libs.retrofit.core)
     implementation(libs.okhttp.core)
@@ -176,6 +178,8 @@ dependencies {
     androidTestImplementation(libs.androidx.work.testing)
     androidTestImplementation(platform(libs.androidx.compose.bom))
     androidTestImplementation(libs.androidx.compose.ui.test.junit4)
+
+    "baselineProfile"(project(":baselineprofile"))
 
     debugImplementation(libs.androidx.compose.ui.tooling)
     debugImplementation(libs.androidx.compose.ui.test.manifest)
