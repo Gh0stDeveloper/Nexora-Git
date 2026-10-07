@@ -80,6 +80,7 @@ jobs:
           ./gradlew --no-daemon \
             :app:assembleDebug \
             :app:assembleDebugAndroidTest \
+            :baselineprofile:assemble \
             :app:testDebugUnitTest \
             :app:lintDebug
 
