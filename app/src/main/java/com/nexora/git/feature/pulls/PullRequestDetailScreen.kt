@@ -195,7 +195,7 @@ internal fun PullRequestDetailContent(
                     modifier = Modifier.weight(1f),
                 ) {
                     Text(
-                        text = "Pull request #" + state.number,
+                        text = stringResource(R.string.pr_number, state.number),
                         style = MaterialTheme.typography.titleLarge,
                     )
                     Text(
@@ -606,7 +606,7 @@ private fun PullRequestHeaderCard(
 
             pull.mergeableState?.let {
                 Text(
-                    text = "Merge state: " + it,
+                    text = stringResource(R.string.pr_merge_state, it),
                     color =
                         MaterialTheme.colorScheme.onSurfaceVariant,
                 )
@@ -903,7 +903,7 @@ private fun PullRequestFileCard(
 
             file.previousFilename?.let {
                 Text(
-                    text = "Previous: " + it,
+                    text = stringResource(R.string.pr_previous, it),
                     fontFamily = FontFamily.Monospace,
                     color =
                         MaterialTheme.colorScheme.onSurfaceVariant,
@@ -962,7 +962,7 @@ private fun ReviewCard(
             }
             review.commitId?.let {
                 Text(
-                    text = "Commit " + it.take(7),
+                    text = stringResource(R.string.pr_commit, it.take(7)),
                     fontFamily = FontFamily.Monospace,
                     color =
                         MaterialTheme.colorScheme.onSurfaceVariant,
@@ -1378,7 +1378,7 @@ private fun InlineReviewCommentDialog(
                     label = { Text(stringResource(R.string.action_comment)) },
                 )
                 Text(
-                    text = "Head commit: " + headSha.take(12),
+                    text = stringResource(R.string.pr_head_commit, headSha.take(12)),
                     fontFamily = FontFamily.Monospace,
                     color =
                         MaterialTheme.colorScheme.onSurfaceVariant,
@@ -1464,7 +1464,7 @@ private fun MergeConfirmationDialog(
                 verticalArrangement = Arrangement.spacedBy(8.dp),
             ) {
                 Text(
-                    text = "Method: " + method.wireValue,
+                    text = stringResource(R.string.pr_method, method.wireValue),
                 )
                 Text(
                     text = stringResource(R.string.pr_sha_guard),
