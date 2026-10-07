@@ -22,7 +22,7 @@ Nexora Git is being extended so the same Android application can be built both b
 | B | persistent Signing Vault, one-time keystore generation, fingerprint, encrypted backup/restore guards | implemented on the feature branch |
 | C | systemd background build worker, persistent queue, immutable snapshots, cancellation and detached execution | implemented on the feature branch |
 | D | APK/AAB staging, persistent logs, metadata, checksums, retention and diagnostics | implemented on the feature branch |
-| E | secure GitHub Actions secret export and signing/config parity verification | planned |
+| E | secure GitHub Actions secret export, isolated release signing and VPS/GitHub parity verification | implemented on the feature branch |
 | F | update/autobuild integration, coalescing, disaster recovery and final hardening | planned |
 
 The phases are intentionally layered. No phase is allowed to regenerate a signing identity merely because a source update occurs.
@@ -368,6 +368,104 @@ Retention never touches `QUEUED`, `QUEUED_RECOVERED` or `RUNNING` jobs. For an e
 The small `job.conf` history remains, so `nexora-git android builds` can still show the historical result and commit after large files are pruned.
 
 The worker applies the same conservative policy after terminal jobs. Operators can preview eligible jobs with `cleanup --dry-run` and inspect the active defaults with `retention status`.
+
+## Phase E — GitHub production credentials, signing and parity
+
+Phase E deliberately separates three trust boundaries.
+
+### E1 — GitHub App configuration on the VPS
+
+The VPS can now manage the GitHub App credentials without re-entering the domain-derived URLs:
+
+```bash
+sudo nexora-git github status
+sudo nexora-git github configure
+```
+
+`github configure` asks for the GitHub App Client ID and hidden Client Secret. A blank secret keeps the current secret. The command writes the broker environment atomically with mode `0600`, derives:
+
+```text
+NEXORA_AUTH_BROKER_BASE_URL=https://DOMAIN
+NEXORA_GITHUB_CALLBACK_URL=https://DOMAIN/oauth/callback
+APP_CALLBACK_URI=nexoragit://oauth/callback
+```
+
+and recreates/health-checks the Auth Broker.
+
+The **GitHub App Client Secret remains server-only**. It is never exported to Android or GitHub Actions.
+
+### E2 — GitHub Actions production Secrets
+
+The stable release workflow requires exactly seven values:
+
+```text
+NEXORA_GITHUB_CLIENT_ID
+NEXORA_AUTH_BROKER_BASE_URL
+NEXORA_GITHUB_CALLBACK_URL
+NEXORA_SIGNING_KEYSTORE_BASE64
+NEXORA_SIGNING_STORE_PASSWORD
+NEXORA_SIGNING_KEY_ALIAS
+NEXORA_SIGNING_KEY_PASSWORD
+```
+
+Create a root-only export bundle when manual transfer is desired:
+
+```bash
+sudo nexora-git github secrets export
+```
+
+The export directory and files are mode `0700/0600` and include a non-secret hash manifest. Delete the bundle after use.
+
+If GitHub CLI is installed and authenticated as root, the VPS can synchronize the same values directly into the repository's `production` environment:
+
+```bash
+sudo gh auth login
+sudo nexora-git github secrets apply
+sudo nexora-git github secrets status
+```
+
+Values are piped through stdin to `gh secret set`; signing passwords/base64 are not placed in command-line arguments. On success the VPS records only SHA-256 hashes of the seven synchronized values. GitHub itself does not expose secret values for later reading, so parity checks compare current local material to this successful synchronization record while GitHub exposes only secret names.
+
+### E3 — isolated production signing
+
+The background Gradle worker still has no Signing Vault access. Signing is an explicit privileged operation after a release build:
+
+```bash
+sudo nexora-git android sign BUILD_ID
+sudo nexora-git android signed BUILD_ID
+```
+
+The signer:
+
+- verifies the Phase D unsigned artifacts/checksums first;
+- signs APK with Android Build Tools `apksigner` using v1/v2/v3;
+- signs AAB with JDK `jarsigner`;
+- passes keystore passwords through process environment references rather than command arguments;
+- verifies both signatures;
+- extracts the SHA-256 certificate fingerprint from APK and AAB;
+- requires both fingerprints to equal the persistent Signing Vault certificate;
+- writes signed outputs atomically below `artifacts/BUILD_ID/signed/`;
+- generates a signed-artifact checksum manifest and public signing metadata.
+
+Repeated signing is idempotent only when the existing signed output verifies against the current Signing Vault.
+
+### VPS ↔ GitHub parity
+
+After `github secrets apply`:
+
+```bash
+sudo nexora-git android parity
+sudo nexora-git android parity BUILD_ID
+```
+
+Parity requires:
+
+- broker Client ID and domain-derived URLs to be internally consistent;
+- current Signing Vault material to match the hashes recorded at the last successful GitHub synchronization;
+- the Stable Release workflow to reference all seven production secrets and the `production` environment;
+- when a build ID is supplied, its signed APK/AAB fingerprint to match the same Signing Vault certificate.
+
+The Stable Release workflow also performs an independent signing-parity gate: callback must equal `AUTH_BROKER_BASE_URL/oauth/callback`, and APK/AAB certificate fingerprints must equal the certificate inside the supplied production keystore.
 
 ## Why the VPS and GitHub builds can match
 

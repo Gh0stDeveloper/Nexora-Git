@@ -13,6 +13,8 @@ source "$SCRIPT_DIR/android-signing-lib.sh"
 source "$SCRIPT_DIR/android-artifacts-lib.sh"
 # shellcheck source=android-worker-lib.sh
 source "$SCRIPT_DIR/android-worker-lib.sh"
+# shellcheck source=android-release-lib.sh
+source "$SCRIPT_DIR/android-release-lib.sh"
 
 usage() {
   cat <<'EOF'
@@ -52,6 +54,14 @@ Usage:
   nexora-git android log <JOB_ID> [LINES]
   nexora-git android retention status
   nexora-git android cleanup [--dry-run]
+  nexora-git android sign <JOB_ID>
+  nexora-git android signed <JOB_ID>
+  nexora-git android parity [JOB_ID]
+  nexora-git github status
+  nexora-git github configure
+  nexora-git github secrets status
+  nexora-git github secrets export [PATH]
+  nexora-git github secrets apply
   nexora-git help
 EOF
 }
@@ -105,6 +115,12 @@ cmd_doctor() {
       failed=1
     fi
     if ! android_signing_verify; then
+      failed=1
+    fi
+    if ! android_worker_doctor; then
+      failed=1
+    fi
+    if ! android_release_doctor; then
       failed=1
     fi
   else
@@ -220,6 +236,15 @@ cmd_android() {
           ;;
       esac
       ;;
+    sign)
+      android_release_sign "${2:-}"
+      ;;
+    signed)
+      android_release_show_signed "${2:-}"
+      ;;
+    parity)
+      android_release_parity "${2:-}"
+      ;;
     cleanup)
       if [[ "${2:-}" == "--dry-run" ]]; then
         android_artifacts_apply_retention 1 "$NEXORA_ANDROID_RETENTION_KEEP" "$NEXORA_ANDROID_RETENTION_DAYS"
@@ -269,6 +294,9 @@ Usage:
   nexora-git android log <JOB_ID> [LINES]
   nexora-git android retention status
   nexora-git android cleanup [--dry-run]
+  nexora-git android sign <JOB_ID>
+  nexora-git android signed <JOB_ID>
+  nexora-git android parity [JOB_ID]
 
 Builds run under the isolated nexora-build account and continue after SSH
 disconnects. The worker never receives the Android Signing Vault credentials;
@@ -277,6 +305,55 @@ EOF
       ;;
     *)
       die "Unknown android command: $subcommand"
+      ;;
+  esac
+}
+
+cmd_github() {
+  require_install
+  local subcommand="${1:-status}"
+
+  case "$subcommand" in
+    status)
+      android_release_github_status
+      ;;
+    configure)
+      android_release_github_configure
+      ;;
+    secrets)
+      case "${2:-status}" in
+        status)
+          android_release_secrets_status
+          ;;
+        export)
+          android_release_export_secrets "${3:-}"
+          ;;
+        apply)
+          android_release_apply_secrets
+          ;;
+        *)
+          die "Unknown github secrets command: ${2:-}"
+          ;;
+      esac
+      ;;
+    help|-h|--help)
+      cat <<'EOF'
+Nexora Git GitHub/VPS production configuration
+
+Usage:
+  nexora-git github status
+  nexora-git github configure
+  nexora-git github secrets status
+  nexora-git github secrets export [PATH]
+  nexora-git github secrets apply
+
+The broker base URL and OAuth callback are derived from the managed VPS domain.
+The GitHub App Client Secret remains broker-only and is never exported to the
+Android application or GitHub Actions release secrets.
+EOF
+      ;;
+    *)
+      die "Unknown github command: $subcommand"
       ;;
   esac
 }
@@ -342,6 +419,10 @@ case "${1:-help}" in
   android)
     shift
     cmd_android "$@"
+    ;;
+  github)
+    shift
+    cmd_github "$@"
     ;;
   help|-h|--help) usage ;;
   *)

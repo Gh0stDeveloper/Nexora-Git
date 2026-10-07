@@ -85,6 +85,10 @@ jobs:
             :app:testDebugUnitTest \
             :app:lintRelease
 
+      - name: Verify VPS release signing integration
+        shell: bash
+        run: bash scripts/vps/test-android-release-integration.sh
+
       - name: Enforce artifact size budgets
         shell: bash
         run: bash scripts/ci/check-artifact-size.sh

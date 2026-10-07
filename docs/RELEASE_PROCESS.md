@@ -21,7 +21,7 @@ Required production secrets:
 - `NEXORA_SIGNING_KEY_ALIAS`
 - `NEXORA_SIGNING_KEY_PASSWORD`
 
-Never commit these values.
+Never commit these values. On a managed VPS, use `sudo nexora-git github secrets export` for a protected manual bundle or authenticate GitHub CLI and run `sudo nexora-git github secrets apply` to synchronize the exact Signing Vault identity and domain-derived public URLs into the `production` environment. The GitHub App Client Secret is intentionally excluded because it belongs only to the Auth Broker.
 
 ## 2. Merge gate
 
@@ -47,7 +47,7 @@ The tag must match `app/build.gradle.kts` `versionName` and its commit must be c
 
 Pushing the tag triggers `Stable Release`.
 
-It validates configuration, decodes the keystore into the runner's temporary directory, builds the signed APK/AAB, runs tests/lint, verifies the APK signature, enforces size budgets, generates SHA-256 checksums and publishes/updates the GitHub Release.
+It validates configuration, decodes the PKCS#12 keystore into the runner's temporary directory, builds the signed APK/AAB, runs tests/lint, verifies APK/AAB signatures and signing-certificate parity, requires the callback to equal the broker base URL plus `/oauth/callback`, enforces size budgets, generates SHA-256 checksums and publishes/updates the GitHub Release.
 
 ## 5. Play Store
 

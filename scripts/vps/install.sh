@@ -11,6 +11,8 @@ source "$SCRIPT_DIR/android-build-lib.sh"
 source "$SCRIPT_DIR/android-signing-lib.sh"
 # shellcheck source=android-worker-lib.sh
 source "$SCRIPT_DIR/android-worker-lib.sh"
+# shellcheck source=android-release-lib.sh
+source "$SCRIPT_DIR/android-release-lib.sh"
 
 RECONFIGURE=0
 if [[ "${1:-}" == "--reconfigure" ]]; then
@@ -23,7 +25,7 @@ require_root
 detect_supported_os
 banner
 
-TOTAL_PHASES=12
+TOTAL_PHASES=13
 phase 1 "$TOTAL_PHASES" "Repository installation"
 
 SOURCE_ROOT="$(git -C "$SCRIPT_DIR/../.." rev-parse --show-toplevel 2>/dev/null || true)"
@@ -275,7 +277,9 @@ chmod +x \
   "$INSTALL_DIR/scripts/vps/test-android-signing-lib.sh" \
   "$INSTALL_DIR/scripts/vps/android-worker.sh" \
   "$INSTALL_DIR/scripts/vps/test-android-worker-lib.sh" \
-  "$INSTALL_DIR/scripts/vps/test-android-artifacts-lib.sh"
+  "$INSTALL_DIR/scripts/vps/test-android-artifacts-lib.sh" \
+  "$INSTALL_DIR/scripts/vps/test-android-github-lib.sh" \
+  "$INSTALL_DIR/scripts/vps/test-android-release-integration.sh"
 log_ok "Installed command: nexora-git"
 
 phase 8 "$TOTAL_PHASES" "Android build foundation"
@@ -291,7 +295,10 @@ phase 11 "$TOTAL_PHASES" "Android artifact lifecycle"
 android_artifacts_ensure_layout
 android_artifacts_doctor
 
-phase 12 "$TOTAL_PHASES" "Final verification"
+phase 12 "$TOTAL_PHASES" "GitHub release signing and parity foundation"
+android_release_doctor
+
+phase 13 "$TOTAL_PHASES" "Final verification"
 curl -fsS --max-time 10 "https://$DOMAIN/health" >/dev/null || die "Public HTTPS health check failed."
 compose ps
 printf '\n'
@@ -313,4 +320,6 @@ printf '  nexora-git android build release\n'
 printf '  nexora-git android builds\n'
 printf '  nexora-git android worker status\n'
 printf '  nexora-git android retention status\n'
+printf '  nexora-git github status\n'
+printf '  nexora-git github secrets export\n'
 printf '  nexora-git logs\n'

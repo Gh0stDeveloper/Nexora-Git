@@ -100,7 +100,7 @@ https://YOUR_DOMAIN/oauth/callback
 
 ## Installation lifecycle
 
-The installer executes twelve explicit stages:
+The installer executes thirteen explicit stages:
 
 | Stage | Action |
 | ---: | --- |
@@ -115,7 +115,8 @@ The installer executes twelve explicit stages:
 | 9 | Create or verify/reuse the persistent Android Signing Vault |
 | 10 | Install/enable the isolated Android background build worker |
 | 11 | Verify persistent Android artifact/log lifecycle paths and policy |
-| 12 | Run final local/public health verification |
+| 12 | Validate GitHub release signing/parity foundation |
+| 13 | Run final local/public health verification |
 
 A failed prerequisite aborts rather than applying destructive workarounds.
 
@@ -229,6 +230,14 @@ The installer creates:
 | `nexora-git android log <JOB_ID> [LINES]` | Read the persistent per-build Gradle log |
 | `nexora-git android retention status` | Show artifact/log retention policy and eligible count |
 | `nexora-git android cleanup [--dry-run]` | Preview or apply conservative terminal-build pruning |
+| `nexora-git android sign <JOB_ID>` | Sign a staged release outside the unprivileged build worker |
+| `nexora-git android signed <JOB_ID>` | Verify/list signed APK/AAB outputs |
+| `nexora-git android parity [JOB_ID]` | Verify current VPS material matches the last successful GitHub secret sync and optional signed build |
+| `nexora-git github status` | Show public GitHub App/broker configuration without Client Secret |
+| `nexora-git github configure` | Update Client ID/Client Secret while deriving URLs from the VPS domain |
+| `nexora-git github secrets export [PATH]` | Create a protected seven-secret production bundle |
+| `nexora-git github secrets apply` | Use authenticated GitHub CLI to synchronize the seven production environment secrets |
+| `nexora-git github secrets status` | Show local sync parity record and GitHub secret names when available |
 | `nexora-git help` | Show command usage |
 
 `config` intentionally hides confidential values.
