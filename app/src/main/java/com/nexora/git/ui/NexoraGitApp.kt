@@ -200,19 +200,6 @@ private fun AuthenticatedNexoraGitApp(
                             "repository/" + owner + "/" + name,
                         )
                     },
-                    onOpenSettings = {
-                        navController.navigate(
-                            NexoraDestination.SETTINGS.route,
-                        )
-                    },
-                )
-            }
-            composable(NexoraDestination.SETTINGS.route) {
-                SettingsScreen(
-                    contentPadding = paddingValues,
-                    onBack = {
-                        navController.popBackStack()
-                    },
                 )
             }
             composable(NexoraDestination.REPOSITORIES.route) {
@@ -618,6 +605,19 @@ private fun AuthenticatedNexoraGitApp(
                         navController.navigate(
                             "repository/" + owner + "/" + name,
                         )
+                    },
+                    onOpenSettings = {
+                        navController.navigate(
+                            NexoraDestination.SETTINGS.route,
+                        )
+                    },
+                )
+            }
+            composable(NexoraDestination.SETTINGS.route) {
+                SettingsScreen(
+                    contentPadding = paddingValues,
+                    onBack = {
+                        navController.popBackStack()
                     },
                 )
             }
