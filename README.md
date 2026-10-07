@@ -140,9 +140,9 @@ less /tmp/nexora-git-bootstrap.sh
 sudo bash /tmp/nexora-git-bootstrap.sh
 ```
 
-After installation, administration is performed through the `nexora-git` command.
+After installation, administration is performed through the `nexora-git` command. The same VPS also hosts the official GitHub-inspired **Nexora Git download website**, which publishes only verified signed APK releases.
 
-See **[VPS Installer & Operations](docs/VPS_INSTALLER.md)**, the **[complete `nexora-git` command reference](docs/NEXORA_GIT_COMMANDS.md)** and **[Auth Broker](auth-broker/README.md)**.
+See **[Download Website](docs/WEB.md)**, **[VPS Installer & Operations](docs/VPS_INSTALLER.md)**, the **[complete `nexora-git` command reference](docs/NEXORA_GIT_COMMANDS.md)** and **[Auth Broker](auth-broker/README.md)**.
 
 ## Documentation
 
@@ -160,6 +160,7 @@ Key references:
 - [GitHub platform layer](docs/PLATFORM_LAYER.md)
 - [Release process](docs/RELEASE_PROCESS.md)
 - [VPS installer](docs/VPS_INSTALLER.md)
+- [Download website](docs/WEB.md)
 - [`nexora-git` command reference](docs/NEXORA_GIT_COMMANDS.md)
 - [Roadmap and implementation history](docs/ROADMAP.md)
 
