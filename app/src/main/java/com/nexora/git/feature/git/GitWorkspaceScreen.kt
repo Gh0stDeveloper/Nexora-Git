@@ -825,7 +825,7 @@ fun GitWorkspaceScreen(
                     if (state.remotes.isEmpty()) {
                         item {
                             EmptyGitCard(
-                                "No remotes configured. Add a GitHub remote to fetch, pull or push.",
+                                stringResource(R.string.git_no_remotes),
                             )
                         }
                     } else {
@@ -1114,11 +1114,11 @@ internal fun AdvancedGitPanel(
         verticalArrangement = Arrangement.spacedBy(12.dp),
     ) {
         Text(
-            "Advanced Git",
+            stringResource(R.string.git_advanced_title),
             style = MaterialTheme.typography.titleLarge,
         )
         Text(
-            "Local libgit2 operations. Destructive actions require explicit confirmation.",
+            stringResource(R.string.git_advanced_description),
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
 
@@ -1146,7 +1146,7 @@ internal fun AdvancedGitPanel(
                 }
                 if (state.rebaseInProgress) {
                     Text(
-                        "Rebase is in progress. Resolve conflicts from Changes, then continue or abort there.",
+                        stringResource(R.string.git_rebase_in_progress_note),
                         color = MaterialTheme.colorScheme.error,
                     )
                 }
@@ -1159,7 +1159,7 @@ internal fun AdvancedGitPanel(
                 verticalArrangement = Arrangement.spacedBy(10.dp),
             ) {
                 Text(
-                    "Cherry-pick / Revert",
+                    stringResource(R.string.git_cherry_revert),
                     style = MaterialTheme.typography.titleMedium,
                 )
                 OutlinedTextField(
@@ -1243,7 +1243,11 @@ internal fun AdvancedGitPanel(
                     }
                 }
                 Text(
-                    "Commit author: $authorName <$authorEmail>",
+                    stringResource(
+                        R.string.git_commit_author,
+                        authorName,
+                        authorEmail,
+                    ),
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     style = MaterialTheme.typography.bodySmall,
                 )
@@ -1283,7 +1287,7 @@ internal fun AdvancedGitPanel(
 
                 if (state.stashes.isEmpty()) {
                     Text(
-                        "No local stashes.",
+                        stringResource(R.string.git_no_stashes),
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
                 } else {
@@ -1295,7 +1299,7 @@ internal fun AdvancedGitPanel(
                             style = MaterialTheme.typography.titleSmall,
                         )
                         Text(
-                            stash.message.ifBlank { "No message" },
+                            stash.message.ifBlank { stringResource(R.string.git_no_message) },
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                         )
                         Row(
@@ -1362,7 +1366,7 @@ internal fun AdvancedGitPanel(
                 }
                 if (resetMode == GitResetMode.HARD) {
                     Text(
-                        "Hard reset can permanently discard uncommitted changes.",
+                        stringResource(R.string.git_hard_reset_warning),
                         color = MaterialTheme.colorScheme.error,
                     )
                 }
@@ -1384,7 +1388,7 @@ internal fun AdvancedGitPanel(
                 verticalArrangement = Arrangement.spacedBy(10.dp),
             ) {
                 Text(
-                    "Local tags",
+                    stringResource(R.string.git_local_tags),
                     style = MaterialTheme.typography.titleMedium,
                 )
                 OutlinedTextField(
@@ -1476,12 +1480,12 @@ internal fun AdvancedGitPanel(
                 verticalArrangement = Arrangement.spacedBy(10.dp),
             ) {
                 Text(
-                    "Submodules",
+                    stringResource(R.string.git_submodules),
                     style = MaterialTheme.typography.titleMedium,
                 )
                 if (state.submodules.isEmpty()) {
                     Text(
-                        "No submodules declared by this repository.",
+                        stringResource(R.string.git_no_submodules),
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
                 } else {
@@ -1561,7 +1565,7 @@ internal fun AdvancedGitPanel(
                 }
                 if (state.lfs.trackedPatterns.isNotEmpty()) {
                     Text(
-                        "Tracked patterns",
+                        stringResource(R.string.git_lfs_tracked),
                         style = MaterialTheme.typography.titleSmall,
                     )
                     state.lfs.trackedPatterns.forEach { pattern ->
@@ -2056,7 +2060,10 @@ private fun CommitCard(
                 onClick = onCommit,
             ) {
                 Text(
-                    "Commit " + stagedCount + " path(s)",
+                    stringResource(
+                        R.string.git_commit_paths,
+                        stagedCount,
+                    ),
                 )
             }
         }
@@ -2253,7 +2260,10 @@ private fun BranchCard(
 
             if (branch.upstream.isNotBlank()) {
                 Text(
-                    text = "Upstream: " + branch.upstream,
+                    text = stringResource(
+                        R.string.git_branch_upstream,
+                        branch.upstream,
+                    ),
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     style = MaterialTheme.typography.bodySmall,
                 )
@@ -2297,7 +2307,7 @@ private fun RemotesHeader(
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.SpaceBetween,
     ) {
-        SectionTitle("Remotes")
+        SectionTitle(stringResource(R.string.git_remotes))
         TextButton(onClick = onAdd) {
             Icon(
                 imageVector = Icons.Outlined.Add,
