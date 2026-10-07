@@ -634,4 +634,8 @@
     <string name="workflow_run_attempt">Ejecución #%1$d · intento %2$d</string>
     <string name="workflow_branch_sha">%1$s · %2$s</string>
     <string name="release_no_assets">Este release no tiene assets.</string>
+
+    <string name="settings_privacy_open">Abrir política de privacidad</string>
+    <string name="settings_privacy_unavailable">La URL de privacidad estará disponible cuando la configuración HTTPS de producción esté activa.</string>
+    <string name="settings_source_open">Ver código fuente</string>
 </resources>
