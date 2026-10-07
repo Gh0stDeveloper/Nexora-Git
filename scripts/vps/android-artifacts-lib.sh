@@ -155,12 +155,14 @@ EOF
 
   (
     cd "$artifact_dir"
-    find . -maxdepth 1 -type f ! -name SHA256SUMS.txt -printf '%f\n' |
+    local_checksum="$(mktemp .SHA256SUMS.XXXXXX)"
+    find . -maxdepth 1 -type f ! -name SHA256SUMS.txt ! -name '.SHA256SUMS.*' -printf '%f\n' |
       sort |
       while IFS= read -r filename; do
         sha256sum "$filename"
-      done > SHA256SUMS.txt
-    chmod 0640 SHA256SUMS.txt
+      done > "$local_checksum"
+    chmod 0640 "$local_checksum"
+    mv "$local_checksum" SHA256SUMS.txt
   )
 }
 
@@ -289,8 +291,9 @@ android_artifacts_show_log() {
   local job_id="$1"
   local lines="${2:-200}"
   android_artifact_valid_job_id "$job_id" || die "Usage: nexora-git android log <JOB_ID> [LINES]"
-  [[ "$lines" =~ ^[0-9]+$ ]] && (( lines >= 1 && lines <= 5000 )) ||
+  if [[ ! "$lines" =~ ^[0-9]+$ ]] || (( lines < 1 || lines > 5000 )); then
     die "Log line count must be between 1 and 5000."
+  fi
 
   local log_file
   log_file="$(android_artifacts_log_file "$job_id")"
@@ -351,8 +354,8 @@ android_artifacts_apply_retention() {
     if [[ "$dry_run" != "1" ]]; then
       job_dir="$NEXORA_ANDROID_STATE_ROOT/builds/$id"
       rm -rf "$job_dir/source"
-      rm -rf "$NEXORA_ANDROID_ARTIFACT_ROOT/$id"
-      rm -f "$NEXORA_ANDROID_LOG_ROOT/$id.log"
+      rm -rf "${NEXORA_ANDROID_ARTIFACT_ROOT:?}/$id"
+      rm -f "${NEXORA_ANDROID_LOG_ROOT:?}/$id.log"
     fi
   done
 }
