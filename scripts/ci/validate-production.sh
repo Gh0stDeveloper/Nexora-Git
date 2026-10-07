@@ -30,7 +30,12 @@ if grep -RInE   --include='*.yml' --include='*.yaml'   'uses:[[:space:]]+[^[:spa
   exit 1
 fi
 
-if grep -RInE   --exclude-dir=.git   --exclude='*.md'   --exclude='*.lock'   '(-----BEGIN (RSA |EC |OPENSSH )?PRIVATE KEY-----|gh[pousr]_[A-Za-z0-9_]{20,}|NEXORA_SIGNING_STORE_PASSWORD[[:space:]]*=[[:space:]]*[^$])'   app auth-broker .github scripts; then
+if grep -RInE \
+  --exclude-dir=.git \
+  --exclude='*.md' \
+  --exclude='*.lock' \
+  '(-----BEGIN (RSA |EC |OPENSSH )?PRIVATE KEY-----|gh[pousr]_[A-Za-z0-9_]{20,}|NEXORA_SIGNING_(STORE_PASSWORD|KEY_PASSWORD|KEYSTORE_BASE64)[[:space:]]*=[[:space:]]*["'\'' ]?[A-Za-z0-9+/=_-]{16,})' \
+  app auth-broker .github scripts; then
   echo "Potential production secret committed to the repository."
   exit 1
 fi
