@@ -132,6 +132,7 @@ fun RepositoriesScreen(
         onOpenGitWorkspace = onOpenGitWorkspace,
         onCloneRepository = viewModel::cloneRepository,
         onCancelClone = viewModel::cancelDurableClone,
+        onCancelWorkspaceOperation = viewModel::cancelDurableWorkspaceOperation,
         onInitializeGit = viewModel::initializeWorkspaceGit,
         onSync = viewModel::sync,
         onDelete = viewModel::delete,
@@ -237,6 +238,7 @@ internal fun RepositoriesContent(
     onOpenGitWorkspace: (String) -> Unit,
     onCloneRepository: (RepositorySummary) -> Unit,
     onCancelClone: () -> Unit,
+    onCancelWorkspaceOperation: () -> Unit,
     onInitializeGit: (String) -> Unit,
     onSync: (String) -> Unit,
     onDelete: (String) -> Unit,
@@ -342,16 +344,34 @@ internal fun RepositoriesContent(
                         ) {
                             CircularProgressIndicator()
                             Text(
-                                text = when (state.durableClonePhase) {
-                                    "resolve" -> stringResource(R.string.clone_durable_resolving)
-                                    "clone" -> stringResource(R.string.clone_durable_running)
-                                    "queued" -> stringResource(R.string.clone_durable_queued)
-                                    else -> stringResource(R.string.clone_durable_running)
+                                text = when {
+                                    state.durableWorkspaceId != null -> {
+                                        when (state.durableWorkspacePhase) {
+                                            "import" -> stringResource(R.string.workspace_durable_import)
+                                            "sync" -> stringResource(R.string.workspace_durable_sync)
+                                            else -> stringResource(R.string.workspace_durable_queued)
+                                        }
+                                    }
+                                    else -> {
+                                        when (state.durableClonePhase) {
+                                            "resolve" -> stringResource(R.string.clone_durable_resolving)
+                                            "clone" -> stringResource(R.string.clone_durable_running)
+                                            "queued" -> stringResource(R.string.clone_durable_queued)
+                                            else -> stringResource(R.string.clone_durable_running)
+                                        }
+                                    }
                                 },
                             )
                         }
 
-                        if (state.durableCloneId != null) {
+                        if (state.durableWorkspaceId != null) {
+                            OutlinedButton(
+                                modifier = Modifier.fillMaxWidth(),
+                                onClick = onCancelWorkspaceOperation,
+                            ) {
+                                Text(stringResource(R.string.workspace_durable_cancel))
+                            }
+                        } else if (state.durableCloneId != null) {
                             OutlinedButton(
                                 modifier = Modifier.fillMaxWidth(),
                                 onClick = onCancelClone,
