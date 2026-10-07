@@ -441,14 +441,21 @@ private fun RepositoryIdentityCard(
             }
 
             Text(
-                text = "Default branch: " +
+                text = stringResource(
+                    R.string.repository_default_branch,
                     repository.defaultBranch,
+                ),
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
 
             Text(
-                text = "Language: " +
-                    (repository.language ?: "Not detected"),
+                text = stringResource(
+                    R.string.repository_language,
+                    repository.language
+                        ?: stringResource(
+                            R.string.repository_language_not_detected,
+                        ),
+                ),
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
         }
