@@ -41,6 +41,7 @@ import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
@@ -60,12 +61,21 @@ import com.nexora.git.core.storage.WorkspaceStrategy
 import com.nexora.git.core.templates.ProjectTemplateSummary
 import java.util.Locale
 
+enum class RepositoryEntryAction {
+    NONE,
+    CLONE,
+    IMPORT,
+    CREATE,
+}
+
 @Composable
 fun RepositoriesScreen(
     contentPadding: PaddingValues,
     onOpenRepository: (String, String) -> Unit,
     onBrowseWorkspace: (String) -> Unit,
     onOpenGitWorkspace: (String) -> Unit,
+    initialAction: RepositoryEntryAction = RepositoryEntryAction.NONE,
+    onInitialActionConsumed: () -> Unit = {},
     viewModel: RepositoriesViewModel = hiltViewModel(),
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
@@ -84,6 +94,18 @@ fun RepositoriesScreen(
     ) { uri ->
         if (uri != null) {
             viewModel.importTree(uri)
+        }
+    }
+
+    LaunchedEffect(initialAction) {
+        when (initialAction) {
+            RepositoryEntryAction.NONE -> Unit
+            RepositoryEntryAction.CLONE -> showCloneDialog = true
+            RepositoryEntryAction.IMPORT -> folderPicker.launch(null)
+            RepositoryEntryAction.CREATE -> showCreateDialog = true
+        }
+        if (initialAction != RepositoryEntryAction.NONE) {
+            onInitialActionConsumed()
         }
     }
 
