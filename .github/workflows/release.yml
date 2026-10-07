@@ -73,7 +73,7 @@ jobs:
             *) echo "GitHub callback must use HTTPS."; exit 1 ;;
           esac
 
-          keystore="$RUNNER_TEMP/nexora-git-release.jks"
+          keystore="$RUNNER_TEMP/nexora-git-release.p12"
           printf '%s' "$NEXORA_SIGNING_KEYSTORE_BASE64" | base64 --decode > "$keystore"
           test -s "$keystore"
           echo "NEXORA_SIGNING_STORE_FILE=$keystore" >> "$GITHUB_ENV"
@@ -119,6 +119,10 @@ jobs:
           test -n "$APK"
           SDK_ROOT="${ANDROID_SDK_ROOT:-${ANDROID_HOME:-/usr/local/lib/android/sdk}}"
           "$SDK_ROOT/build-tools/37.0.0/apksigner" verify --verbose --print-certs "$APK"
+
+      - name: Verify release signing and configuration parity
+        shell: bash
+        run: bash scripts/ci/verify-release-signing.sh
 
       - name: Enforce artifact budgets
         shell: bash

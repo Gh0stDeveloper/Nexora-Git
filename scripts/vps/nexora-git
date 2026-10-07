@@ -5,6 +5,18 @@ set -Eeuo pipefail
 SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
 # shellcheck source=lib.sh
 source "$SCRIPT_DIR/lib.sh"
+# shellcheck source=android-build-lib.sh
+source "$SCRIPT_DIR/android-build-lib.sh"
+# shellcheck source=android-signing-lib.sh
+source "$SCRIPT_DIR/android-signing-lib.sh"
+# shellcheck source=android-artifacts-lib.sh
+source "$SCRIPT_DIR/android-artifacts-lib.sh"
+# shellcheck source=android-worker-lib.sh
+source "$SCRIPT_DIR/android-worker-lib.sh"
+# shellcheck source=android-release-lib.sh
+source "$SCRIPT_DIR/android-release-lib.sh"
+# shellcheck source=android-ops-lib.sh
+source "$SCRIPT_DIR/android-ops-lib.sh"
 
 usage() {
   cat <<'EOF'
@@ -22,6 +34,44 @@ Usage:
   nexora-git reconfigure
   nexora-git config
   nexora-git version
+  nexora-git android status
+  nexora-git android doctor
+  nexora-git android setup
+  nexora-git android config
+  nexora-git android signing status
+  nexora-git android signing setup
+  nexora-git android signing verify
+  nexora-git android signing fingerprint
+  nexora-git android signing certificate
+  nexora-git android signing backup [PATH]
+  nexora-git android signing restore <PATH>
+  nexora-git android build [release|debug] [REF]
+  nexora-git android builds [LIMIT]
+  nexora-git android job <JOB_ID>
+  nexora-git android cancel <JOB_ID>
+  nexora-git android worker status
+  nexora-git android worker logs
+  nexora-git android artifacts <JOB_ID>
+  nexora-git android verify <JOB_ID>
+  nexora-git android log <JOB_ID> [LINES]
+  nexora-git android retention status
+  nexora-git android cleanup [--dry-run]
+  nexora-git android sign <JOB_ID>
+  nexora-git android signed <JOB_ID>
+  nexora-git android parity [JOB_ID]
+  nexora-git android autobuild status
+  nexora-git android autobuild enable [release|debug] [DEBOUNCE_SECONDS]
+  nexora-git android autobuild disable
+  nexora-git github status
+  nexora-git github configure
+  nexora-git github secrets status
+  nexora-git github secrets export [PATH]
+  nexora-git github secrets apply
+  nexora-git recovery status
+  nexora-git recovery checkpoint [REASON]
+  nexora-git recovery list [LIMIT]
+  nexora-git recovery verify <CHECKPOINT_ID>
+  nexora-git recovery restore <CHECKPOINT_ID>
   nexora-git help
 EOF
 }
@@ -68,7 +118,304 @@ cmd_doctor() {
   fi
 
   compose ps
+
+  if [[ -r "$NEXORA_ANDROID_CONFIG_FILE" ]]; then
+    printf '\nAndroid build host:\n'
+    if ! android_doctor; then
+      failed=1
+    fi
+    if ! android_signing_verify; then
+      failed=1
+    fi
+    if ! android_worker_doctor; then
+      failed=1
+    fi
+    if ! android_release_doctor; then
+      failed=1
+    fi
+  else
+    log_error "Android builder configuration missing: $NEXORA_ANDROID_CONFIG_FILE"
+    failed=1
+  fi
+
   return "$failed"
+}
+
+cmd_android_signing() {
+  local subcommand="${1:-status}"
+  shift || true
+
+  case "$subcommand" in
+    status)
+      android_signing_status
+      ;;
+    setup)
+      ensure_android_foundation
+      ensure_android_signing_vault
+      ;;
+    verify)
+      android_signing_verify
+      ;;
+    fingerprint)
+      android_signing_fingerprint
+      ;;
+    certificate)
+      android_signing_certificate
+      ;;
+    backup)
+      android_signing_backup "${1:-}"
+      ;;
+    restore)
+      android_signing_restore "${1:-}"
+      ;;
+    help|-h|--help)
+      cat <<'EOF'
+Nexora Git Android Signing Vault
+
+Usage:
+  nexora-git android signing status
+  nexora-git android signing setup
+  nexora-git android signing verify
+  nexora-git android signing fingerprint
+  nexora-git android signing certificate
+  nexora-git android signing backup [PATH]
+  nexora-git android signing restore <PATH>
+
+The release identity is generated only when no identity exists. Existing or
+partial signing state is never overwritten automatically. Backup files are
+encrypted and their passphrases are entered through the TTY.
+EOF
+      ;;
+    *)
+      die "Unknown android signing command: $subcommand"
+      ;;
+  esac
+}
+
+cmd_android() {
+  require_install
+  local subcommand="${1:-status}"
+  case "$subcommand" in
+    status)
+      android_status
+      printf '\nSigning Vault:\n'
+      android_signing_status || true
+      printf '\nBackground worker:\n'
+      android_worker_service_status
+      ;;
+    doctor)
+      local failed=0
+      android_doctor || failed=1
+      android_signing_verify || failed=1
+      android_worker_doctor || failed=1
+      return "$failed"
+      ;;
+    setup)
+      ensure_android_foundation
+      ensure_android_signing_vault
+      android_worker_install_service
+      ;;
+    build)
+      android_worker_enqueue "${2:-release}" "${3:-HEAD}"
+      ;;
+    builds)
+      android_worker_list_jobs "${2:-20}"
+      ;;
+    job)
+      android_worker_show_job "${2:-}"
+      ;;
+    cancel)
+      android_worker_cancel "${2:-}"
+      ;;
+    artifacts)
+      android_artifacts_show "${2:-}"
+      ;;
+    verify)
+      android_artifacts_verify "${2:-}"
+      ;;
+    log)
+      android_artifacts_show_log "${2:-}" "${3:-200}"
+      ;;
+    retention)
+      case "${2:-status}" in
+        status)
+          android_artifacts_retention_status
+          ;;
+        *)
+          die "Unknown android retention command: ${2:-}"
+          ;;
+      esac
+      ;;
+    sign)
+      android_release_sign "${2:-}"
+      ;;
+    signed)
+      android_release_show_signed "${2:-}"
+      ;;
+    parity)
+      android_release_parity "${2:-}"
+      ;;
+    autobuild)
+      case "${2:-status}" in
+        status)
+          android_ops_autobuild_status
+          ;;
+        enable)
+          android_ops_autobuild_enable "${3:-release}" "${4:-30}"
+          ;;
+        disable)
+          android_ops_autobuild_disable
+          ;;
+        run-pending)
+          android_ops_autobuild_run_pending
+          ;;
+        *)
+          die "Unknown android autobuild command: ${2:-}"
+          ;;
+      esac
+      ;;
+    cleanup)
+      if [[ "${2:-}" == "--dry-run" ]]; then
+        android_artifacts_apply_retention 1 "$NEXORA_ANDROID_RETENTION_KEEP" "$NEXORA_ANDROID_RETENTION_DAYS"
+      elif [[ -n "${2:-}" ]]; then
+        die "Usage: nexora-git android cleanup [--dry-run]"
+      else
+        android_artifacts_apply_retention 0 "$NEXORA_ANDROID_RETENTION_KEEP" "$NEXORA_ANDROID_RETENTION_DAYS"
+      fi
+      ;;
+    worker)
+      case "${2:-status}" in
+        status)
+          android_worker_service_status
+          ;;
+        logs)
+          journalctl -u "$NEXORA_ANDROID_WORKER_SERVICE" -n 200 -f
+          ;;
+        *)
+          die "Unknown android worker command: ${2:-}"
+          ;;
+      esac
+      ;;
+    config)
+      android_config
+      ;;
+    signing)
+      shift
+      cmd_android_signing "$@"
+      ;;
+    help|-h|--help)
+      cat <<'EOF'
+Nexora Git Android Builder Foundation
+
+Usage:
+  nexora-git android status
+  nexora-git android doctor
+  nexora-git android setup
+  nexora-git android config
+  nexora-git android build [release|debug] [REF]
+  nexora-git android builds [LIMIT]
+  nexora-git android job <JOB_ID>
+  nexora-git android cancel <JOB_ID>
+  nexora-git android worker status
+  nexora-git android worker logs
+  nexora-git android artifacts <JOB_ID>
+  nexora-git android verify <JOB_ID>
+  nexora-git android log <JOB_ID> [LINES]
+  nexora-git android retention status
+  nexora-git android cleanup [--dry-run]
+  nexora-git android sign <JOB_ID>
+  nexora-git android signed <JOB_ID>
+  nexora-git android parity [JOB_ID]
+  nexora-git android autobuild status
+  nexora-git android autobuild enable [release|debug] [DEBOUNCE_SECONDS]
+  nexora-git android autobuild disable
+
+Builds run under the isolated nexora-build account and continue after SSH
+disconnects. The worker never receives the Android Signing Vault credentials;
+release outputs remain unsigned until the controlled signing phase.
+EOF
+      ;;
+    *)
+      die "Unknown android command: $subcommand"
+      ;;
+  esac
+}
+
+cmd_github() {
+  require_install
+  local subcommand="${1:-status}"
+
+  case "$subcommand" in
+    status)
+      android_release_github_status
+      ;;
+    configure)
+      android_release_github_configure
+      ;;
+    secrets)
+      case "${2:-status}" in
+        status)
+          android_release_secrets_status
+          ;;
+        export)
+          android_release_export_secrets "${3:-}"
+          ;;
+        apply)
+          android_release_apply_secrets
+          ;;
+        *)
+          die "Unknown github secrets command: ${2:-}"
+          ;;
+      esac
+      ;;
+    help|-h|--help)
+      cat <<'EOF'
+Nexora Git GitHub/VPS production configuration
+
+Usage:
+  nexora-git github status
+  nexora-git github configure
+  nexora-git github secrets status
+  nexora-git github secrets export [PATH]
+  nexora-git github secrets apply
+
+The broker base URL and OAuth callback are derived from the managed VPS domain.
+The GitHub App Client Secret remains broker-only and is never exported to the
+Android application or GitHub Actions release secrets.
+EOF
+      ;;
+    *)
+      die "Unknown github command: $subcommand"
+      ;;
+  esac
+}
+
+cmd_recovery() {
+  require_install
+  local subcommand="${1:-status}"
+  case "$subcommand" in
+    status)
+      android_ops_recovery_status
+      ;;
+    checkpoint)
+      local checkpoint_id
+      checkpoint_id="$(android_ops_checkpoint_create "${2:-manual}")"
+      log_ok "Operational checkpoint created: $checkpoint_id"
+      ;;
+    list)
+      android_ops_checkpoint_list "${2:-20}"
+      ;;
+    verify)
+      android_ops_checkpoint_verify "${2:-}" || die "Operational checkpoint verification failed: ${2:-}"
+      log_ok "Operational checkpoint verified: ${2:-}"
+      ;;
+    restore)
+      android_ops_checkpoint_restore "${2:-}"
+      ;;
+    *)
+      die "Unknown recovery command: $subcommand"
+      ;;
+  esac
 }
 
 cmd_update() {
@@ -78,7 +425,7 @@ cmd_update() {
   cp "$INSTALL_DIR/scripts/vps/update.sh" "$temp"
   chmod 700 "$temp"
   trap 'rm -f "$temp"' EXIT
-  "$temp"
+  NEXORA_UPDATE_SOURCE_DIR="$INSTALL_DIR/scripts/vps" "$temp"
 }
 
 cmd_config() {
@@ -128,6 +475,18 @@ case "${1:-help}" in
   version)
     require_install
     git -C "$INSTALL_DIR" rev-parse HEAD
+    ;;
+  android)
+    shift
+    cmd_android "$@"
+    ;;
+  github)
+    shift
+    cmd_github "$@"
+    ;;
+  recovery)
+    shift
+    cmd_recovery "$@"
     ;;
   help|-h|--help) usage ;;
   *)

@@ -8,7 +8,7 @@ Create/configure:
 
 - production GitHub App;
 - HTTPS Auth Broker with the GitHub App client secret;
-- Android release/upload keystore;
+- Android release/upload keystore (the VPS installer can create and preserve the authoritative Nexora Git release identity);
 - GitHub `production` environment.
 
 Required production secrets:
@@ -21,7 +21,7 @@ Required production secrets:
 - `NEXORA_SIGNING_KEY_ALIAS`
 - `NEXORA_SIGNING_KEY_PASSWORD`
 
-Never commit these values.
+Never commit these values. On a managed VPS, use `sudo nexora-git github secrets export` for a protected manual bundle or authenticate GitHub CLI and run `sudo nexora-git github secrets apply` to synchronize the exact Signing Vault identity and domain-derived public URLs into the `production` environment. The GitHub App Client Secret is intentionally excluded because it belongs only to the Auth Broker.
 
 ## 2. Merge gate
 
@@ -47,7 +47,7 @@ The tag must match `app/build.gradle.kts` `versionName` and its commit must be c
 
 Pushing the tag triggers `Stable Release`.
 
-It validates configuration, decodes the keystore into the runner's temporary directory, builds the signed APK/AAB, runs tests/lint, verifies the APK signature, enforces size budgets, generates SHA-256 checksums and publishes/updates the GitHub Release.
+It validates configuration, decodes the PKCS#12 keystore into the runner's temporary directory, builds the signed APK/AAB, runs tests/lint, verifies APK/AAB signatures and signing-certificate parity, requires the callback to equal the broker base URL plus `/oauth/callback`, enforces size budgets, generates SHA-256 checksums and publishes/updates the GitHub Release.
 
 ## 5. Play Store
 
@@ -55,7 +55,7 @@ Upload the generated AAB as the Play upload artifact. Keep the Play App Signing 
 
 ## 6. Key rotation/recovery
 
-Store the keystore and passwords in a dedicated password/secret manager outside GitHub source history. Document operational ownership privately. A lost upload/release key cannot be reconstructed from this repository.
+The VPS Signing Vault is the authoritative self-hosted copy when that deployment model is used. Create an encrypted `nexora-git android signing backup`, copy it off-host, and store its passphrase separately. The later GitHub-export phase mirrors this same identity into GitHub Secrets; it must never generate a second release key. A lost release key cannot be reconstructed from this repository.
 
 ---
 

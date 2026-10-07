@@ -1,6 +1,6 @@
 # Nexora Git VPS Installer & Operations
 
-> [Documentation hub](README.md) · [Auth deployment](AUTH_DEPLOYMENT.md) · [Auth Broker](../auth-broker/README.md)
+> [Documentation hub](README.md) · [Android Builder](VPS_ANDROID_BUILDER.md) · [Auth deployment](AUTH_DEPLOYMENT.md) · [Auth Broker](../auth-broker/README.md)
 
 <p align="center">
 
@@ -13,7 +13,7 @@
 
 </p>
 
-The repository includes a managed production installer for the Nexora Git **Auth Broker**. It is designed for Debian/Ubuntu VPS hosts that may already run other websites or services.
+The repository includes a managed production installer for the Nexora Git **Auth Broker** and the reusable **Android build-host foundation**. It is designed for Debian/Ubuntu VPS hosts that may already run other websites or services.
 
 The installer is deliberately conservative:
 
@@ -100,7 +100,7 @@ https://YOUR_DOMAIN/oauth/callback
 
 ## Installation lifecycle
 
-The installer executes eight explicit stages:
+The installer executes fourteen explicit stages:
 
 | Stage | Action |
 | ---: | --- |
@@ -111,7 +111,13 @@ The installer executes eight explicit stages:
 | 5 | Create the dedicated Nginx virtual host |
 | 6 | Obtain or reuse the Let's Encrypt certificate |
 | 7 | Integrate firewall/management command safely |
-| 8 | Run final local/public health verification |
+| 8 | Provision/reuse the isolated Android build-host foundation |
+| 9 | Create or verify/reuse the persistent Android Signing Vault |
+| 10 | Install/enable the isolated Android background build worker |
+| 11 | Verify persistent Android artifact/log lifecycle paths and policy |
+| 12 | Validate GitHub release signing/parity foundation |
+| 13 | Install autobuild/recovery operations and final hardening |
+| 14 | Run final local/public health verification |
 
 A failed prerequisite aborts rather than applying destructive workarounds.
 
@@ -128,6 +134,9 @@ The installer checks before installing packages. Core dependencies include:
 | Certbot + Nginx plugin | Let's Encrypt issuance/renewal |
 | iproute2 / `ss` | port ownership diagnostics |
 | OpenSSL | certificate diagnostics |
+| OpenJDK 17 | pinned JVM toolchain for Android/Gradle builds |
+| unzip | verified Android command-line tools extraction |
+| util-linux / `flock` | single-worker build locking |
 
 Existing dependencies are reused. Updating Nexora Git does **not** reinstall Nginx, Docker, Certbot or the operating-system packages.
 
@@ -201,6 +210,43 @@ The installer creates:
 | `nexora-git reconfigure` | Re-run the installer configuration path |
 | `nexora-git config` | Show non-secret deployment configuration |
 | `nexora-git version` | Print the installed Git commit |
+| `nexora-git android status` | Show pinned Android host paths and component state |
+| `nexora-git android doctor` | Validate JDK, SDK, Build Tools, NDK, CMake, Gradle wrapper and persistent paths |
+| `nexora-git android setup` | Idempotently repair/reuse the Android build foundation |
+| `nexora-git android config` | Show non-secret Android build-host configuration |
+| `nexora-git android signing status` | Show public signing identity metadata without passwords |
+| `nexora-git android signing verify` | Strictly validate keystore, credentials, fingerprints and integrity |
+| `nexora-git android signing fingerprint` | Print public SHA-256/SHA-1 certificate fingerprints |
+| `nexora-git android signing certificate` | Print the public release certificate in PEM form |
+| `nexora-git android signing backup [PATH]` | Create an encrypted off-host-capable signing backup |
+| `nexora-git android signing restore <PATH>` | Restore only when no conflicting signing identity exists |
+| `nexora-git android build [release\|debug] [REF]` | Queue an immutable background build and return its job ID |
+| `nexora-git android builds [LIMIT]` | List recent persistent build jobs |
+| `nexora-git android job <JOB_ID>` | Show one build's mode, commit and state |
+| `nexora-git android cancel <JOB_ID>` | Cancel a queued or running build |
+| `nexora-git android worker status` | Show worker and queue state |
+| `nexora-git android worker logs` | Follow the worker journal |
+| `nexora-git android artifacts <JOB_ID>` | Show staged artifact files and metadata |
+| `nexora-git android verify <JOB_ID>` | Strictly verify staged SHA-256 checksums |
+| `nexora-git android log <JOB_ID> [LINES]` | Read the persistent per-build Gradle log |
+| `nexora-git android retention status` | Show artifact/log retention policy and eligible count |
+| `nexora-git android cleanup [--dry-run]` | Preview or apply conservative terminal-build pruning |
+| `nexora-git android sign <JOB_ID>` | Sign a staged release outside the unprivileged build worker |
+| `nexora-git android signed <JOB_ID>` | Verify/list signed APK/AAB outputs |
+| `nexora-git android parity [JOB_ID]` | Verify current VPS material matches the last successful GitHub secret sync and optional signed build |
+| `nexora-git github status` | Show public GitHub App/broker configuration without Client Secret |
+| `nexora-git github configure` | Update Client ID/Client Secret while deriving URLs from the VPS domain |
+| `nexora-git github secrets export [PATH]` | Create a protected seven-secret production bundle |
+| `nexora-git github secrets apply` | Use authenticated GitHub CLI to synchronize the seven production environment secrets |
+| `nexora-git github secrets status` | Show local sync parity record and GitHub secret names when available |
+| `nexora-git android autobuild status` | Show update-triggered Android autobuild/debounce state |
+| `nexora-git android autobuild enable [release\|debug] [SECONDS]` | Enable debounced build dispatch after successful VPS updates |
+| `nexora-git android autobuild disable` | Disable update-triggered Android builds and clear the pending dispatch |
+| `nexora-git recovery status` | Show operational checkpoint and encrypted signing-backup counts |
+| `nexora-git recovery checkpoint [REASON]` | Capture a root-only checksummed operational checkpoint |
+| `nexora-git recovery list [LIMIT]` | List recent checkpoints |
+| `nexora-git recovery verify <ID>` | Verify checkpoint allow-list and SHA-256 integrity |
+| `nexora-git recovery restore <ID>` | Restore configuration/code from a verified checkpoint and health-check it |
 | `nexora-git help` | Show command usage |
 
 `config` intentionally hides confidential values.
@@ -225,7 +271,11 @@ flowchart TD
 
 The updater never force-merges history. Tracked local changes cause an immediate abort so an update cannot silently overwrite manual modifications.
 
-If the new broker build fails or local health fails, the updater restores the previous Git revision and rebuilds that known revision automatically.
+Before a real fast-forward the updater creates a root-only operational checkpoint. If the new broker build, local health gate or managed runtime refresh fails—or the update process is interrupted while the rollback guard is armed—the updater restores the previous Git revision and checkpoint, rebuilds the known-good broker and refreshes the prior runtime automatically.
+
+Only one update runs at a time through a dedicated `flock` lock. If the remote commit is already installed, Docker rebuild and Android autobuild are skipped entirely.
+
+After a healthy update, the configured autobuild dispatcher schedules the exact new commit. A 30-second default debounce and latest-pending-wins coalescing prevent rapid consecutive updates from creating a long queue of obsolete builds.
 
 A failure of the **public** HTTPS health check after a successful local health check is treated as an infrastructure warning (for example DNS, Nginx or TLS), not as proof that the broker binary itself is broken.
 
@@ -278,6 +328,19 @@ Reconfiguration preserves the same safety rules: no unrelated Nginx site is over
 | `/etc/nginx/sites-available/nexora-git-auth.conf` | Nexora Git Nginx vhost |
 | `/etc/nginx/sites-enabled/nexora-git-auth.conf` | enabled vhost symlink |
 | `/usr/local/bin/nexora-git` | management command symlink |
+| `/etc/nexora-git/android-builder.conf` | non-secret pinned Android toolchain configuration |
+| `/opt/nexora-android-sdk` | persistent Android SDK/NDK/CMake toolchain |
+| `/var/cache/nexora-git/gradle` | persistent Gradle cache owned by the isolated builder user |
+| `/var/lib/nexora-git/android` | persistent Android queue/build state |
+| `/var/lib/nexora-git/android/artifacts` | atomic staged APK/AAB/symbol artifacts with manifests/checksums |
+| `/var/lib/nexora-git/android/logs` | persistent per-build Gradle logs |
+| `/var/lib/nexora-git/signing` | root-only Android release Signing Vault and encrypted backups |
+| `/var/lib/nexora-git/operations` | root-only update locks, pending autobuild dispatch and checksummed recovery checkpoints |
+| `/etc/nexora-git/android-autobuild.conf` | non-secret autobuild mode/debounce configuration |
+| `/etc/systemd/system/nexora-git-android-autobuild.service` | root dispatcher that queues snapshots without exposing signing material |
+| `/etc/systemd/system/nexora-git-android-autobuild.timer` | persistent debounce dispatcher timer |
+| `/etc/systemd/system/nexora-git-android-worker.service` | hardened detached Android build worker |
+| `/usr/local/libexec/nexora-git-android-worker` | stable worker executable symlink |
 | `/etc/letsencrypt/live/DOMAIN/` | TLS material managed by Certbot |
 
 ---

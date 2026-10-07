@@ -52,6 +52,30 @@ jobs:
         shell: bash
         run: bash scripts/vps/test-lib.sh
 
+      - name: Test Android build helpers
+        shell: bash
+        run: bash scripts/vps/test-android-build-lib.sh
+
+      - name: Test Android Signing Vault
+        shell: bash
+        run: bash scripts/vps/test-android-signing-lib.sh
+
+      - name: Test Android background worker
+        shell: bash
+        run: bash scripts/vps/test-android-worker-lib.sh
+
+      - name: Test Android artifact lifecycle
+        shell: bash
+        run: bash scripts/vps/test-android-artifacts-lib.sh
+
+      - name: Test GitHub/VPS secret parity helpers
+        shell: bash
+        run: bash scripts/vps/test-android-github-lib.sh
+
+      - name: Test autobuild and recovery operations
+        shell: bash
+        run: bash scripts/vps/test-android-ops-lib.sh
+
       - name: Validate Compose model
         shell: bash
         run: |

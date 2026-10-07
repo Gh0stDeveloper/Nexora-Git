@@ -9,6 +9,7 @@ on:
       - "app/**"
       - "native/**"
       - "scripts/ci/**"
+      - "scripts/vps/**"
       - "gradle/**"
       - "build.gradle.kts"
       - "settings.gradle.kts"
@@ -21,6 +22,7 @@ on:
       - "app/**"
       - "native/**"
       - "scripts/ci/**"
+      - "scripts/vps/**"
       - "gradle/**"
       - "build.gradle.kts"
       - "settings.gradle.kts"
@@ -84,6 +86,10 @@ jobs:
             :app:bundleRelease \
             :app:testDebugUnitTest \
             :app:lintRelease
+
+      - name: Verify VPS release signing integration
+        shell: bash
+        run: bash scripts/vps/test-android-release-integration.sh
 
       - name: Enforce artifact size budgets
         shell: bash
