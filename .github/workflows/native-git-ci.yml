@@ -107,3 +107,101 @@ jobs:
           ASAN_OPTIONS: detect_leaks=1:halt_on_error=1
           UBSAN_OPTIONS: halt_on_error=1:print_stacktrace=1
         run: ctest --test-dir build/native-sanitizers --output-on-failure
+
+
+  clang-tidy:
+    name: clang-tidy project-owned native code
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
+
+      - name: Install Clang tooling
+        shell: bash
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y clang clang-tidy ninja-build cmake
+
+      - name: Configure compilation database
+        shell: bash
+        env:
+          CC: clang
+          CXX: clang++
+          NEXORA_GITHUB_CLIENT_ID: Iv1.NexoraClangTidy
+          NEXORA_AUTH_BROKER_BASE_URL: https://native-tidy.example
+          NEXORA_GITHUB_CALLBACK_URL: https://native-tidy.example/oauth/callback
+        run: |
+          cmake \
+            -S native/git \
+            -B build/native-tidy \
+            -G Ninja \
+            -DNEXORA_BUILD_NATIVE_TESTS=ON \
+            -DCMAKE_EXPORT_COMPILE_COMMANDS=ON \
+            -DCMAKE_BUILD_TYPE=Debug
+
+      - name: Build before static analysis
+        run: cmake --build build/native-tidy --parallel 2
+
+      - name: Analyze project-owned C++ sources
+        shell: bash
+        run: |
+          set -euo pipefail
+          mapfile -t sources < <(
+            find native/git/src -maxdepth 1 -type f -name '*.cpp' \
+              ! -name 'git_jni.cpp' \
+              ! -name 'syntax_jni.cpp' \
+              -print | sort
+          )
+          test "${#sources[@]}" -gt 0
+          clang-tidy \
+            -p build/native-tidy \
+            --header-filter='^.*/native/git/(src|include)/.*' \
+            --checks='-*,clang-analyzer-*,bugprone-*,performance-*,portability-*' \
+            "${sources[@]}"
+
+  fuzz:
+    name: Fuzz secure native runtime decoder
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
+
+      - name: Install Clang and native dependencies
+        shell: bash
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y clang ninja-build cmake
+
+      - name: Configure fuzz target
+        shell: bash
+        env:
+          CC: clang
+          CXX: clang++
+          NEXORA_GITHUB_CLIENT_ID: Iv1.NexoraFuzz
+          NEXORA_AUTH_BROKER_BASE_URL: https://native-fuzz.example
+          NEXORA_GITHUB_CALLBACK_URL: https://native-fuzz.example/oauth/callback
+        run: |
+          cmake \
+            -S native/git \
+            -B build/native-fuzz \
+            -G Ninja \
+            -DNEXORA_BUILD_NATIVE_FUZZERS=ON \
+            -DCMAKE_BUILD_TYPE=RelWithDebInfo
+
+      - name: Build fuzz target
+        run: cmake --build build/native-fuzz --target nexora_secure_config_fuzzer --parallel 2
+
+      - name: Run bounded fuzz smoke campaign
+        shell: bash
+        env:
+          ASAN_OPTIONS: detect_leaks=1:halt_on_error=1
+          UBSAN_OPTIONS: halt_on_error=1:print_stacktrace=1
+        run: |
+          ./build/native-fuzz/nexora_secure_config_fuzzer \
+            -runs=10000 \
+            -max_len=4096 \
+            -timeout=5
