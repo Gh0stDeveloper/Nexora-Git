@@ -241,4 +241,9 @@
     <string name="editor_indent">Insertar sangría</string>
     <string name="editor_format">Formatear documento</string>
     <string name="editor_view_diff">Ver diff</string>
+
+    <string name="workspace_durable_import">Importando proyecto de forma durable…</string>
+    <string name="workspace_durable_sync">Sincronizando workspace de forma durable…</string>
+    <string name="workspace_durable_queued">Operación en cola; continuará aunque Android recree la pantalla.</string>
+    <string name="workspace_durable_cancel">Cancelar operación</string>
 </resources>
