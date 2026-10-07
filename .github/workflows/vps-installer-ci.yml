@@ -52,6 +52,10 @@ jobs:
         shell: bash
         run: bash scripts/vps/test-lib.sh
 
+      - name: Test Android build helpers
+        shell: bash
+        run: bash scripts/vps/test-android-build-lib.sh
+
       - name: Validate Compose model
         shell: bash
         run: |
