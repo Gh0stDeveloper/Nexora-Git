@@ -266,8 +266,10 @@ internal fun IssueDetailContent(
 
             item {
                 Text(
-                    text = "Comments (" +
-                        state.comments.size + ")",
+                    text = stringResource(
+                        R.string.issue_comments,
+                        state.comments.size,
+                    ),
                     style = MaterialTheme.typography.titleMedium,
                 )
             }
@@ -480,20 +482,24 @@ private fun IssueHeaderCard(
 
             if (summary.labels.isNotEmpty()) {
                 Text(
-                    text = "Labels: " +
+                    text = stringResource(
+                        R.string.issue_labels,
                         summary.labels.joinToString(", ") {
                             it.name
                         },
+                    ),
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
             }
 
             if (summary.assignees.isNotEmpty()) {
                 Text(
-                    text = "Assignees: " +
+                    text = stringResource(
+                        R.string.issue_assignees,
                         summary.assignees.joinToString(", ") {
                             it.login
                         },
+                    ),
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
             }
