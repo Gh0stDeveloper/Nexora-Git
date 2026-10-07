@@ -1513,7 +1513,7 @@ internal fun AdvancedGitPanel(
                 modifier = Modifier.padding(16.dp),
                 verticalArrangement = Arrangement.spacedBy(10.dp),
             ) {
-                Text("Git LFS", style = MaterialTheme.typography.titleMedium)
+                Text(stringResource(R.string.git_lfs), style = MaterialTheme.typography.titleMedium)
                 Text(
                     state.lfs.transferMessage,
                     color = if (state.lfs.transferSupported) {
