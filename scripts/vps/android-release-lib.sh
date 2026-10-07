@@ -354,10 +354,10 @@ android_release_normalize_fingerprint() {
 
 android_release_apk_fingerprint() {
   local apk="$1"
-  local apksigner
-  apksigner="$(android_component_path build-tools)"
-  "$apksigner" verify --verbose --print-certs "$apk" 2>/dev/null |
-    awk -F': ' '/Signer #1 certificate SHA-256 digest:/ {print toupper($2); exit}'
+  local keytool
+  keytool="$(android_signing_keytool)"
+  LC_ALL=C "$keytool" -printcert -jarfile "$apk" 2>/dev/null |
+    awk -F': ' '/SHA256:/ {print toupper($2); exit}'
 }
 
 android_release_aab_fingerprint() {

@@ -39,9 +39,10 @@ expected="$(
     awk -F': ' '/SHA256:/{print toupper($2); exit}' |
     tr -d ':'
 )"
+"$apksigner" verify --verbose --print-certs "$apk" >/dev/null
 apk_fp="$(
-  "$apksigner" verify --verbose --print-certs "$apk" 2>/dev/null |
-    awk -F': ' '/Signer #1 certificate SHA-256 digest:/{print toupper($2); exit}' |
+  LC_ALL=C keytool -printcert -jarfile "$apk" 2>/dev/null |
+    awk -F': ' '/SHA256:/{print toupper($2); exit}' |
     tr -d ':'
 )"
 aab_fp="$(
