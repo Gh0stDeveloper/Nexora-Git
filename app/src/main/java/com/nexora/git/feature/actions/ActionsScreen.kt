@@ -398,7 +398,7 @@ private fun WorkflowRunCard(
             )
 
             Text(
-                text = (run.headBranch ?: "detached") +
+                text = (run.headBranch ?: stringResource(R.string.workflow_detached)) +
                     " · " + run.headSha.take(10),
                 fontFamily = FontFamily.Monospace,
                 style = MaterialTheme.typography.bodySmall,
