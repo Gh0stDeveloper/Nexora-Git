@@ -313,6 +313,11 @@ android_signing_verify() {
   local secrets_alias="$NEXORA_SIGNING_ALIAS"
   local secrets_type="$NEXORA_SIGNING_STORE_TYPE"
 
+  if [[ "$NEXORA_SIGNING_KEY_PASSWORD" != "$NEXORA_SIGNING_STORE_PASSWORD" ]]; then
+    log_error "PKCS#12 key password must match the store password for this Signing Vault."
+    return 1
+  fi
+
   if ! android_signing_load_metadata_from "$NEXORA_SIGNING_METADATA"; then
     log_error "Signing metadata file has an invalid or unexpected format."
     return 1
