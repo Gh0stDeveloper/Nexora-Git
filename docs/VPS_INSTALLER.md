@@ -1,6 +1,6 @@
 # Nexora Git VPS Installer & Operations
 
-> [Documentation hub](README.md) · [Android Builder](VPS_ANDROID_BUILDER.md) · [Auth deployment](AUTH_DEPLOYMENT.md) · [Auth Broker](../auth-broker/README.md)
+> [Documentation hub](README.md) · [Command reference](NEXORA_GIT_COMMANDS.md) · [Android Builder](VPS_ANDROID_BUILDER.md) · [Auth deployment](AUTH_DEPLOYMENT.md) · [Auth Broker](../auth-broker/README.md)
 
 <p align="center">
 
@@ -250,6 +250,8 @@ The installer creates:
 | `nexora-git help` | Show command usage |
 
 `config` intentionally hides confidential values.
+
+For detailed behavior, arguments, safety notes, examples, help aliases and the internal systemd autobuild dispatcher, see **[Complete `nexora-git` Command Reference](NEXORA_GIT_COMMANDS.md)**. That document is the authoritative operator reference for the CLI.
 
 ## Update and rollback flow
 
