@@ -20,6 +20,7 @@ This directory contains the technical, operational, security and historical docu
 | Threat model | [THREAT_MODEL.md](THREAT_MODEL.md) | Threats, assets, trust boundaries and controls |
 | Deployment | [VPS_INSTALLER.md](VPS_INSTALLER.md) | Self-hosted Auth Broker installation and operations |
 | VPS command reference | [NEXORA_GIT_COMMANDS.md](NEXORA_GIT_COMMANDS.md) | Every `nexora-git` command, argument, effect, safety note and example |
+| Download website | [WEB.md](WEB.md) | Next.js download site, signed APK publication, Nginx routing and VPS lifecycle |
 | VPS Android builds | [VPS_ANDROID_BUILDER.md](VPS_ANDROID_BUILDER.md) | Persistent Android SDK/build-host architecture, security boundaries and rollout |
 | Releases | [RELEASE_PROCESS.md](RELEASE_PROCESS.md) | Signing, validation and GitHub Release procedure |
 | Roadmap | [ROADMAP.md](ROADMAP.md) | Completed implementation roadmap and historical scope |
@@ -72,6 +73,7 @@ The broker itself is documented in [../auth-broker/README.md](../auth-broker/REA
 - [FDROID_READINESS.md](FDROID_READINESS.md) — optional F-Droid packaging constraints.
 - [VPS_INSTALLER.md](VPS_INSTALLER.md) — self-hosted Auth Broker deployment.
 - [NEXORA_GIT_COMMANDS.md](NEXORA_GIT_COMMANDS.md) — complete operator reference for every `nexora-git` CLI command.
+- [WEB.md](WEB.md) — official self-hosted project/download website and signed APK publication.
 - [VPS_ANDROID_BUILDER.md](VPS_ANDROID_BUILDER.md) — reusable Android build-host environment and signing/build service rollout.
 - [BRANDING.md](BRANDING.md) — product identity and branding rules.
 

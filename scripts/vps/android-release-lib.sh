@@ -15,6 +15,10 @@ if ! declare -F android_artifacts_verify >/dev/null 2>&1; then
   # shellcheck source=android-artifacts-lib.sh
   source "$SCRIPT_DIR/android-artifacts-lib.sh"
 fi
+if ! declare -F web_publish_signed_release >/dev/null 2>&1; then
+  # shellcheck source=web-lib.sh
+  source "$SCRIPT_DIR/web-lib.sh"
+fi
 
 NEXORA_GITHUB_EXPORT_ROOT="${NEXORA_GITHUB_EXPORT_ROOT:-/root/nexora-git-github-secrets}"
 NEXORA_GITHUB_SYNC_FILE="${NEXORA_GITHUB_SYNC_FILE:-$NEXORA_SIGNING_ROOT/github-sync.conf}"
@@ -460,6 +464,7 @@ android_release_sign() {
   signed_dir="$(android_release_signed_dir "$job_id")"
   if [[ -d "$signed_dir" ]]; then
     android_release_verify_signed "$job_id"
+    web_publish_signed_release "$job_id" "$signed_dir"
     log_ok "Signed release already exists and matches the Signing Vault: $job_id"
     return
   fi
@@ -536,6 +541,7 @@ android_release_sign() {
 
   mv "$stage" "$signed_dir"
   android_release_verify_signed "$job_id"
+  web_publish_signed_release "$job_id" "$signed_dir"
   log_ok "Release signed with the persistent Nexora Git identity: $signed_dir"
 }
 

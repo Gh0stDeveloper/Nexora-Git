@@ -1,6 +1,6 @@
 # Nexora Git VPS Installer & Operations
 
-> [Documentation hub](README.md) · [Command reference](NEXORA_GIT_COMMANDS.md) · [Android Builder](VPS_ANDROID_BUILDER.md) · [Auth deployment](AUTH_DEPLOYMENT.md) · [Auth Broker](../auth-broker/README.md)
+> [Documentation hub](README.md) · [Command reference](NEXORA_GIT_COMMANDS.md) · [Download website](WEB.md) · [Android Builder](VPS_ANDROID_BUILDER.md) · [Auth deployment](AUTH_DEPLOYMENT.md) · [Auth Broker](../auth-broker/README.md)
 
 <p align="center">
 
@@ -348,3 +348,14 @@ Reconfiguration preserves the same safety rules: no unrelated Nginx site is over
 ---
 
 [← Documentation hub](README.md)
+
+
+## Website lifecycle
+
+The installer builds and starts the Next.js website automatically. It uses a dedicated loopback port and the same managed domain as the Auth Broker.
+
+Nginx routes normal pages to the website while keeping `/health`, `/oauth/callback` and `/v1/oauth/*` on the Auth Broker. The signed APK download is served directly from the public release directory.
+
+The updater rebuilds the website image only when `web/**` or the relevant Compose definition changed, or when no website image exists. This avoids reinstalling npm dependencies on unrelated Nexora Git updates.
+
+See **[Download Website](WEB.md)** for the complete architecture, signed APK publication flow, migration guidance and operational commands.

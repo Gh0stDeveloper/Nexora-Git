@@ -1115,6 +1115,78 @@ A checkpoint restore can intentionally move the managed repository backwards to 
 
 ---
 
+
+# Download website commands
+
+## `nexora-git web status`
+
+```bash
+sudo nexora-git web status
+```
+
+Shows the website URL, loopback port, Docker container state, local health and the build ID currently published as the downloadable APK.
+
+This is read-oriented, although an older installation missing the new website environment keys may have those safe public/runtime values initialized during first migration.
+
+---
+
+## `nexora-git web doctor`
+
+```bash
+sudo nexora-git web doctor
+```
+
+Runs website-specific diagnostics:
+
+- local Next.js health;
+- public HTTPS root health;
+- Nginx route separation for Auth Broker and website;
+- signed APK publication pointer consistency.
+
+The absence of an APK before the first signed release is reported as a warning, not as a website runtime failure.
+
+---
+
+## `nexora-git web deploy`
+
+```bash
+sudo nexora-git web deploy
+```
+
+Forces a rebuild of the current Next.js website image, starts/recreates the website and Auth Broker containers as required, refreshes the managed Nginx routing and requires the public website health endpoint to pass.
+
+Use it after intentionally changing website build configuration or when repairing the website image. Normal source updates should use `nexora-git update`, which skips the web rebuild when website source is unchanged.
+
+---
+
+## `nexora-git web restart`
+
+```bash
+sudo nexora-git web restart
+```
+
+Restarts only the website container and waits for its local health endpoint to recover.
+
+It does not rebuild the image and does not rotate or expose Android/GitHub secrets.
+
+---
+
+## `nexora-git web logs`
+
+```bash
+sudo nexora-git web logs
+```
+
+Follows the website Docker container logs.
+
+Use this for Next.js runtime/startup errors. Auth Broker logs remain available through:
+
+```bash
+sudo nexora-git logs
+```
+
+---
+
 # Help commands
 
 ## `nexora-git help`

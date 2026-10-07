@@ -15,6 +15,8 @@ source "$SCRIPT_DIR/android-worker-lib.sh"
 source "$SCRIPT_DIR/android-release-lib.sh"
 # shellcheck source=android-ops-lib.sh
 source "$SCRIPT_DIR/android-ops-lib.sh"
+# shellcheck source=web-lib.sh
+source "$SCRIPT_DIR/web-lib.sh"
 
 RECONFIGURE=0
 if [[ "${1:-}" == "--reconfigure" ]]; then
@@ -27,7 +29,7 @@ require_root
 detect_supported_os
 banner
 
-TOTAL_PHASES=14
+TOTAL_PHASES=15
 phase 1 "$TOTAL_PHASES" "Repository installation"
 
 SOURCE_ROOT="$(git -C "$SCRIPT_DIR/../.." rev-parse --show-toplevel 2>/dev/null || true)"
@@ -100,6 +102,13 @@ else
   fi
   log_ok "Local broker port: 127.0.0.1:$LOCAL_PORT"
 
+  WEB_PORT="$(web_env_value WEB_PORT 2>/dev/null || true)"
+  if [[ ! "$WEB_PORT" =~ ^[0-9]+$ ]] || (( WEB_PORT < 1024 || WEB_PORT > 65535 )); then
+    WEB_PORT="$(find_free_port 18181 18280)" || die "No free local website port found in 18181-18280."
+  fi
+  SITE_URL="https://$DOMAIN"
+  log_ok "Local website port: 127.0.0.1:$WEB_PORT"
+
   read -r -p "GitHub App Client ID: " GITHUB_APP_CLIENT_ID
   [[ -n "$GITHUB_APP_CLIENT_ID" ]] || die "GitHub App Client ID is required."
 
@@ -116,6 +125,8 @@ GITHUB_APP_CLIENT_SECRET=$GITHUB_APP_CLIENT_SECRET
 GITHUB_CALLBACK_URL=$CALLBACK_URL
 APP_CALLBACK_URI=nexoragit://oauth/callback
 PORT=$LOCAL_PORT
+WEB_PORT=$WEB_PORT
+SITE_URL=$SITE_URL
 EOF
   chmod 600 "$INSTALL_DIR/auth-broker/.env"
 
@@ -126,7 +137,10 @@ EOF
   log_ok "Broker secrets stored outside Git in a root-readable .env file."
 fi
 
-phase 4 "$TOTAL_PHASES" "Auth Broker container"
+web_ensure_config
+web_ensure_layout
+
+phase 4 "$TOTAL_PHASES" "Auth Broker and download website containers"
 if port_busy "$LOCAL_PORT"; then
   if compose ps 2>/dev/null | grep -Eq 'auth-broker.*(Up|running)'; then
     log_info "Broker port is already owned by the existing Nexora container; reusing it."
@@ -137,17 +151,15 @@ if port_busy "$LOCAL_PORT"; then
 fi
 
 compose build auth-broker
-compose up -d --remove-orphans auth-broker
+web_deploy 1
 wait_local_health "$LOCAL_PORT" 30 || {
   compose logs --tail=80 auth-broker || true
   die "Auth Broker did not pass its local health check."
 }
 log_ok "Auth Broker is healthy on 127.0.0.1:$LOCAL_PORT."
 
-phase 5 "$TOTAL_PHASES" "Nginx virtual host"
+phase 5 "$TOTAL_PHASES" "Nginx website and Auth Broker routing"
 NGINX_AVAILABLE="/etc/nginx/sites-available/nexora-git-auth.conf"
-NGINX_ENABLED="/etc/nginx/sites-enabled/nexora-git-auth.conf"
-
 conflicts=""
 while IFS= read -r candidate; do
   [[ -z "$candidate" ]] && continue
@@ -160,86 +172,20 @@ if [[ -n "$conflicts" ]]; then
   die "Another enabled Nginx site already owns $DOMAIN. No configuration was overwritten."
 fi
 
-render_nginx_http() {
-  cat > "$NGINX_AVAILABLE" <<EOF
-server {
-    listen 80;
-    listen [::]:80;
-    server_name $DOMAIN;
-
-    client_max_body_size 32k;
-
-    location / {
-        proxy_pass http://127.0.0.1:$LOCAL_PORT;
-        proxy_http_version 1.1;
-        proxy_set_header Host \$host;
-        proxy_set_header X-Real-IP \$remote_addr;
-        proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
-        proxy_set_header X-Forwarded-Proto \$scheme;
-        proxy_connect_timeout 5s;
-        proxy_read_timeout 30s;
-        proxy_send_timeout 30s;
-    }
-}
-EOF
-}
-
-render_nginx_https() {
-  cat > "$NGINX_AVAILABLE" <<EOF
-server {
-    listen 80;
-    listen [::]:80;
-    server_name $DOMAIN;
-    return 301 https://\$host\$request_uri;
-}
-
-server {
-    listen 443 ssl http2;
-    listen [::]:443 ssl http2;
-    server_name $DOMAIN;
-
-    ssl_certificate /etc/letsencrypt/live/$DOMAIN/fullchain.pem;
-    ssl_certificate_key /etc/letsencrypt/live/$DOMAIN/privkey.pem;
-    ssl_protocols TLSv1.2 TLSv1.3;
-    ssl_session_cache shared:NexoraGitSSL:10m;
-    ssl_session_timeout 1d;
-    ssl_session_tickets off;
-
-    add_header Strict-Transport-Security "max-age=31536000" always;
-    add_header X-Content-Type-Options "nosniff" always;
-    add_header Referrer-Policy "no-referrer" always;
-
-    client_max_body_size 32k;
-
-    location / {
-        proxy_pass http://127.0.0.1:$LOCAL_PORT;
-        proxy_http_version 1.1;
-        proxy_set_header Host \$host;
-        proxy_set_header X-Real-IP \$remote_addr;
-        proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
-        proxy_set_header X-Forwarded-Proto https;
-        proxy_connect_timeout 5s;
-        proxy_read_timeout 30s;
-        proxy_send_timeout 30s;
-    }
-}
-EOF
-}
-
-if [[ -f "$NGINX_AVAILABLE" ]]; then
-  cp -a "$NGINX_AVAILABLE" "${NGINX_AVAILABLE}.bak.$(date +%Y%m%d%H%M%S)"
+if [[ -f "$NEXORA_WEB_NGINX_CONFIG" ]]; then
+  cp -a "$NEXORA_WEB_NGINX_CONFIG" "${NEXORA_WEB_NGINX_CONFIG}.bak.$(date +%Y%m%d%H%M%S)"
 fi
 
 if [[ -r "/etc/letsencrypt/live/$DOMAIN/fullchain.pem" && -r "/etc/letsencrypt/live/$DOMAIN/privkey.pem" ]]; then
-  render_nginx_https
+  web_render_nginx_https "$NEXORA_WEB_NGINX_CONFIG"
 else
-  render_nginx_http
+  web_render_nginx_http "$NEXORA_WEB_NGINX_CONFIG"
 fi
 
-ln -sfn "$NGINX_AVAILABLE" "$NGINX_ENABLED"
+ln -sfn "$NEXORA_WEB_NGINX_CONFIG" "$NEXORA_WEB_NGINX_ENABLED"
 nginx -t
 systemctl reload nginx
-log_ok "Nginx vhost enabled without modifying other site files."
+log_ok "Nginx routes website traffic and preserves dedicated OAuth/API broker paths."
 
 phase 6 "$TOTAL_PHASES" "HTTPS certificate"
 if [[ -r "/etc/letsencrypt/live/$DOMAIN/fullchain.pem" && -r "/etc/letsencrypt/live/$DOMAIN/privkey.pem" ]]; then
@@ -254,7 +200,7 @@ else
     -d "$DOMAIN"
 fi
 
-render_nginx_https
+web_render_nginx_https "$NEXORA_WEB_NGINX_CONFIG"
 if systemctl list-unit-files certbot.timer >/dev/null 2>&1; then
   systemctl enable --now certbot.timer >/dev/null || true
 fi
@@ -282,7 +228,8 @@ chmod +x \
   "$INSTALL_DIR/scripts/vps/test-android-artifacts-lib.sh" \
   "$INSTALL_DIR/scripts/vps/test-android-github-lib.sh" \
   "$INSTALL_DIR/scripts/vps/test-android-release-integration.sh" \
-  "$INSTALL_DIR/scripts/vps/test-android-ops-lib.sh"
+  "$INSTALL_DIR/scripts/vps/test-android-ops-lib.sh" \
+  "$INSTALL_DIR/scripts/vps/test-web-lib.sh"
 log_ok "Installed command: nexora-git"
 
 phase 8 "$TOTAL_PHASES" "Android build foundation"
@@ -305,14 +252,19 @@ phase 13 "$TOTAL_PHASES" "Autobuild, recovery and operational hardening"
 android_ops_setup
 android_ops_doctor
 
-phase 14 "$TOTAL_PHASES" "Final verification"
-curl -fsS --max-time 10 "https://$DOMAIN/health" >/dev/null || die "Public HTTPS health check failed."
+phase 14 "$TOTAL_PHASES" "Website deployment verification"
+web_doctor
+
+phase 15 "$TOTAL_PHASES" "Final verification"
+curl -fsS --max-time 10 "https://$DOMAIN/health" >/dev/null || die "Public Auth Broker HTTPS health check failed."
+curl -fsS --max-time 10 "https://$DOMAIN/api/health" >/dev/null || die "Public website HTTPS health check failed."
 compose ps
 printf '\n'
 log_ok "Nexora Git Auth Broker VPS installation completed."
 printf 'Domain:      https://%s\n' "$DOMAIN"
 printf 'Callback:    https://%s/oauth/callback\n' "$DOMAIN"
-printf 'Local port:  127.0.0.1:%s\n' "$LOCAL_PORT"
+printf 'Broker port: 127.0.0.1:%s\n' "$LOCAL_PORT"
+printf 'Web port:    127.0.0.1:%s\n' "$WEB_PORT"
 printf 'Repository:  %s (%s)\n' "$INSTALL_DIR" "$BRANCH"
 printf '\nUseful commands:\n'
 printf '  nexora-git status\n'
@@ -331,4 +283,6 @@ printf '  nexora-git github status\n'
 printf '  nexora-git github secrets export\n'
 printf '  nexora-git android autobuild status\n'
 printf '  nexora-git recovery status\n'
+printf '  nexora-git web status\n'
+printf '  nexora-git web logs\n'
 printf '  nexora-git logs\n'
