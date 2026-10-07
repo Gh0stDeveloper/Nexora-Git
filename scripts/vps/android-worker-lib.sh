@@ -451,6 +451,11 @@ android_worker_recover_orphans() {
       mv "$request" "$NEXORA_ANDROID_QUEUE_CANCELLED/$job_id.job"
       rm -f "$NEXORA_ANDROID_CANCEL_ROOT/$job_id"
       android_worker_write_state "$job_id" "$ANDROID_JOB_MODE" "$ANDROID_JOB_COMMIT" "$ANDROID_JOB_CREATED_AT" "CANCELLED" "143"
+    elif [[ -d "$NEXORA_ANDROID_ARTIFACT_ROOT/$job_id" ]] &&
+         (android_artifacts_verify "$job_id") >/dev/null 2>&1; then
+      mv "$request" "$NEXORA_ANDROID_QUEUE_COMPLETED/$job_id.job"
+      android_worker_write_state "$job_id" "$ANDROID_JOB_MODE" "$ANDROID_JOB_COMMIT" "$ANDROID_JOB_CREATED_AT" "COMPLETED" "0"
+      log_ok "Recovered staged Android build as completed: $job_id"
     else
       mv "$request" "$NEXORA_ANDROID_QUEUE_PENDING/$job_id.job"
       android_worker_write_state "$job_id" "$ANDROID_JOB_MODE" "$ANDROID_JOB_COMMIT" "$ANDROID_JOB_CREATED_AT" "QUEUED_RECOVERED" ""

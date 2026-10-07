@@ -269,7 +269,18 @@ android_artifacts_verify() {
     sha256sum --check --strict SHA256SUMS.txt >/dev/null
   ) || die "Artifact checksum verification failed: $job_id"
 
-  log_ok "Artifact checksums verified: $job_id"
+  local expected_log_sha log_file actual_log_sha
+  expected_log_sha="$(sed -n 's/^[[:space:]]*"build_log_sha256": "\([a-f0-9]*\)",[[:space:]]*$/\1/p' "$artifact_dir/manifest.json")"
+  if [[ -n "$expected_log_sha" ]]; then
+    [[ "$expected_log_sha" =~ ^[a-f0-9]{64}$ ]] || die "Artifact manifest contains an invalid build-log checksum."
+    log_file="$(android_artifacts_log_file "$job_id")"
+    [[ -s "$log_file" ]] || die "Build log referenced by artifact manifest is missing: $job_id"
+    actual_log_sha="$(sha256sum "$log_file" | awk '{print $1}')"
+    [[ "$actual_log_sha" == "$expected_log_sha" ]] ||
+      die "Build log checksum does not match the artifact manifest: $job_id"
+  fi
+
+  log_ok "Artifact and build-log checksums verified: $job_id"
 }
 
 android_artifacts_show() {

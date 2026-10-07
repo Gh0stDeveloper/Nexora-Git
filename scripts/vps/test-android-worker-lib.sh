@@ -102,6 +102,21 @@ android_worker_recover_orphans
 android_worker_load_state "$job4"
 [[ "$STATUS" == "QUEUED_RECOVERED" ]]
 
+job5="20261007T010004Z-e1f2a3b4"
+job5_dir="$(android_worker_job_dir "$job5")"
+mkdir -p "$job5_dir/source/app/build/outputs/apk/debug"
+printf 'recovered-debug-apk' > "$job5_dir/source/app/build/outputs/apk/debug/app-debug.apk"
+android_worker_write_request "$NEXORA_ANDROID_QUEUE_RUNNING/$job5.job" "$job5" "debug" "$commit" "$created"
+android_worker_write_state "$job5" "debug" "$commit" "$created" "RUNNING" ""
+job5_log="$(android_artifacts_init_log "$job5")"
+printf 'recovered build log\n' > "$job5_log"
+android_artifacts_stage "$job5" debug "$commit" "$created" "$job5_dir/source"
+android_worker_recover_orphans
+[[ -f "$NEXORA_ANDROID_QUEUE_COMPLETED/$job5.job" ]]
+android_worker_load_state "$job5"
+[[ "$STATUS" == "COMPLETED" ]]
+[[ "$EXIT_CODE" == "0" ]]
+
 android_worker_valid_job_id "$job1"
 if android_worker_valid_job_id "../../bad"; then
   printf 'Unsafe job ID was accepted.\n' >&2

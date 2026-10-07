@@ -32,6 +32,14 @@ log1="$(android_artifacts_init_log "$job1")"
 printf 'test build log\n' > "$log1"
 android_artifacts_stage "$job1" release "$commit1" "$created" "$source1"
 android_artifacts_verify "$job1"
+cp "$log1" "$TEMP_ROOT/original.log"
+printf 'tampered log\n' >> "$log1"
+if (android_artifacts_verify "$job1") >/dev/null 2>&1; then
+  printf 'Artifact verification accepted a modified build log.\n' >&2
+  exit 1
+fi
+cp "$TEMP_ROOT/original.log" "$log1"
+android_artifacts_verify "$job1"
 
 artifact1="$(android_artifacts_job_dir "$job1")"
 [[ -s "$artifact1/NexoraGit-${commit1:0:12}-release-unsigned.apk" ]]
