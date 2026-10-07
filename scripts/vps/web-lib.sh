@@ -445,6 +445,21 @@ web_doctor() {
     failed=1
   fi
 
+  local app_link_fingerprint
+  app_link_fingerprint="$(web_env_value NEXORA_ANDROID_APP_LINK_SHA256_CERT_FINGERPRINT 2>/dev/null || true)"
+  if [[ -n "$app_link_fingerprint" ]]; then
+    local assetlinks
+    assetlinks="$(curl -fsS --max-time 10 "https://$DOMAIN/.well-known/assetlinks.json" 2>/dev/null || true)"
+    if [[ "$assetlinks" == *"$app_link_fingerprint"* ]]; then
+      log_ok "Android App Link signing association OK"
+    else
+      log_error "Android App Link signing association missing or stale"
+      failed=1
+    fi
+  else
+    log_warn "Android App Link signing fingerprint is not configured yet."
+  fi
+
   if grep -q 'location = /oauth/callback' "$NEXORA_WEB_NGINX_CONFIG" 2>/dev/null &&
      grep -q 'location ^~ /v1/oauth/' "$NEXORA_WEB_NGINX_CONFIG" 2>/dev/null &&
      grep -q 'location = /download/nexora-git.apk' "$NEXORA_WEB_NGINX_CONFIG" 2>/dev/null; then
