@@ -23,7 +23,8 @@ This directory contains the technical, operational, security and historical docu
 | Download website | [WEB.md](WEB.md) | Next.js download site, signed APK publication, Nginx routing and VPS lifecycle |
 | VPS Android builds | [VPS_ANDROID_BUILDER.md](VPS_ANDROID_BUILDER.md) | Persistent Android SDK/build-host architecture, security boundaries and rollout |
 | Releases | [RELEASE_PROCESS.md](RELEASE_PROCESS.md) | Signing, validation and GitHub Release procedure |
-| Roadmap | [ROADMAP.md](ROADMAP.md) | Completed implementation roadmap and historical scope |
+| Roadmap | [ROADMAP.md](ROADMAP.md) | Full implementation roadmap, including active Phase S hardening |
+| Phase S hardening | [PHASE_S_PRODUCTION_HARDENING_ROADMAP.md](PHASE_S_PRODUCTION_HARDENING_ROADMAP.md) | Strict security, UX, performance, SEO and release-readiness pass |
 
 ## Android application
 
@@ -67,6 +68,7 @@ The broker itself is documented in [../auth-broker/README.md](../auth-broker/REA
 
 ## Production and distribution
 
+- [PHASE_S_PRODUCTION_HARDENING_ROADMAP.md](PHASE_S_PRODUCTION_HARDENING_ROADMAP.md) — active production-hardening, product-polish and stable-release qualification roadmap.
 - [PRODUCTION_READINESS.md](PRODUCTION_READINESS.md) — repository-level production readiness.
 - [RELEASE_PROCESS.md](RELEASE_PROCESS.md) — signed release workflow.
 - [PLAY_STORE_READINESS.md](PLAY_STORE_READINESS.md) — Play Store metadata and publication requirements.
@@ -87,7 +89,7 @@ The ADRs record decisions that should remain stable unless explicitly superseded
 
 ## Historical implementation reports
 
-`PHASE_0_REPORT.md` through `PHASE_R_REPORT.md` document how the implementation was delivered and validated. They are retained for traceability, but current architecture and operations are defined by the topic-based documents above.
+`PHASE_0_REPORT.md` through `PHASE_R_REPORT.md` document how the original implementation was delivered and validated. They are retained for traceability. Phase S is intentionally maintained as an active roadmap rather than a completed historical report until its release gates have been satisfied.
 
 ## Documentation conventions
 
