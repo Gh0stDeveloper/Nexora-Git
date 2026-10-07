@@ -19,6 +19,7 @@ captures/
 .env.*
 !*.env.example
 secrets.properties
+nexora.local.properties
 
 # Native build outputs
 CMakeFiles/

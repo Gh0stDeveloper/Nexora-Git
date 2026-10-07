@@ -1,3 +1,5 @@
+import com.nexora.build.NexoraBuildSecrets
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.compose.compiler)
@@ -5,44 +7,7 @@ plugins {
     alias(libs.plugins.hilt)
 }
 
-val githubClientId = providers.gradleProperty("nexora.githubClientId")
-    .orElse(providers.environmentVariable("NEXORA_GITHUB_CLIENT_ID"))
-    .getOrElse("")
-
-val authBrokerBaseUrl = providers.gradleProperty("nexora.authBrokerBaseUrl")
-    .orElse(providers.environmentVariable("NEXORA_AUTH_BROKER_BASE_URL"))
-    .getOrElse("")
-
-val githubCallbackUrl = providers.gradleProperty("nexora.githubCallbackUrl")
-    .orElse(providers.environmentVariable("NEXORA_GITHUB_CALLBACK_URL"))
-    .getOrElse("")
-
-val releaseStoreFile = providers
-    .gradleProperty("nexora.signing.storeFile")
-    .orElse(providers.environmentVariable("NEXORA_SIGNING_STORE_FILE"))
-    .orNull
-
-val releaseStorePassword = providers
-    .gradleProperty("nexora.signing.storePassword")
-    .orElse(providers.environmentVariable("NEXORA_SIGNING_STORE_PASSWORD"))
-    .orNull
-
-val releaseKeyAlias = providers
-    .gradleProperty("nexora.signing.keyAlias")
-    .orElse(providers.environmentVariable("NEXORA_SIGNING_KEY_ALIAS"))
-    .orNull
-
-val releaseKeyPassword = providers
-    .gradleProperty("nexora.signing.keyPassword")
-    .orElse(providers.environmentVariable("NEXORA_SIGNING_KEY_PASSWORD"))
-    .orNull
-
-val releaseSigningConfigured = listOf(
-    releaseStoreFile,
-    releaseStorePassword,
-    releaseKeyAlias,
-    releaseKeyPassword,
-).all { !it.isNullOrBlank() }
+val releaseSigning = NexoraBuildSecrets.releaseSigning(project)
 
 android {
     namespace = "com.nexora.git"
@@ -58,11 +23,6 @@ android {
         targetSdk = 36
         versionCode = 10000
         versionName = "1.0.0"
-
-        buildConfigField("String", "GITHUB_CLIENT_ID", "\"$githubClientId\"")
-        buildConfigField("String", "AUTH_BROKER_BASE_URL", "\"$authBrokerBaseUrl\"")
-        buildConfigField("String", "GITHUB_CALLBACK_URL", "\"$githubCallbackUrl\"")
-        buildConfigField("String", "APP_CALLBACK_URI", "\"nexoragit://oauth/callback\"")
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {
@@ -93,12 +53,12 @@ android {
     }
 
     signingConfigs {
-        if (releaseSigningConfigured) {
+        if (releaseSigning != null) {
             create("release") {
-                storeFile = file(requireNotNull(releaseStoreFile))
-                storePassword = requireNotNull(releaseStorePassword)
-                keyAlias = requireNotNull(releaseKeyAlias)
-                keyPassword = requireNotNull(releaseKeyPassword)
+                storeFile = file(releaseSigning.storeFile)
+                storePassword = releaseSigning.storePassword
+                keyAlias = releaseSigning.keyAlias
+                keyPassword = releaseSigning.keyPassword
                 enableV1Signing = true
                 enableV2Signing = true
                 enableV3Signing = true
@@ -116,7 +76,7 @@ android {
             isDebuggable = false
             isMinifyEnabled = true
             isShrinkResources = true
-            if (releaseSigningConfigured) {
+            if (releaseSigning != null) {
                 signingConfig = signingConfigs.getByName("release")
             }
             ndk {

@@ -7,12 +7,14 @@ on:
       - "phase-*"
     paths:
       - "native/git/**"
+      - "native/config/**"
       - ".github/workflows/native-git-ci.yml"
   pull_request:
     branches:
       - main
     paths:
       - "native/git/**"
+      - "native/config/**"
       - ".github/workflows/native-git-ci.yml"
 
 permissions:
@@ -40,6 +42,10 @@ jobs:
 
       - name: Configure
         shell: bash
+        env:
+          NEXORA_GITHUB_CLIENT_ID: Iv1.NexoraNativeConfigTest
+          NEXORA_AUTH_BROKER_BASE_URL: https://native-config.example
+          NEXORA_GITHUB_CALLBACK_URL: https://native-config.example/oauth/callback
         run: |
           cmake \
             -S native/git \

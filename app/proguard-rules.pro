@@ -18,3 +18,10 @@
 -keepclasseswithmembernames,includedescriptorclasses class com.nexora.git.core.editor.NativeSyntaxBridge {
     native <methods>;
 }
+
+
+# The secure runtime configuration class is resolved by libnexoraconfig.so
+# through JNI RegisterNatives. Keep its binary name and native method name.
+-keep,allowoptimization class com.nexora.git.core.auth.SecureRuntimeConfigNative {
+    native <methods>;
+}

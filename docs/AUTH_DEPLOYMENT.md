@@ -38,9 +38,7 @@ Never expose `GITHUB_APP_CLIENT_SECRET` to Android, Gradle source, GitHub artifa
 
 ## 4. Configure the Android build
 
-The Android build consumes only public/non-confidential values.
-
-Environment variables:
+The Android build consumes only public/non-confidential values:
 
 ```text
 NEXORA_GITHUB_CLIENT_ID
@@ -48,7 +46,9 @@ NEXORA_AUTH_BROKER_BASE_URL
 NEXORA_GITHUB_CALLBACK_URL
 ```
 
-Example:
+These values are no longer emitted as `BuildConfig` string constants. During the native CMake configuration step they are encoded into a dedicated `libnexoraconfig.so` using per-build split XOR masks and are decoded only at runtime through a registered JNI method.
+
+For CI/VPS builds, keep using environment variables:
 
 ```bash
 export NEXORA_GITHUB_CLIENT_ID="Iv1...."
@@ -58,15 +58,17 @@ export NEXORA_GITHUB_CALLBACK_URL="https://auth.example.com/oauth/callback"
 ./gradlew :app:assembleDebug
 ```
 
-Equivalent Gradle properties:
+For local development, copy the repository example file:
 
-```text
--Pnexora.githubClientId=Iv1....
--Pnexora.authBrokerBaseUrl=https://auth.example.com
--Pnexora.githubCallbackUrl=https://auth.example.com/oauth/callback
+```bash
+cp nexora.local.properties.example nexora.local.properties
 ```
 
-Do not put the client secret in any Android build property.
+and edit only the three public Android values there. `nexora.local.properties` is gitignored.
+
+The release keystore, store password, key alias and key password are **not accepted from this local runtime-config file**. Release signing remains environment/secret-store only.
+
+> Native XOR encoding is obfuscation, not a cryptographic secret store. A determined reverse engineer can still recover public runtime values from a running application. The confidential GitHub App Client Secret must remain on the Auth Broker and must never be embedded in the APK, DEX, resources or native libraries.
 
 ## 5. Expected authorization path
 
