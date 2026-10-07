@@ -367,10 +367,14 @@ web_publish_signed_release() {
   version_info="$(web_release_version_info "$job_id")" || die "Cannot determine Android version for website publication."
   IFS='|' read -r version_name version_code <<< "$version_info"
 
-  local signed_at
+  local signed_at signing_cert_sha256
   signed_at="$(sed -n 's/^SIGNED_AT=//p' "$signed_dir/signing-manifest.conf" | tr -d "'" | head -n 1)"
   [[ "$signed_at" =~ ^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$ ]] ||
     die "Signed release timestamp is invalid."
+
+  signing_cert_sha256="$(sed -n 's/^SIGNING_CERT_SHA256=//p' "$signed_dir/signing-manifest.conf" | tr -d "'" | head -n 1)"
+  [[ "$signing_cert_sha256" =~ ^([A-Fa-f0-9]{2}:){31}[A-Fa-f0-9]{2}$ ]] ||
+    die "Signed release certificate fingerprint is invalid."
 
   local sha size final stage
   sha="$(sha256sum "$apk" | awk '{print $1}')"
@@ -392,6 +396,7 @@ web_publish_signed_release() {
   "commit": "$commit",
   "signedAt": "$signed_at",
   "sha256": "$sha",
+  "signingCertificateSha256": "$signing_cert_sha256",
   "sizeBytes": $size,
   "downloadUrl": "/download/nexora-git.apk"
 }
