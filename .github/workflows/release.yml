@@ -96,6 +96,10 @@ jobs:
           test -s "$keystore"
           echo "NEXORA_SIGNING_STORE_FILE=$keystore" >> "$GITHUB_ENV"
 
+      - name: Validate store and launch assets
+        shell: bash
+        run: python3 scripts/ci/validate-store-readiness.py "$GITHUB_REF_NAME"
+
       - name: Validate GitHub launch settings
         shell: bash
         env:
