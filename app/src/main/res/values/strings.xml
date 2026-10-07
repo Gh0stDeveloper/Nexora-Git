@@ -607,4 +607,31 @@
     <string name="advanced_dependabot">Dependabot</string>
     <string name="advanced_code_scanning">Code scanning</string>
     <string name="advanced_secret_scanning">Secret scanning</string>
+
+    <string name="code_browser_title">Code browser</string>
+    <string name="code_browser_search_project">Search project</string>
+    <string name="code_browser_regex">Regex</string>
+    <string name="code_browser_match_case">Match case</string>
+    <string name="code_browser_whole_word">Whole word</string>
+    <string name="code_browser_include_glob">Include glob</string>
+    <string name="code_browser_exclude_glob">Exclude glob</string>
+    <string name="code_browser_empty_directory">Empty directory</string>
+    <string name="code_browser_empty_directory_body">There are no browsable files here.</string>
+    <string name="code_browser_root">root</string>
+    <string name="code_browser_back">Back</string>
+    <string name="code_browser_refresh">Refresh</string>
+    <string name="code_browser_edit_file">Edit file</string>
+    <string name="code_browser_share_file">Share file</string>
+    <string name="code_browser_save_copy">Save copy</string>
+
+    <string name="git_resolve_first">Resolve first</string>
+    <string name="git_strategy_merge">Merge</string>
+    <string name="git_strategy_ff_only">FF only</string>
+    <string name="git_strategy_rebase">Rebase</string>
+
+    <string name="issues_no_matches">No issues match the current filters.</string>
+    <string name="pulls_no_matches">No pull requests match this state.</string>
+    <string name="pulls_create_draft">Create as draft</string>
+    <string name="pulls_maintainer_edits">Allow maintainer edits</string>
+    <string name="releases_generate_notes">Generate release notes</string>
 </resources>
