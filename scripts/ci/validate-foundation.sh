@@ -15,7 +15,8 @@ test -s docs/STORAGE.md
 test -s docs/SECURITY.md
 test -s docs/THREAT_MODEL.md
 test -s docs/UI_UX.md
-test -s docs/PRODUCTION_READINESS.md\ntest -s docs/VPS_ANDROID_BUILDER.md
+test -s docs/PRODUCTION_READINESS.md
+test -s docs/VPS_ANDROID_BUILDER.md
 test -s docs/PRODUCTION_SECURITY_AUDIT.md
 test -s docs/PERFORMANCE_AUDIT.md
 test -s docs/ACCESSIBILITY_AUDIT.md
