@@ -2,11 +2,31 @@ import type { Metadata } from "next";
 import "./globals.css";
 import { Footer } from "../components/footer";
 import { SiteHeader } from "../components/site-header";
+import { getSiteUrl } from "../lib/site";
 
 const description =
   "Nexora Git is a native open-source Git and GitHub workspace for Android with a real local Git engine, code editing, GitHub workflows and self-hosted signed releases.";
 
-const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "https://nexora-git.invalid";
+const siteUrl = getSiteUrl();
+
+const structuredData = {
+  "@context": "https://schema.org",
+  "@type": "SoftwareApplication",
+  name: "Nexora Git",
+  applicationCategory: "DeveloperApplication",
+  operatingSystem: "Android 8.0+",
+  description,
+  url: siteUrl,
+  downloadUrl: new URL("/download/nexora-git.apk", siteUrl).toString(),
+  codeRepository: "https://github.com/Gh0stDeveloper/Nexora-Git",
+  license: "https://www.apache.org/licenses/LICENSE-2.0",
+  author: {
+    "@type": "Person",
+    name: "Ghost Developer",
+    url: "https://github.com/Gh0stDeveloper",
+  },
+  isAccessibleForFree: true,
+};
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
@@ -45,6 +65,12 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
   return (
     <html lang="en">
       <body>
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify(structuredData).replace(/</g, "\\u003c"),
+          }}
+        />
         <SiteHeader />
         {children}
         <Footer />
