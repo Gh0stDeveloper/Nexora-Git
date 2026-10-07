@@ -11,6 +11,10 @@ if ! declare -F android_worker_enqueue >/dev/null 2>&1; then
   # shellcheck source=android-worker-lib.sh
   source "$SCRIPT_DIR/android-worker-lib.sh"
 fi
+if ! declare -F web_deploy >/dev/null 2>&1; then
+  # shellcheck source=web-lib.sh
+  source "$SCRIPT_DIR/web-lib.sh"
+fi
 
 NEXORA_OPS_ROOT="${NEXORA_OPS_ROOT:-/var/lib/nexora-git/operations}"
 NEXORA_OPS_LOCK_ROOT="${NEXORA_OPS_LOCK_ROOT:-$NEXORA_OPS_ROOT/locks}"
@@ -521,7 +525,12 @@ android_ops_checkpoint_restore() {
   nginx -t
   systemctl reload nginx
   compose build auth-broker
-  compose up -d --remove-orphans auth-broker
+  if [[ -d "$INSTALL_DIR/web" ]]; then
+    web_deploy 1
+    web_refresh_nginx
+  else
+    compose up -d --remove-orphans auth-broker
+  fi
   wait_local_health "$LOCAL_PORT" 30 || die "Restored broker failed its local health check."
 
   log_ok "Operational checkpoint restored: $id ($GIT_COMMIT)"
@@ -582,6 +591,7 @@ android_ops_refresh_runtime() {
   android_worker_install_service
   android_ops_install_autobuild_units
   android_ops_request_worker_reload
+  web_ensure_config
 }
 
 android_ops_rollback_update() {
@@ -594,9 +604,14 @@ android_ops_rollback_update() {
   load_state || return 1
 
   compose build auth-broker || return 1
-  compose up -d --remove-orphans auth-broker || return 1
-  wait_local_health "$LOCAL_PORT" 30 || return 1
   android_ops_refresh_runtime || return 1
+  if [[ -d "$INSTALL_DIR/web" ]]; then
+    web_deploy 1 || return 1
+    web_refresh_nginx || return 1
+  else
+    compose up -d --remove-orphans auth-broker || return 1
+  fi
+  wait_local_health "$LOCAL_PORT" 30 || return 1
   log_ok "Update rollback restored $old_commit and operational configuration."
 }
 

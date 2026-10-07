@@ -13,6 +13,8 @@ source "$SCRIPT_DIR/android-artifacts-lib.sh"
 source "$SCRIPT_DIR/android-worker-lib.sh"
 # shellcheck source=android-ops-lib.sh
 source "$SCRIPT_DIR/android-ops-lib.sh"
+# shellcheck source=web-lib.sh
+source "$SCRIPT_DIR/web-lib.sh"
 
 require_root
 load_state || die "Nexora Git VPS is not installed. Run the installer first."
@@ -42,8 +44,10 @@ phase 2 6 "Fetch and compare"
 git fetch --prune origin "$BRANCH"
 REMOTE_COMMIT="$(git rev-parse "origin/$BRANCH")"
 if [[ "$OLD_COMMIT" == "$REMOTE_COMMIT" ]]; then
-  log_ok "Already on the newest $BRANCH revision; broker rebuild and Android autobuild are skipped."
+  log_ok "Already on the newest $BRANCH revision; application rebuild and Android autobuild are skipped."
   android_ops_refresh_runtime
+  web_deploy 0
+  web_refresh_nginx
   exit 0
 fi
 
@@ -74,9 +78,14 @@ NEW_COMMIT="$(git rev-parse HEAD)"
 [[ "$NEW_COMMIT" == "$REMOTE_COMMIT" ]] || die "Fast-forward result does not match fetched remote commit."
 log_ok "Repository advanced to $NEW_COMMIT."
 
-phase 4 6 "Build updated Auth Broker"
+phase 4 6 "Build updated services"
+WEB_CHANGED=0
+if web_source_changed "$OLD_COMMIT" "$NEW_COMMIT"; then
+  WEB_CHANGED=1
+  log_info "Website source changed; a new Next.js image will be built."
+fi
 compose build auth-broker
-compose up -d --remove-orphans auth-broker
+web_deploy "$WEB_CHANGED"
 
 phase 5 6 "Health and runtime refresh"
 if ! wait_local_health "$LOCAL_PORT" 30; then
@@ -85,12 +94,15 @@ if ! wait_local_health "$LOCAL_PORT" 30; then
 fi
 
 android_ops_refresh_runtime
+web_refresh_nginx
 nginx -t >/dev/null
 
 curl -fsS --max-time 10 "https://$DOMAIN/health" >/dev/null || {
-  log_warn "Local broker is healthy but public HTTPS health check failed."
-  log_warn "The update is kept because the application itself is healthy; inspect DNS/Nginx/TLS with nexora-git doctor."
+  log_warn "Local broker is healthy but public Auth Broker HTTPS health check failed."
+  log_warn "The update is kept because the broker itself is healthy; inspect DNS/Nginx/TLS with nexora-git doctor."
 }
+curl -fsS --max-time 10 "https://$DOMAIN/api/health" >/dev/null ||
+  die "Updated website failed its public HTTPS health gate."
 
 UPDATE_ROLLBACK_ARMED=0
 

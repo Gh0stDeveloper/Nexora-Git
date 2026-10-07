@@ -17,6 +17,8 @@ source "$SCRIPT_DIR/android-worker-lib.sh"
 source "$SCRIPT_DIR/android-release-lib.sh"
 # shellcheck source=android-ops-lib.sh
 source "$SCRIPT_DIR/android-ops-lib.sh"
+# shellcheck source=web-lib.sh
+source "$SCRIPT_DIR/web-lib.sh"
 
 usage() {
   cat <<'EOF'
@@ -72,6 +74,11 @@ Usage:
   nexora-git recovery list [LIMIT]
   nexora-git recovery verify <CHECKPOINT_ID>
   nexora-git recovery restore <CHECKPOINT_ID>
+  nexora-git web status
+  nexora-git web doctor
+  nexora-git web deploy
+  nexora-git web restart
+  nexora-git web logs
   nexora-git help
 EOF
 }
@@ -90,6 +97,8 @@ cmd_status() {
   printf 'Docker:     %s\n' "$(systemctl is-active docker 2>/dev/null || true)"
   printf 'TLS:        %s\n' "$(certificate_expiry "$DOMAIN")"
   compose ps
+  printf '\nWebsite:\n'
+  web_status
 }
 
 cmd_doctor() {
@@ -118,6 +127,11 @@ cmd_doctor() {
   fi
 
   compose ps
+
+  printf '\nWebsite:\n'
+  if ! web_doctor; then
+    failed=1
+  fi
 
   if [[ -r "$NEXORA_ANDROID_CONFIG_FILE" ]]; then
     printf '\nAndroid build host:\n'
@@ -418,6 +432,49 @@ cmd_recovery() {
   esac
 }
 
+cmd_web() {
+  require_install
+  local subcommand="${1:-status}"
+
+  case "$subcommand" in
+    status)
+      web_status
+      ;;
+    doctor)
+      web_doctor
+      ;;
+    deploy)
+      web_deploy 1
+      web_refresh_nginx
+      curl -fsS --max-time 10 "https://$DOMAIN/api/health" >/dev/null ||
+        die "Website public health check failed after deployment."
+      ;;
+    restart)
+      web_ensure_config
+      compose restart web
+      web_wait_health 45 || die "Website failed health check after restart."
+      ;;
+    logs)
+      compose logs -f --tail=200 web
+      ;;
+    help|-h|--help)
+      cat <<'EOF'
+Nexora Git download website
+
+Usage:
+  nexora-git web status
+  nexora-git web doctor
+  nexora-git web deploy
+  nexora-git web restart
+  nexora-git web logs
+EOF
+      ;;
+    *)
+      die "Unknown web command: $subcommand"
+      ;;
+  esac
+}
+
 cmd_update() {
   require_install
   local temp
@@ -434,6 +491,9 @@ cmd_config() {
   printf 'DOMAIN=%s\n' "$DOMAIN"
   printf 'EMAIL=%s\n' "$EMAIL"
   printf 'LOCAL_PORT=%s\n' "$LOCAL_PORT"
+  web_ensure_config
+  printf 'WEB_PORT=%s\n' "$WEB_PORT"
+  printf 'SITE_URL=%s\n' "$SITE_URL"
   printf 'REPO_URL=%s\n' "$REPO_URL"
   printf 'BRANCH=%s\n' "$BRANCH"
   printf 'Secrets: hidden (auth-broker/.env, mode 600)\n'
@@ -450,16 +510,19 @@ case "${1:-help}" in
     ;;
   start)
     require_install
-    compose up -d auth-broker
+    web_ensure_config
+    compose up -d auth-broker web
     ;;
   stop)
     require_install
-    compose stop auth-broker
+    compose stop auth-broker web
     ;;
   restart)
     require_install
-    compose restart auth-broker
+    web_ensure_config
+    compose restart auth-broker web
     wait_local_health "$LOCAL_PORT" 30 || die "Broker failed health check after restart."
+    web_wait_health 45 || die "Website failed health check after restart."
     ;;
   renew-cert)
     require_install
@@ -487,6 +550,10 @@ case "${1:-help}" in
   recovery)
     shift
     cmd_recovery "$@"
+    ;;
+  web)
+    shift
+    cmd_web "$@"
     ;;
   help|-h|--help) usage ;;
   *)
