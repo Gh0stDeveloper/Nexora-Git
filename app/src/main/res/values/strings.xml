@@ -17,7 +17,7 @@
     <string name="action_settings">Settings</string>
 
     <string name="login_title">Sign in to GitHub</string>
-    <string name="login_description">Nexora Git uses GitHub&apos;s official authorization page. Passwords, passkeys and 2FA are handled only by GitHub.</string>
+    <string name="login_description">Nexora Git uses GitHub\'s official authorization page. Passwords, passkeys and 2FA are handled only by GitHub.</string>
     <string name="login_continue">Continue with GitHub</string>
     <string name="login_not_configured">Authentication is disabled in this build until the GitHub App client ID, broker URL and callback URL are configured.</string>
 
