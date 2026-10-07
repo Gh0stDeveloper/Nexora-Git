@@ -10,6 +10,13 @@ FILES = [
     "app/src/main/java/com/nexora/git/feature/home/HomeScreen.kt",
     "app/src/main/java/com/nexora/git/feature/settings/SettingsScreen.kt",
     "app/src/main/java/com/nexora/git/feature/onboarding/OnboardingScreen.kt",
+    "app/src/main/java/com/nexora/git/feature/repositories/RepositoriesScreen.kt",
+    "app/src/main/java/com/nexora/git/feature/git/GitWorkspaceScreen.kt",
+    "app/src/main/java/com/nexora/git/feature/issues/IssuesScreen.kt",
+    "app/src/main/java/com/nexora/git/feature/pulls/PullRequestsScreen.kt",
+    "app/src/main/java/com/nexora/git/feature/actions/ActionsScreen.kt",
+    "app/src/main/java/com/nexora/git/feature/releases/ReleasesScreen.kt",
+    "app/src/main/java/com/nexora/git/feature/editor/MobileEditorScreen.kt",
 ]
 
 PATTERNS = [
