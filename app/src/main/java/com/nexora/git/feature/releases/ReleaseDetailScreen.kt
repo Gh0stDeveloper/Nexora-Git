@@ -387,7 +387,7 @@ internal fun ReleaseDetailContent(
                     ) {
                         Text(
                             modifier = Modifier.padding(16.dp),
-                            text = "GitHub marks this release as immutable. Editing, deleting, and asset mutations are disabled.",
+                            text = stringResource(R.string.release_immutable_note),
                             color =
                                 MaterialTheme.colorScheme.onSurfaceVariant,
                         )
@@ -534,7 +534,7 @@ private fun ReleaseHeaderCard(
             }
 
             Text(
-                text = "Tag: " + release.tagName,
+                text = stringResource(R.string.release_tag, release.tagName),
                 fontFamily = FontFamily.Monospace,
             )
 
@@ -548,7 +548,7 @@ private fun ReleaseHeaderCard(
 
             release.authorLogin?.let {
                 Text(
-                    text = "Author: " + it,
+                    text = stringResource(R.string.release_author, it),
                     color =
                         MaterialTheme.colorScheme.onSurfaceVariant,
                 )
@@ -556,7 +556,7 @@ private fun ReleaseHeaderCard(
 
             release.publishedAt?.let {
                 Text(
-                    text = "Published: " + it,
+                    text = stringResource(R.string.release_published, it),
                     color =
                         MaterialTheme.colorScheme.onSurfaceVariant,
                     style = MaterialTheme.typography.bodySmall,
@@ -895,14 +895,14 @@ private fun EditReleaseDialog(
                 }
                 item {
                     ReleaseDetailToggleRow(
-                        label = "Draft",
+                        label = stringResource(R.string.release_draft),
                         checked = draft,
                         onCheckedChange = { draft = it },
                     )
                 }
                 item {
                     ReleaseDetailToggleRow(
-                        label = "Prerelease",
+                        label = stringResource(R.string.release_prerelease),
                         checked = prerelease,
                         onCheckedChange = {
                             prerelease = it
