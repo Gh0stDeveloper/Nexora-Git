@@ -37,9 +37,11 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import com.nexora.git.R
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.nexora.git.core.releases.CreateReleaseRequest
 import com.nexora.git.core.releases.GitHubRelease
@@ -122,7 +124,7 @@ fun ReleasesScreen(
                         viewModel.deleteTag(tag)
                     },
                 ) {
-                    Text("Delete")
+                    Text(stringResource(R.string.action_delete))
                 }
             },
             dismissButton = {
@@ -131,11 +133,11 @@ fun ReleasesScreen(
                         deletingTag = null
                     },
                 ) {
-                    Text("Cancel")
+                    Text(stringResource(R.string.action_cancel))
                 }
             },
             title = {
-                Text("Delete tag?")
+                Text(stringResource(R.string.releases_delete_tag))
             },
             text = {
                 Text(
@@ -150,10 +152,10 @@ fun ReleasesScreen(
             onDismissRequest = viewModel::dismissError,
             confirmButton = {
                 TextButton(onClick = viewModel::dismissError) {
-                    Text("OK")
+                    Text(stringResource(R.string.action_ok))
                 }
             },
-            title = { Text("Releases") },
+            title = { Text(stringResource(R.string.releases_title)) },
             text = { Text(message) },
         )
     }
@@ -163,10 +165,10 @@ fun ReleasesScreen(
             onDismissRequest = viewModel::dismissSuccess,
             confirmButton = {
                 TextButton(onClick = viewModel::dismissSuccess) {
-                    Text("Done")
+                    Text(stringResource(R.string.action_done))
                 }
             },
-            title = { Text("Nexora Git") },
+            title = { Text(stringResource(R.string.app_name)) },
             text = { Text(message) },
         )
     }
@@ -204,7 +206,7 @@ internal fun ReleasesContent(
                 IconButton(onClick = onBack) {
                     Icon(
                         imageVector = Icons.AutoMirrored.Outlined.ArrowBack,
-                        contentDescription = "Back",
+                        contentDescription = stringResource(R.string.action_back),
                     )
                 }
 
@@ -212,7 +214,7 @@ internal fun ReleasesContent(
                     modifier = Modifier.weight(1f),
                 ) {
                     Text(
-                        text = "Releases",
+                        text = stringResource(R.string.releases_title),
                         style = MaterialTheme.typography.titleLarge,
                     )
                     Text(
@@ -228,7 +230,7 @@ internal fun ReleasesContent(
                 ) {
                     Icon(
                         imageVector = Icons.Outlined.Refresh,
-                        contentDescription = "Refresh releases",
+                        contentDescription = stringResource(R.string.releases_refresh),
                     )
                 }
             }
@@ -249,7 +251,7 @@ internal fun ReleasesContent(
                             imageVector = Icons.Outlined.Add,
                             contentDescription = null,
                         )
-                        Text("New release")
+                        Text(stringResource(R.string.releases_new_release))
                     }
 
                     OutlinedButton(
@@ -257,7 +259,7 @@ internal fun ReleasesContent(
                         enabled = !state.operationInProgress,
                         onClick = onCreateTag,
                     ) {
-                        Text("New tag")
+                        Text(stringResource(R.string.releases_new_tag))
                     }
                 }
             }
@@ -293,7 +295,7 @@ internal fun ReleasesContent(
 
         item {
             Text(
-                text = "Releases",
+                text = stringResource(R.string.releases_title),
                 style = MaterialTheme.typography.titleMedium,
             )
         }
@@ -418,7 +420,7 @@ private fun ReleaseRow(
 
             if (release.immutable) {
                 Text(
-                    text = "Immutable release",
+                    text = stringResource(R.string.releases_immutable),
                     color =
                         MaterialTheme.colorScheme.onSurfaceVariant,
                     style = MaterialTheme.typography.labelMedium,
@@ -535,7 +537,7 @@ private fun CreateReleaseDialog(
                     )
                 },
             ) {
-                Text("Create")
+                Text(stringResource(R.string.action_create))
             }
         },
         dismissButton = {
@@ -543,10 +545,10 @@ private fun CreateReleaseDialog(
                 enabled = !busy,
                 onClick = onDismiss,
             ) {
-                Text("Cancel")
+                Text(stringResource(R.string.action_cancel))
             }
         },
-        title = { Text("New release") },
+        title = { Text(stringResource(R.string.releases_new_release)) },
         text = {
             LazyColumn(
                 verticalArrangement = Arrangement.spacedBy(10.dp),
@@ -557,7 +559,7 @@ private fun CreateReleaseDialog(
                         value = tagName,
                         onValueChange = { tagName = it },
                         singleLine = true,
-                        label = { Text("Tag name") },
+                        label = { Text(stringResource(R.string.releases_tag_name)) },
                     )
                 }
                 item {
@@ -567,7 +569,7 @@ private fun CreateReleaseDialog(
                         onValueChange = { target = it },
                         singleLine = true,
                         label = {
-                            Text("Target branch or commit")
+                            Text(stringResource(R.string.releases_target))
                         },
                     )
                 }
@@ -577,7 +579,7 @@ private fun CreateReleaseDialog(
                         value = name,
                         onValueChange = { name = it },
                         singleLine = true,
-                        label = { Text("Release name") },
+                        label = { Text(stringResource(R.string.releases_name)) },
                     )
                 }
                 item {
@@ -587,7 +589,7 @@ private fun CreateReleaseDialog(
                         onValueChange = { body = it },
                         minLines = 4,
                         maxLines = 9,
-                        label = { Text("Release notes") },
+                        label = { Text(stringResource(R.string.releases_notes)) },
                     )
                 }
                 item {
@@ -621,7 +623,7 @@ private fun CreateReleaseDialog(
                 if (!draft && !prerelease) {
                     item {
                         Text(
-                            text = "Latest release policy",
+                            text = stringResource(R.string.releases_latest_policy),
                             style =
                                 MaterialTheme.typography.labelLarge,
                         )
@@ -682,15 +684,15 @@ private fun CreateTagDialog(
                     onCreate(name, sha)
                 },
             ) {
-                Text("Create")
+                Text(stringResource(R.string.action_create))
             }
         },
         dismissButton = {
             TextButton(onClick = onDismiss) {
-                Text("Cancel")
+                Text(stringResource(R.string.action_cancel))
             }
         },
-        title = { Text("New lightweight tag") },
+        title = { Text(stringResource(R.string.releases_lightweight_tag)) },
         text = {
             Column(
                 verticalArrangement = Arrangement.spacedBy(10.dp),
@@ -700,7 +702,7 @@ private fun CreateTagDialog(
                     value = name,
                     onValueChange = { name = it },
                     singleLine = true,
-                    label = { Text("Tag name") },
+                    label = { Text(stringResource(R.string.releases_tag_name)) },
                 )
                 OutlinedTextField(
                     modifier = Modifier.fillMaxWidth(),
@@ -709,10 +711,10 @@ private fun CreateTagDialog(
                         sha = it.trim()
                     },
                     singleLine = true,
-                    label = { Text("Target commit SHA") },
+                    label = { Text(stringResource(R.string.releases_target_sha)) },
                 )
                 Text(
-                    text = "A lightweight tag points directly at the selected commit.",
+                    text = stringResource(R.string.releases_tag_note),
                     color =
                         MaterialTheme.colorScheme.onSurfaceVariant,
                     style = MaterialTheme.typography.bodySmall,
