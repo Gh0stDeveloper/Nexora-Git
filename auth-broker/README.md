@@ -87,7 +87,7 @@ Required values:
 GITHUB_APP_CLIENT_ID=Iv1....
 GITHUB_APP_CLIENT_SECRET=...
 GITHUB_CALLBACK_URL=https://auth.example.com/oauth/callback
-APP_CALLBACK_URI=nexoragit://oauth/callback
+APP_CALLBACK_URI=https://auth.example.com/oauth/android/callback
 PORT=8080
 ```
 
