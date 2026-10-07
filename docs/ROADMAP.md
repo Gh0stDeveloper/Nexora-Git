@@ -1,6 +1,6 @@
 # Nexora Git Roadmap
 
-> **Roadmap status: complete.** All repository implementation phases from Product Foundation through Production have been implemented, validated and integrated into `main`. This file is retained as the detailed implementation record.
+> **Roadmap status: Phase S active.** Phases 0 through R were implemented and integrated into `main`. A strict post-production audit identified a new hardening and product-polish pass, tracked as **Phase S — Production Hardening & Product Polish**. Phases 0–R remain historical implementation records; Phase S is not complete until its release gates are satisfied.
 
 A phase is considered complete only when its applicable UI, implementation, error handling, permissions, tests, accessibility and documentation are present. External account provisioning and store publication are operational launch tasks, not incomplete product phases.
 
@@ -835,22 +835,99 @@ A phase is considered complete only when its applicable UI, implementation, erro
 - [x] production implementation merged into `main` through PR #20
 
 
+## Phase S — Production Hardening & Product Polish
+
+**Status: planned / not started. This phase is a release-hardening gate created from the post-Phase-R audit.**
+
+The detailed executable checklist is maintained in **[PHASE_S_PRODUCTION_HARDENING_ROADMAP.md](PHASE_S_PRODUCTION_HARDENING_ROADMAP.md)**.
+
+### S.1 Repository governance
+- [ ] protected `main`
+- [ ] required PRs and CI gates
+- [ ] force-push/deletion protection
+- [ ] release-tag policy tied to protected `main`
+
+### S.2 Auth Broker and OAuth hardening
+- [ ] reverse-proxy-aware rate limiting
+- [ ] trusted forwarded-client identity handling
+- [ ] Nginx abuse controls
+- [ ] verified Android App Link callback or documented risk acceptance
+
+### S.3 Application and native security
+- [ ] release artifact secret scanning
+- [ ] CodeQL expansion to native C/C++, Go and web
+- [ ] ASan/UBSan
+- [ ] clang-tidy
+- [ ] focused fuzzing for attacker-controlled native/JNI inputs
+
+### S.4 Supply-chain security
+- [ ] Dependabot for Gradle, npm and Go
+- [ ] dependency integrity/reproducibility review
+- [ ] SBOM
+- [ ] release provenance / artifact attestations
+- [ ] public signing-certificate fingerprint
+
+### S.5 Product UX and localization
+- [ ] global Settings surface
+- [ ] persistent System/Light/Dark/AMOLED selection
+- [ ] English and Spanish resource localization
+- [ ] real onboarding flow
+- [ ] useful Home/dashboard continuation experience
+
+### S.6 Reliability and performance
+- [ ] durable long-running operation policy
+- [ ] WorkManager/foreground execution where appropriate
+- [ ] cancellation/retry/process-death recovery
+- [ ] Macrobenchmark coverage
+- [ ] Baseline Profile
+- [ ] measured release performance budgets
+
+### S.7 Accessibility qualification
+- [ ] automated accessibility assertions
+- [ ] physical-device TalkBack/font/display/navigation matrix
+- [ ] signed release-candidate accessibility evidence
+
+### S.8 Website, SEO and privacy
+- [ ] production site URL required; no silent `.invalid` canonical
+- [ ] public `/privacy`
+- [ ] Content-Security-Policy and header regression tests
+- [ ] SoftwareApplication/MobileApplication structured data
+- [ ] production metadata validation
+- [ ] static/ISR strategy review
+
+### S.9 GitHub and distribution polish
+- [ ] repository homepage and topics
+- [ ] Discussions decision
+- [ ] real README/store screenshots
+- [ ] complete Play Store visual assets
+- [ ] F-Droid reproducible native dependency acquisition
+- [ ] signed public beta/RC qualification before stable 1.0
+
+### S.10 Final stable-release gate
+- [ ] all P0 findings closed
+- [ ] all P1 findings closed
+- [ ] no known Critical/High security issue
+- [ ] no reproducible data-loss bug
+- [ ] production privacy/download/signing identity publicly verifiable
+- [ ] public RC passes real-device qualification
+- [ ] Phase S completion evidence linked from the roadmap
+
 ## External launch operations
 
-The implementation roadmap is complete. The following actions depend on production accounts, credentials or publication decisions and therefore remain outside phase completion:
+Phases 0–R are implementation-complete, while Phase S remains the active hardening gate. The following actions depend on production accounts, credentials or publication decisions and remain external operations unless a Phase S acceptance gate explicitly requires evidence from them:
 
 - create/configure the production GitHub App in the owning GitHub account;
 - provision the production Auth Broker secret and DNS/TLS environment;
 - inject production Android signing credentials through the documented release mechanism;
-- publish the first signed `v1.0.0` GitHub Release when launch credentials are available;
+- publish a signed beta/RC for Phase S qualification, then publish stable `v1.0.0` only after the Phase S stable-release gate passes;
 - create/complete the Play Console listing, screenshots and publication workflow;
 - enable an F-Droid build entry only when native dependency acquisition satisfies the documented reproducibility requirement.
 
-These tasks must not be represented as incomplete application features. Their procedures live in `GITHUB_APP.md`, `AUTH_DEPLOYMENT.md`, `VPS_INSTALLER.md`, `RELEASE_PROCESS.md`, `PLAY_STORE_READINESS.md` and `FDROID_READINESS.md`.
+These tasks must not be confused with missing application features. Where Phase S requires deployment or release evidence, the corresponding external operation becomes part of that acceptance gate. Procedures live in `GITHUB_APP.md`, `AUTH_DEPLOYMENT.md`, `VPS_INSTALLER.md`, `RELEASE_PROCESS.md`, `PLAY_STORE_READINESS.md` and `FDROID_READINESS.md`.
 
 ## Definition of Done
 
-A feature can be marked complete only when applicable UI, implementation, errors, permissions, tests, accessibility and documentation are present.
+A feature can be marked complete only when applicable UI, implementation, errors, permissions, tests, accessibility and documentation are present. Phase S additionally requires the completion evidence and stable-release gates defined in `PHASE_S_PRODUCTION_HARDENING_ROADMAP.md`.
 
 ---
 
