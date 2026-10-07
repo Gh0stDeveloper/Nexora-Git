@@ -151,9 +151,29 @@ web_proxy_block() {
 EOF
 }
 
+web_render_rate_limit_zones() {
+  cat <<'EOF'
+limit_req_zone $binary_remote_addr zone=nexora_oauth_callback:10m rate=30r/m;
+limit_req_zone $binary_remote_addr zone=nexora_oauth_sensitive:10m rate=10r/m;
+EOF
+}
+
+web_render_rate_limited_response() {
+  cat <<'EOF'
+    location @nexora_oauth_rate_limited {
+        default_type application/json;
+        add_header Cache-Control "no-store" always;
+        add_header Retry-After "60" always;
+        return 429 '{"error":"rate_limited"}';
+    }
+EOF
+}
+
 web_render_nginx_http() {
   local destination="$1"
   cat > "$destination" <<EOF
+$(web_render_rate_limit_zones)
+
 server {
     listen 80;
     listen [::]:80;
@@ -166,12 +186,20 @@ $(web_proxy_block "$LOCAL_PORT")
     }
 
     location = /oauth/callback {
+        limit_req zone=nexora_oauth_callback burst=10 nodelay;
+        limit_req_status 429;
+        error_page 429 = @nexora_oauth_rate_limited;
 $(web_proxy_block "$LOCAL_PORT")
     }
 
     location ^~ /v1/oauth/ {
+        limit_req zone=nexora_oauth_sensitive burst=5 nodelay;
+        limit_req_status 429;
+        error_page 429 = @nexora_oauth_rate_limited;
 $(web_proxy_block "$LOCAL_PORT")
     }
+
+$(web_render_rate_limited_response)
 
     location = /download/nexora-git.apk {
         alias $NEXORA_WEB_RELEASE_ROOT/current/Nexora-Git.apk;
@@ -223,12 +251,20 @@ $(web_proxy_block "$LOCAL_PORT")
     }
 
     location = /oauth/callback {
+        limit_req zone=nexora_oauth_callback burst=10 nodelay;
+        limit_req_status 429;
+        error_page 429 = @nexora_oauth_rate_limited;
 $(web_proxy_block "$LOCAL_PORT")
     }
 
     location ^~ /v1/oauth/ {
+        limit_req zone=nexora_oauth_sensitive burst=5 nodelay;
+        limit_req_status 429;
+        error_page 429 = @nexora_oauth_rate_limited;
 $(web_proxy_block "$LOCAL_PORT")
     }
+
+$(web_render_rate_limited_response)
 
     location = /download/nexora-git.apk {
         alias $NEXORA_WEB_RELEASE_ROOT/current/Nexora-Git.apk;
