@@ -23,7 +23,7 @@ import okhttp3.Response
 
 @Singleton
 class GitHubActionsBinaryClient @Inject constructor(
-    @ApplicationContext private val context: Context,
+    @param:ApplicationContext private val context: Context,
     client: OkHttpClient,
     private val authSessionRepository: AuthSessionRepository,
     private val errorMapper: GitHubApiErrorMapper,

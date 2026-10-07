@@ -15,7 +15,7 @@ import kotlin.coroutines.coroutineContext
 
 @Singleton
 class SafProjectScanner @Inject constructor(
-    @ApplicationContext private val context: Context,
+    @param:ApplicationContext private val context: Context,
     private val gitIgnoreMatcher: GitIgnoreMatcher,
     private val riskDetector: ProjectRiskDetector,
 ) {

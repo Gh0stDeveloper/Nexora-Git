@@ -21,8 +21,8 @@ abstract class NexoraDatabase : RoomDatabase() {
 
     companion object {
         val MIGRATION_1_2 = object : Migration(1, 2) {
-            override fun migrate(database: SupportSQLiteDatabase) {
-                database.execSQL(
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL(
                     """
                     CREATE TABLE IF NOT EXISTS auth_accounts (
                         accountId INTEGER NOT NULL,
@@ -41,49 +41,49 @@ abstract class NexoraDatabase : RoomDatabase() {
         }
 
         val MIGRATION_2_3 = object : Migration(2, 3) {
-            override fun migrate(database: SupportSQLiteDatabase) {
-                database.execSQL(
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL(
                     "ALTER TABLE workspaces ADD COLUMN sourceDisplayName TEXT",
                 )
-                database.execSQL(
+                db.execSQL(
                     "ALTER TABLE workspaces ADD COLUMN sourceAuthority TEXT",
                 )
-                database.execSQL(
+                db.execSQL(
                     "ALTER TABLE workspaces ADD COLUMN sourceWritable INTEGER NOT NULL DEFAULT 0",
                 )
-                database.execSQL(
+                db.execSQL(
                     "ALTER TABLE workspaces ADD COLUMN strategy TEXT NOT NULL DEFAULT 'MANAGED'",
                 )
-                database.execSQL(
+                db.execSQL(
                     "ALTER TABLE workspaces ADD COLUMN syncState TEXT NOT NULL DEFAULT 'READY'",
                 )
-                database.execSQL(
+                db.execSQL(
                     "ALTER TABLE workspaces ADD COLUMN lastSyncedAtEpochMillis INTEGER",
                 )
-                database.execSQL(
+                db.execSQL(
                     "ALTER TABLE workspaces ADD COLUMN lastScanAtEpochMillis INTEGER",
                 )
-                database.execSQL(
+                db.execSQL(
                     "ALTER TABLE workspaces ADD COLUMN fileCount INTEGER NOT NULL DEFAULT 0",
                 )
-                database.execSQL(
+                db.execSQL(
                     "ALTER TABLE workspaces ADD COLUMN totalBytes INTEGER NOT NULL DEFAULT 0",
                 )
-                database.execSQL(
+                db.execSQL(
                     "ALTER TABLE workspaces ADD COLUMN secretWarningCount INTEGER NOT NULL DEFAULT 0",
                 )
-                database.execSQL(
+                db.execSQL(
                     "ALTER TABLE workspaces ADD COLUMN largeFileWarningCount INTEGER NOT NULL DEFAULT 0",
                 )
-                database.execSQL(
+                db.execSQL(
                     "ALTER TABLE workspaces ADD COLUMN syncConflictCount INTEGER NOT NULL DEFAULT 0",
                 )
             }
         }
 
         val MIGRATION_3_4 = object : Migration(3, 4) {
-            override fun migrate(database: SupportSQLiteDatabase) {
-                database.execSQL(
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL(
                     """
                     CREATE TABLE IF NOT EXISTS github_repositories (
                         accountId INTEGER NOT NULL,
@@ -118,7 +118,7 @@ abstract class NexoraDatabase : RoomDatabase() {
                     )
                     """.trimIndent(),
                 )
-                database.execSQL(
+                db.execSQL(
                     """
                     CREATE UNIQUE INDEX IF NOT EXISTS
                     index_github_repositories_accountId_fullName

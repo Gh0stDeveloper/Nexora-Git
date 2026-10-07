@@ -15,7 +15,7 @@ import kotlin.coroutines.coroutineContext
 
 @Singleton
 class SafWorkspaceSyncEngine @Inject constructor(
-    @ApplicationContext private val context: Context,
+    @param:ApplicationContext private val context: Context,
     private val workspacePaths: WorkspacePaths,
     private val manifestWriter: WorkspaceManifestWriter,
 ) {

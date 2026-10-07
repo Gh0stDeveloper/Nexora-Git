@@ -20,16 +20,16 @@ import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.AccountTree
-import androidx.compose.material.icons.outlined.ArrowBack
+import androidx.compose.material.icons.automirrored.outlined.ArrowBack
 import androidx.compose.material.icons.outlined.Check
 import androidx.compose.material.icons.outlined.Code
 import androidx.compose.material.icons.outlined.Difference
-import androidx.compose.material.icons.outlined.FormatAlignLeft
-import androidx.compose.material.icons.outlined.FormatIndentIncrease
-import androidx.compose.material.icons.outlined.Redo
+import androidx.compose.material.icons.automirrored.outlined.FormatAlignLeft
+import androidx.compose.material.icons.automirrored.outlined.FormatIndentIncrease
+import androidx.compose.material.icons.automirrored.outlined.Redo
 import androidx.compose.material.icons.outlined.Save
 import androidx.compose.material.icons.outlined.Search
-import androidx.compose.material.icons.outlined.Undo
+import androidx.compose.material.icons.automirrored.outlined.Undo
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
@@ -58,7 +58,7 @@ import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.nexora.git.core.auth.AuthAccountSummary
 import com.nexora.git.core.editor.EditorIndentStyle
@@ -360,7 +360,7 @@ private fun EditorHeader(
     ) {
         IconButton(onClick = onBack) {
             Icon(
-                imageVector = Icons.Outlined.ArrowBack,
+                imageVector = Icons.AutoMirrored.Outlined.ArrowBack,
                 contentDescription = "Back",
             )
         }
@@ -453,7 +453,7 @@ private fun EditorToolbar(
             onClick = onUndo,
         ) {
             Icon(
-                imageVector = Icons.Outlined.Undo,
+                imageVector = Icons.AutoMirrored.Outlined.Undo,
                 contentDescription = "Undo",
             )
         }
@@ -463,7 +463,7 @@ private fun EditorToolbar(
             onClick = onRedo,
         ) {
             Icon(
-                imageVector = Icons.Outlined.Redo,
+                imageVector = Icons.AutoMirrored.Outlined.Redo,
                 contentDescription = "Redo",
             )
         }
@@ -477,7 +477,7 @@ private fun EditorToolbar(
 
         IconButton(onClick = onInsertIndent) {
             Icon(
-                imageVector = Icons.Outlined.FormatIndentIncrease,
+                imageVector = Icons.AutoMirrored.Outlined.FormatIndentIncrease,
                 contentDescription = "Insert indentation",
             )
         }
@@ -543,7 +543,7 @@ private fun EditorToolbar(
                 )
             } else {
                 Icon(
-                    imageVector = Icons.Outlined.FormatAlignLeft,
+                    imageVector = Icons.AutoMirrored.Outlined.FormatAlignLeft,
                     contentDescription = "Format document",
                 )
             }

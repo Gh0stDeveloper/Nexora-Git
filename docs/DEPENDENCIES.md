@@ -41,7 +41,7 @@ This document records the principal libraries, native components and deployment 
 | Lifecycle | 2.11.0 | lifecycle, runtime and ViewModel integration |
 | Navigation Compose | 2.10.2 | application navigation |
 | Hilt | 2.60.1 | dependency injection |
-| AndroidX Hilt Navigation | 1.4.0 | Hilt + Navigation Compose integration |
+| Hilt Lifecycle ViewModel Compose | 1.4.0 | Hilt ViewModel integration for Compose |
 | Room | 2.8.5 | local structured persistence |
 | DataStore | 1.2.1 | preferences and active account/settings state |
 | DocumentFile | 1.1.0 | Storage Access Framework integration |

@@ -12,11 +12,11 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.ArrowBack
-import androidx.compose.material.icons.outlined.CallMerge
+import androidx.compose.material.icons.automirrored.outlined.ArrowBack
+import androidx.compose.material.icons.automirrored.outlined.CallMerge
 import androidx.compose.material.icons.outlined.CheckCircle
 import androidx.compose.material.icons.outlined.Code
-import androidx.compose.material.icons.outlined.Comment
+import androidx.compose.material.icons.automirrored.outlined.Comment
 import androidx.compose.material.icons.outlined.Refresh
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
@@ -40,7 +40,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.unit.dp
-import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.nexora.git.core.pulls.CreateReviewCommentRequest
 import com.nexora.git.core.pulls.PullRequestCheckRun
@@ -184,7 +184,7 @@ internal fun PullRequestDetailContent(
             ) {
                 IconButton(onClick = onBack) {
                     Icon(
-                        imageVector = Icons.Outlined.ArrowBack,
+                        imageVector = Icons.AutoMirrored.Outlined.ArrowBack,
                         contentDescription = "Back",
                     )
                 }
@@ -729,7 +729,7 @@ private fun OverviewActions(
                             ) {
                                 Icon(
                                     imageVector =
-                                        Icons.Outlined.CallMerge,
+                                        Icons.AutoMirrored.Outlined.CallMerge,
                                     contentDescription = null,
                                 )
                                 Text(
@@ -920,7 +920,7 @@ private fun PullRequestFileCard(
                 onClick = onComment,
             ) {
                 Icon(
-                    imageVector = Icons.Outlined.Comment,
+                    imageVector = Icons.AutoMirrored.Outlined.Comment,
                     contentDescription = null,
                 )
                 Text("Add inline comment")

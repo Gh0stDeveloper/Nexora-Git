@@ -12,6 +12,7 @@ import com.nexora.git.core.platform.GitHubPlatformClient
 import com.nexora.git.core.platform.GitHubRestRequest
 import javax.inject.Inject
 import javax.inject.Singleton
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
@@ -26,6 +27,7 @@ class GitHubRepositoryGateway @Inject constructor(
     private val parser: RepositoryJsonParser,
 ) : RepositoryGateway {
 
+    @OptIn(ExperimentalCoroutinesApi::class)
     override val cachedRepositories: Flow<List<RepositorySummary>> =
         authSessionRepository.activeAccountId.flatMapLatest { accountId ->
             if (accountId == null) {

@@ -16,7 +16,7 @@ data class PersistedTreePermission(
 
 @Singleton
 class SafPermissionManager @Inject constructor(
-    @ApplicationContext private val context: Context,
+    @param:ApplicationContext private val context: Context,
 ) {
     private val resolver: ContentResolver
         get() = context.contentResolver

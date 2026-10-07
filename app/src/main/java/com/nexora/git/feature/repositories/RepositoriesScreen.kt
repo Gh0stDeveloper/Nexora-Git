@@ -14,7 +14,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Add
-import androidx.compose.material.icons.outlined.CallSplit
+import androidx.compose.material.icons.automirrored.outlined.CallSplit
 import androidx.compose.material.icons.outlined.CloudDownload
 import androidx.compose.material.icons.outlined.Code
 import androidx.compose.material.icons.outlined.Delete
@@ -49,7 +49,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.nexora.git.core.repository.CreateRepositoryRequest
 import com.nexora.git.core.repository.RepositorySummary
@@ -517,7 +517,7 @@ private fun RemoteRepositoryCard(
                     description = "Stars",
                 )
                 RepositoryMetric(
-                    icon = Icons.Outlined.CallSplit,
+                    icon = Icons.AutoMirrored.Outlined.CallSplit,
                     value = repository.forks.toString(),
                     description = "Forks",
                 )

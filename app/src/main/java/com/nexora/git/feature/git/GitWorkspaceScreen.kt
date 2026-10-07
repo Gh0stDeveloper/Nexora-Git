@@ -13,9 +13,9 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Add
-import androidx.compose.material.icons.outlined.ArrowBack
-import androidx.compose.material.icons.outlined.CallMerge
-import androidx.compose.material.icons.outlined.CallSplit
+import androidx.compose.material.icons.automirrored.outlined.ArrowBack
+import androidx.compose.material.icons.automirrored.outlined.CallMerge
+import androidx.compose.material.icons.automirrored.outlined.CallSplit
 import androidx.compose.material.icons.outlined.CloudDownload
 import androidx.compose.material.icons.outlined.CloudUpload
 import androidx.compose.material.icons.outlined.Code
@@ -50,7 +50,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.unit.dp
-import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.nexora.git.core.auth.AuthAccountSummary
 import com.nexora.git.core.git.GitBranch
@@ -416,7 +416,7 @@ fun GitWorkspaceScreen(
             ) {
                 IconButton(onClick = onBack) {
                     Icon(
-                        imageVector = Icons.Outlined.ArrowBack,
+                        imageVector = Icons.AutoMirrored.Outlined.ArrowBack,
                         contentDescription = "Back",
                     )
                 }
@@ -2080,7 +2080,7 @@ private fun BranchCreateCard(
                 onClick = onCreate,
             ) {
                 Icon(
-                    imageVector = Icons.Outlined.CallSplit,
+                    imageVector = Icons.AutoMirrored.Outlined.CallSplit,
                     contentDescription = null,
                 )
                 Text("Create and switch")
@@ -2212,7 +2212,7 @@ private fun BranchCard(
                         onClick = onMerge,
                     ) {
                         Icon(
-                            imageVector = Icons.Outlined.CallMerge,
+                            imageVector = Icons.AutoMirrored.Outlined.CallMerge,
                             contentDescription = null,
                         )
                         Text("Merge")
