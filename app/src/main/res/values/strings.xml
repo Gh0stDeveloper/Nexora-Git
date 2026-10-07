@@ -84,4 +84,9 @@
     <string name="onboarding_create">Create repository</string>
     <string name="onboarding_skip">Skip for now</string>
     <string name="onboarding_replay">Replay onboarding</string>
+
+    <string name="clone_durable_queued">Clone queued; it will continue if Android recreates the screen.</string>
+    <string name="clone_durable_running">Cloning repository in durable background work…</string>
+    <string name="clone_durable_resolving">Preparing repository and credentials…</string>
+    <string name="clone_durable_cancel">Cancel clone</string>
 </resources>
