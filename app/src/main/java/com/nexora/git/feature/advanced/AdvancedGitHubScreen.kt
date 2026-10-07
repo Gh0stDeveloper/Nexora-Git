@@ -643,15 +643,15 @@ private fun SecuritySection(
                 fontWeight = FontWeight.SemiBold,
             )
             SecurityFeedRow(
-                label = "Dependabot",
+                label = stringResource(R.string.advanced_dependabot),
                 feed = overview.dependabot,
             )
             SecurityFeedRow(
-                label = "Code scanning",
+                label = stringResource(R.string.advanced_code_scanning),
                 feed = overview.codeScanning,
             )
             SecurityFeedRow(
-                label = "Secret scanning",
+                label = stringResource(R.string.advanced_secret_scanning),
                 feed = overview.secretScanning,
             )
 
