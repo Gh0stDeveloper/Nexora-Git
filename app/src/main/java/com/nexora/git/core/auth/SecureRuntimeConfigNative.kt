@@ -39,6 +39,6 @@ internal object SecureRuntimeConfigNative {
         githubClientId = "",
         authBrokerBaseUrl = "",
         githubCallbackUrl = "",
-        appCallbackUri = "nexoragit://oauth/callback",
+        appCallbackUri = "",
     )
 }
