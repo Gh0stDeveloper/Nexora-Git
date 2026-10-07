@@ -51,6 +51,9 @@ grep -q 'limit_req zone=nexora_oauth_callback burst=10 nodelay;' "$TEMP_ROOT/ren
 grep -q 'limit_req zone=nexora_oauth_sensitive burst=5 nodelay;' "$TEMP_ROOT/rendered.conf"
 grep -q 'location @nexora_oauth_rate_limited' "$TEMP_ROOT/rendered.conf"
 grep -q 'Retry-After "60"' "$TEMP_ROOT/rendered.conf"
+grep -q 'Content-Security-Policy' "$TEMP_ROOT/rendered.conf"
+grep -q "object-src 'none'" "$TEMP_ROOT/rendered.conf"
+grep -q 'server_tokens off;' "$TEMP_ROOT/rendered.conf"
 
 job="20261007T040000Z-a1b2c3d4"
 commit="0123456789abcdef0123456789abcdef01234567"
