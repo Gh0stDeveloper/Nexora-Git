@@ -8,6 +8,7 @@ import javax.inject.Singleton
 interface GitCredentialProvider {
     suspend fun credentialsFor(
         remoteUrl: String,
+        accountId: Long? = null,
     ): GitTransportCredentials?
 }
 
@@ -19,14 +20,19 @@ class GitHubGitCredentialProvider @Inject constructor(
 
     override suspend fun credentialsFor(
         remoteUrl: String,
+        accountId: Long?,
     ): GitTransportCredentials? {
         if (!securityPolicy.allowsGitHubOAuthCredentials(remoteUrl)) {
             return null
         }
 
-        return when (
-            val result = authSessionRepository.getActiveAccessToken()
-        ) {
+        val tokenResult = if (accountId == null) {
+            authSessionRepository.getActiveAccessToken()
+        } else {
+            authSessionRepository.getValidAccessToken(accountId)
+        }
+
+        return when (val result = tokenResult) {
             is AuthResult.Success -> GitTransportCredentials(
                 username = "x-access-token",
                 password = result.value,
