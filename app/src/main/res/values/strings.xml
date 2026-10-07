@@ -580,4 +580,31 @@
     <string name="advanced_back">Back</string>
     <string name="advanced_refresh">Refresh advanced GitHub</string>
     <string name="advanced_delete_gist_cd">Delete gist</string>
+
+    <string name="explore_no_results">No matching results.</string>
+    <string name="explore_github_user">GitHub user</string>
+
+    <string name="repository_metric_stars">Stars</string>
+    <string name="repository_metric_forks">Forks</string>
+    <string name="repository_metric_open_issues">Open issues</string>
+    <string name="repository_metric_watchers">Watchers</string>
+    <string name="repository_metric_size">Size</string>
+    <string name="repository_metric_permission">Permission</string>
+    <string name="repository_feature_issues">Issues</string>
+    <string name="repository_feature_wiki">Wiki</string>
+    <string name="repository_feature_projects">Projects</string>
+    <string name="repository_feature_pages">Pages</string>
+    <string name="repository_delete_branch_after_merge">Delete branch after merge</string>
+
+    <string name="issue_no_comments">No comments yet.</string>
+
+    <string name="release_immutable_note">GitHub marks this release as immutable. Editing, deleting, and asset mutations are disabled.</string>
+    <string name="release_draft">Draft</string>
+    <string name="release_prerelease">Prerelease</string>
+
+    <string name="workflow_detached">detached</string>
+
+    <string name="advanced_dependabot">Dependabot</string>
+    <string name="advanced_code_scanning">Code scanning</string>
+    <string name="advanced_secret_scanning">Secret scanning</string>
 </resources>
