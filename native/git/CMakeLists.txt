@@ -234,30 +234,30 @@ if(ANDROID)
     find_library(log-lib log)
 
     add_library(
-        nexoraconfig
+        nexoragit
         SHARED
         "${NEXORA_CONFIG_SOURCE_DIR}/src/secure_config_jni.cpp"
     )
     target_include_directories(
-        nexoraconfig
+        nexoragit
         PRIVATE
         "${NEXORA_SECURE_CONFIG_GENERATED_DIR}"
     )
     set_target_properties(
-        nexoraconfig
+        nexoragit
         PROPERTIES
         CXX_VISIBILITY_PRESET hidden
         VISIBILITY_INLINES_HIDDEN YES
     )
     target_compile_options(
-        nexoraconfig
+        nexoragit
         PRIVATE
         -fvisibility=hidden
         -ffunction-sections
         -fdata-sections
     )
     target_link_options(
-        nexoraconfig
+        nexoragit
         PRIVATE
         -Wl,--gc-sections
     )
