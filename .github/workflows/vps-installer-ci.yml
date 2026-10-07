@@ -64,6 +64,10 @@ jobs:
         shell: bash
         run: bash scripts/vps/test-android-worker-lib.sh
 
+      - name: Test Android artifact lifecycle
+        shell: bash
+        run: bash scripts/vps/test-android-artifacts-lib.sh
+
       - name: Validate Compose model
         shell: bash
         run: |

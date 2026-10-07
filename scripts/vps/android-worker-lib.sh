@@ -11,6 +11,10 @@ if ! declare -F load_android_config >/dev/null 2>&1; then
   # shellcheck source=android-build-lib.sh
   source "$SCRIPT_DIR/android-build-lib.sh"
 fi
+if ! declare -F android_artifacts_stage >/dev/null 2>&1; then
+  # shellcheck source=android-artifacts-lib.sh
+  source "$SCRIPT_DIR/android-artifacts-lib.sh"
+fi
 
 NEXORA_ANDROID_QUEUE_ROOT="${NEXORA_ANDROID_QUEUE_ROOT:-$NEXORA_ANDROID_STATE_ROOT/queue}"
 NEXORA_ANDROID_QUEUE_PENDING="${NEXORA_ANDROID_QUEUE_PENDING:-$NEXORA_ANDROID_QUEUE_ROOT/pending}"
@@ -79,6 +83,7 @@ android_worker_ensure_layout() {
   android_worker_mkdir "$NEXORA_ANDROID_CANCEL_ROOT" 0750 "$owner" "$group"
   android_worker_mkdir "$NEXORA_ANDROID_LOCK_ROOT" 0750 "$owner" "$group"
   android_worker_mkdir "$NEXORA_ANDROID_STATE_ROOT/builds" 0750 "$owner" "$group"
+  android_artifacts_ensure_layout
 }
 
 android_worker_job_dir() {
@@ -566,19 +571,35 @@ android_worker_process_one() {
   android_worker_write_state "$ANDROID_JOB_ID" "$ANDROID_JOB_MODE" "$ANDROID_JOB_COMMIT" "$ANDROID_JOB_CREATED_AT" "RUNNING" ""
   log_info "Android build started: $ANDROID_JOB_ID ($ANDROID_JOB_MODE @ $ANDROID_JOB_COMMIT)"
 
+  local build_log
+  build_log="$(android_artifacts_init_log "$ANDROID_JOB_ID")"
+  {
+    printf '[%s] job=%s mode=%s commit=%s status=STARTED\n' "$(date -u +%Y-%m-%dT%H:%M:%SZ)" "$ANDROID_JOB_ID" "$ANDROID_JOB_MODE" "$ANDROID_JOB_COMMIT"
+  } >> "$build_log"
+
   local result=0
-  if android_worker_gradle "$ANDROID_JOB_ID"; then
+  if android_worker_gradle "$ANDROID_JOB_ID" 2>&1 | tee -a "$build_log"; then
     result=0
   else
-    result=$?
+    result="${PIPESTATUS[0]}"
   fi
 
   if [[ -f "$NEXORA_ANDROID_CANCEL_ROOT/$ANDROID_JOB_ID" ]]; then
     android_worker_finish_job "$running" "$NEXORA_ANDROID_QUEUE_CANCELLED" "CANCELLED" "$result"
     log_warn "Android build cancelled: $ANDROID_JOB_ID"
   elif (( result == 0 )); then
-    android_worker_finish_job "$running" "$NEXORA_ANDROID_QUEUE_COMPLETED" "COMPLETED" "0"
-    log_ok "Android build completed: $ANDROID_JOB_ID"
+    local source_dir
+    source_dir="$(android_worker_job_dir "$ANDROID_JOB_ID")/source"
+    if android_artifacts_stage "$ANDROID_JOB_ID" "$ANDROID_JOB_MODE" "$ANDROID_JOB_COMMIT" "$ANDROID_JOB_CREATED_AT" "$source_dir"; then
+      android_worker_finish_job "$running" "$NEXORA_ANDROID_QUEUE_COMPLETED" "COMPLETED" "0"
+      printf '[%s] job=%s status=COMPLETED artifacts=%s\n' "$(date -u +%Y-%m-%dT%H:%M:%SZ)" "$ANDROID_JOB_ID" "$(android_artifacts_job_dir "$ANDROID_JOB_ID")" >> "$build_log"
+      log_ok "Android build completed: $ANDROID_JOB_ID"
+    else
+      result=90
+      android_worker_finish_job "$running" "$NEXORA_ANDROID_QUEUE_FAILED" "FAILED" "$result"
+      printf '[%s] job=%s status=FAILED stage_exit=%s\n' "$(date -u +%Y-%m-%dT%H:%M:%SZ)" "$ANDROID_JOB_ID" "$result" >> "$build_log"
+      log_error "Android build outputs failed artifact staging: $ANDROID_JOB_ID"
+    fi
   else
     android_worker_finish_job "$running" "$NEXORA_ANDROID_QUEUE_FAILED" "FAILED" "$result"
     log_error "Android build failed: $ANDROID_JOB_ID (exit $result)"
@@ -586,6 +607,7 @@ android_worker_process_one() {
 
   rm -f "$NEXORA_ANDROID_CURRENT_JOB_FILE"
   ANDROID_WORKER_CURRENT_JOB=""
+  android_artifacts_apply_retention 0 "$NEXORA_ANDROID_RETENTION_KEEP" "$NEXORA_ANDROID_RETENTION_DAYS" >/dev/null || true
   return 0
 }
 
@@ -654,6 +676,8 @@ android_worker_doctor() {
       failed=1
     fi
   fi
+
+  android_artifacts_doctor || failed=1
 
   for path in \
     "$NEXORA_ANDROID_QUEUE_PENDING" \

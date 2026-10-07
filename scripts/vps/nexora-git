@@ -9,6 +9,8 @@ source "$SCRIPT_DIR/lib.sh"
 source "$SCRIPT_DIR/android-build-lib.sh"
 # shellcheck source=android-signing-lib.sh
 source "$SCRIPT_DIR/android-signing-lib.sh"
+# shellcheck source=android-artifacts-lib.sh
+source "$SCRIPT_DIR/android-artifacts-lib.sh"
 # shellcheck source=android-worker-lib.sh
 source "$SCRIPT_DIR/android-worker-lib.sh"
 
@@ -45,6 +47,11 @@ Usage:
   nexora-git android cancel <JOB_ID>
   nexora-git android worker status
   nexora-git android worker logs
+  nexora-git android artifacts <JOB_ID>
+  nexora-git android verify <JOB_ID>
+  nexora-git android log <JOB_ID> [LINES]
+  nexora-git android retention status
+  nexora-git android cleanup [--dry-run]
   nexora-git help
 EOF
 }
@@ -194,6 +201,34 @@ cmd_android() {
     cancel)
       android_worker_cancel "${2:-}"
       ;;
+    artifacts)
+      android_artifacts_show "${2:-}"
+      ;;
+    verify)
+      android_artifacts_verify "${2:-}"
+      ;;
+    log)
+      android_artifacts_show_log "${2:-}" "${3:-200}"
+      ;;
+    retention)
+      case "${2:-status}" in
+        status)
+          android_artifacts_retention_status
+          ;;
+        *)
+          die "Unknown android retention command: ${2:-}"
+          ;;
+      esac
+      ;;
+    cleanup)
+      if [[ "${2:-}" == "--dry-run" ]]; then
+        android_artifacts_apply_retention 1 "$NEXORA_ANDROID_RETENTION_KEEP" "$NEXORA_ANDROID_RETENTION_DAYS"
+      elif [[ -n "${2:-}" ]]; then
+        die "Usage: nexora-git android cleanup [--dry-run]"
+      else
+        android_artifacts_apply_retention 0 "$NEXORA_ANDROID_RETENTION_KEEP" "$NEXORA_ANDROID_RETENTION_DAYS"
+      fi
+      ;;
     worker)
       case "${2:-status}" in
         status)
@@ -229,6 +264,11 @@ Usage:
   nexora-git android cancel <JOB_ID>
   nexora-git android worker status
   nexora-git android worker logs
+  nexora-git android artifacts <JOB_ID>
+  nexora-git android verify <JOB_ID>
+  nexora-git android log <JOB_ID> [LINES]
+  nexora-git android retention status
+  nexora-git android cleanup [--dry-run]
 
 Builds run under the isolated nexora-build account and continue after SSH
 disconnects. The worker never receives the Android Signing Vault credentials;

@@ -100,7 +100,7 @@ https://YOUR_DOMAIN/oauth/callback
 
 ## Installation lifecycle
 
-The installer executes eleven explicit stages:
+The installer executes twelve explicit stages:
 
 | Stage | Action |
 | ---: | --- |
@@ -114,7 +114,8 @@ The installer executes eleven explicit stages:
 | 8 | Provision/reuse the isolated Android build-host foundation |
 | 9 | Create or verify/reuse the persistent Android Signing Vault |
 | 10 | Install/enable the isolated Android background build worker |
-| 11 | Run final local/public health verification |
+| 11 | Verify persistent Android artifact/log lifecycle paths and policy |
+| 12 | Run final local/public health verification |
 
 A failed prerequisite aborts rather than applying destructive workarounds.
 
@@ -223,6 +224,11 @@ The installer creates:
 | `nexora-git android cancel <JOB_ID>` | Cancel a queued or running build |
 | `nexora-git android worker status` | Show worker and queue state |
 | `nexora-git android worker logs` | Follow the worker journal |
+| `nexora-git android artifacts <JOB_ID>` | Show staged artifact files and metadata |
+| `nexora-git android verify <JOB_ID>` | Strictly verify staged SHA-256 checksums |
+| `nexora-git android log <JOB_ID> [LINES]` | Read the persistent per-build Gradle log |
+| `nexora-git android retention status` | Show artifact/log retention policy and eligible count |
+| `nexora-git android cleanup [--dry-run]` | Preview or apply conservative terminal-build pruning |
 | `nexora-git help` | Show command usage |
 
 `config` intentionally hides confidential values.
@@ -303,7 +309,9 @@ Reconfiguration preserves the same safety rules: no unrelated Nginx site is over
 | `/etc/nexora-git/android-builder.conf` | non-secret pinned Android toolchain configuration |
 | `/opt/nexora-android-sdk` | persistent Android SDK/NDK/CMake toolchain |
 | `/var/cache/nexora-git/gradle` | persistent Gradle cache owned by the isolated builder user |
-| `/var/lib/nexora-git/android` | persistent Android builder state, future logs/builds/artifacts |
+| `/var/lib/nexora-git/android` | persistent Android queue/build state |
+| `/var/lib/nexora-git/android/artifacts` | atomic staged APK/AAB/symbol artifacts with manifests/checksums |
+| `/var/lib/nexora-git/android/logs` | persistent per-build Gradle logs |
 | `/var/lib/nexora-git/signing` | root-only Android release Signing Vault and encrypted backups |
 | `/etc/systemd/system/nexora-git-android-worker.service` | hardened detached Android build worker |
 | `/usr/local/libexec/nexora-git-android-worker` | stable worker executable symlink |
