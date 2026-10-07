@@ -34,32 +34,35 @@ jobs:
           distribution: temurin
           java-version: "17"
 
-      - name: Enable KVM
-        shell: bash
-        run: |
-          if [[ -e /dev/kvm ]]; then
-            sudo chmod 666 /dev/kvm
-          fi
-
-      - name: Install Android SDK prerequisites
+      - name: Install Android build prerequisites
         shell: bash
         run: |
           set -euo pipefail
           SDK_ROOT="${ANDROID_SDK_ROOT:-${ANDROID_HOME:-/usr/local/lib/android/sdk}}"
           SDKMANAGER="$SDK_ROOT/cmdline-tools/latest/bin/sdkmanager"
           yes | "$SDKMANAGER" --licenses >/dev/null || true
-          "$SDKMANAGER" --channel=3             "platform-tools"             "platforms;android-35"             "platforms;android-37.0"             "build-tools;37.0.0"             "ndk;27.2.12479018"             "cmake;3.22.1"             "system-images;android-35;aosp;x86_64"
+          "$SDKMANAGER" --channel=3 \
+            "platform-tools" \
+            "platforms;android-35" \
+            "platforms;android-37.0" \
+            "build-tools;37.0.0" \
+            "ndk;27.2.12479018" \
+            "cmake;3.22.1"
 
       - name: Set up Gradle
         uses: gradle/actions/setup-gradle@3f5f9adaf7d9fecd50b5935e54106014257a94e6 # v6.4.0
 
-      - name: Generate Baseline Profile
-        shell: bash
-        run: ./gradlew --no-daemon :app:generateBaselineProfile
-
-      - name: Run startup Macrobenchmark
-        shell: bash
-        run: ./gradlew --no-daemon :baselineprofile:pixel6Api35BenchmarkAndroidTest
+      - name: Generate profile and run startup benchmark
+        uses: ReactiveCircus/android-emulator-runner@a421e43855164a8197daf9d8d40fe71c6996bb0d # v2
+        with:
+          api-level: 35
+          arch: x86_64
+          target: default
+          profile: pixel_6
+          disable-animations: true
+          script: |
+            ./gradlew --no-daemon :app:generateBaselineProfile
+            ./gradlew --no-daemon :baselineprofile:connectedBenchmarkAndroidTest
 
       - name: Upload performance evidence
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7
@@ -69,6 +72,5 @@ jobs:
             app/src/**/generated/baselineProfiles/**
             baselineprofile/build/outputs/**
             baselineprofile/build/reports/**
-            baselineprofile/build/outputs/managed_device_android_test_additional_output/**
           if-no-files-found: warn
           retention-days: 30
