@@ -607,4 +607,31 @@
     <string name="advanced_dependabot">Dependabot</string>
     <string name="advanced_code_scanning">Code scanning</string>
     <string name="advanced_secret_scanning">Secret scanning</string>
+
+    <string name="code_browser_title">Explorador de código</string>
+    <string name="code_browser_search_project">Buscar en el proyecto</string>
+    <string name="code_browser_regex">Regex</string>
+    <string name="code_browser_match_case">Distinguir mayúsculas</string>
+    <string name="code_browser_whole_word">Palabra completa</string>
+    <string name="code_browser_include_glob">Glob de inclusión</string>
+    <string name="code_browser_exclude_glob">Glob de exclusión</string>
+    <string name="code_browser_empty_directory">Directorio vacío</string>
+    <string name="code_browser_empty_directory_body">No hay archivos navegables aquí.</string>
+    <string name="code_browser_root">raíz</string>
+    <string name="code_browser_back">Atrás</string>
+    <string name="code_browser_refresh">Actualizar</string>
+    <string name="code_browser_edit_file">Editar archivo</string>
+    <string name="code_browser_share_file">Compartir archivo</string>
+    <string name="code_browser_save_copy">Guardar copia</string>
+
+    <string name="git_resolve_first">Resolver primero</string>
+    <string name="git_strategy_merge">Merge</string>
+    <string name="git_strategy_ff_only">Solo FF</string>
+    <string name="git_strategy_rebase">Rebase</string>
+
+    <string name="issues_no_matches">Ningún issue coincide con los filtros actuales.</string>
+    <string name="pulls_no_matches">Ningún pull request coincide con este estado.</string>
+    <string name="pulls_create_draft">Crear como borrador</string>
+    <string name="pulls_maintainer_edits">Permitir ediciones del mantenedor</string>
+    <string name="releases_generate_notes">Generar notas del release</string>
 </resources>
