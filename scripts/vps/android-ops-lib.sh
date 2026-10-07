@@ -31,8 +31,6 @@ NEXORA_WORKER_UNIT_DEST="${NEXORA_WORKER_UNIT_DEST:-/etc/systemd/system/nexora-g
 NEXORA_AUTOBUILD_SERVICE_DEST="${NEXORA_AUTOBUILD_SERVICE_DEST:-/etc/systemd/system/nexora-git-android-autobuild.service}"
 NEXORA_AUTOBUILD_TIMER_DEST="${NEXORA_AUTOBUILD_TIMER_DEST:-/etc/systemd/system/nexora-git-android-autobuild.timer}"
 
-ANDROID_OPS_CHECKPOINT_ID=""
-
 android_ops_require_or_test_root() {
   if [[ "${NEXORA_OPS_TEST_MODE:-0}" != "1" ]]; then
     require_root
@@ -69,8 +67,9 @@ android_ops_write_autobuild_config() {
   local debounce="${3:-30}"
   [[ "$enabled" == "0" || "$enabled" == "1" ]] || die "Autobuild enabled value must be 0 or 1."
   android_worker_valid_mode "$mode" || die "Autobuild mode must be release or debug."
-  [[ "$debounce" =~ ^[0-9]+$ ]] && (( debounce >= 5 && debounce <= 3600 )) ||
+  if [[ ! "$debounce" =~ ^[0-9]+$ ]] || (( debounce < 5 || debounce > 3600 )); then
     die "Autobuild debounce must be between 5 and 3600 seconds."
+  fi
 
   local dir temp
   dir="$(dirname "$NEXORA_AUTOBUILD_CONFIG")"
@@ -381,13 +380,14 @@ android_ops_checkpoint_create() {
 
   (
     cd "$dir"
-    find . -maxdepth 1 -type f ! -name SHA256SUMS -printf '%f\n' |
+    local_checksum="$(mktemp .SHA256SUMS.XXXXXX)"
+    find . -maxdepth 1 -type f ! -name SHA256SUMS ! -name '.SHA256SUMS.*' -printf '%f\n' |
       sort |
-      while IFS= read -r name; do sha256sum "$name"; done > SHA256SUMS
-    chmod 0600 SHA256SUMS
+      while IFS= read -r name; do sha256sum "$name"; done > "$local_checksum"
+    chmod 0600 "$local_checksum"
+    mv "$local_checksum" SHA256SUMS
   )
 
-  ANDROID_OPS_CHECKPOINT_ID="$id"
   android_ops_checkpoint_prune "$NEXORA_CHECKPOINT_KEEP" >/dev/null
   printf '%s\n' "$id"
 }
@@ -428,8 +428,9 @@ android_ops_checkpoint_verify() {
 
 android_ops_checkpoint_prune() {
   local keep="${1:-$NEXORA_CHECKPOINT_KEEP}"
-  [[ "$keep" =~ ^[0-9]+$ ]] && (( keep >= 1 && keep <= 100 )) ||
+  if [[ ! "$keep" =~ ^[0-9]+$ ]] || (( keep < 1 || keep > 100 )); then
     die "Checkpoint retention must be between 1 and 100."
+  fi
 
   local ids=()
   mapfile -t ids < <(
@@ -446,8 +447,9 @@ android_ops_checkpoint_prune() {
 
 android_ops_checkpoint_list() {
   local limit="${1:-20}"
-  [[ "$limit" =~ ^[0-9]+$ ]] && (( limit >= 1 && limit <= 100 )) ||
+  if [[ ! "$limit" =~ ^[0-9]+$ ]] || (( limit < 1 || limit > 100 )); then
     die "Checkpoint list limit must be between 1 and 100."
+  fi
 
   local ids=()
   mapfile -t ids < <(

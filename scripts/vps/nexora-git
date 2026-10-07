@@ -398,8 +398,9 @@ cmd_recovery() {
       android_ops_recovery_status
       ;;
     checkpoint)
-      android_ops_checkpoint_create "${2:-manual}" >/dev/null
-      log_ok "Operational checkpoint created: $ANDROID_OPS_CHECKPOINT_ID"
+      local checkpoint_id
+      checkpoint_id="$(android_ops_checkpoint_create "${2:-manual}")"
+      log_ok "Operational checkpoint created: $checkpoint_id"
       ;;
     list)
       android_ops_checkpoint_list "${2:-20}"
