@@ -167,7 +167,7 @@ fun MobileEditorScreen(
             },
             text = {
                 Text(
-                    "The file has changes that have not been saved.",
+                    stringResource(R.string.editor_discard_note),
                 )
             },
         )
@@ -602,7 +602,7 @@ private fun IntelligencePanel(
                 verticalAlignment = Alignment.CenterVertically,
             ) {
                 Text(
-                    "Language intelligence",
+                    stringResource(R.string.editor_language_intelligence),
                     style = MaterialTheme.typography.titleSmall,
                 )
                 when {
@@ -614,14 +614,17 @@ private fun IntelligencePanel(
                     }
                     snapshot != null -> {
                         Text(
-                            "Tree-sitter · " + snapshot.rootType,
+                            stringResource(
+                                R.string.editor_tree_sitter,
+                                snapshot.rootType,
+                            ),
                             style = MaterialTheme.typography.labelMedium,
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                         )
                     }
                     else -> {
                         Text(
-                            "Regex fallback",
+                            stringResource(R.string.editor_regex_fallback),
                             style = MaterialTheme.typography.labelMedium,
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                         )
@@ -631,35 +634,40 @@ private fun IntelligencePanel(
 
             if (snapshot == null && !state.syntaxLoading) {
                 Text(
-                    "No bundled Tree-sitter grammar is available for this file. Syntax highlighting continues with the local fallback.",
+                    stringResource(R.string.editor_no_grammar),
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
             } else if (snapshot != null) {
                 if (snapshot.diagnostics.isNotEmpty()) {
                     Text(
-                        snapshot.diagnostics.size.toString() +
-                            " syntax diagnostic(s)",
+                        stringResource(
+                            R.string.editor_syntax_diagnostics,
+                            snapshot.diagnostics.size,
+                        ),
                         color = MaterialTheme.colorScheme.error,
                     )
                     snapshot.diagnostics.take(4).forEach { diagnostic ->
                         Text(
-                            "L" + diagnostic.line +
-                                ":" + diagnostic.column +
-                                " · " + diagnostic.message,
+                            stringResource(
+                                R.string.editor_diagnostic_line,
+                                diagnostic.line,
+                                diagnostic.column,
+                                diagnostic.message,
+                            ),
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.error,
                         )
                     }
                 } else {
                     Text(
-                        "No syntax errors detected.",
+                        stringResource(R.string.editor_no_errors),
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
                 }
 
                 if (snapshot.symbols.isNotEmpty()) {
                     Text(
-                        "Symbols",
+                        stringResource(R.string.editor_symbols),
                         style = MaterialTheme.typography.labelLarge,
                     )
                     snapshot.symbols.take(12).forEach { symbol ->
@@ -669,10 +677,12 @@ private fun IntelligencePanel(
                             },
                         ) {
                             Text(
-                                symbol.kind + " · " +
-                                    symbol.name +
-                                    " · L" +
+                                stringResource(
+                                    R.string.editor_symbol_line,
+                                    symbol.kind,
+                                    symbol.name,
                                     symbol.line,
+                                ),
                             )
                         }
                     }
@@ -680,7 +690,7 @@ private fun IntelligencePanel(
 
                 if (snapshot.truncated) {
                     Text(
-                        "Analysis was capped to protect mobile performance.",
+                        stringResource(R.string.editor_analysis_capped),
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
@@ -947,7 +957,11 @@ private fun EditorStatusBar(
             horizontalArrangement = Arrangement.spacedBy(12.dp),
         ) {
             Text(
-                text = "Ln " + line + ", Col " + column,
+                text = stringResource(
+                    R.string.editor_line_column,
+                    line,
+                    column,
+                ),
                 style = MaterialTheme.typography.labelMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
@@ -958,9 +972,9 @@ private fun EditorStatusBar(
             )
             Text(
                 text = if (state.dirty) {
-                    "Modified"
+                    stringResource(R.string.editor_modified)
                 } else {
-                    "Saved"
+                    stringResource(R.string.editor_saved)
                 },
                 style = MaterialTheme.typography.labelMedium,
                 color = if (state.dirty) {
@@ -989,7 +1003,11 @@ private fun DiffDialog(
         },
         title = {
             Text(
-                "Diff  +" + additions + "  -" + deletions,
+                stringResource(
+                    R.string.editor_diff_summary,
+                    additions,
+                    deletions,
+                ),
             )
         },
         text = {
@@ -1057,10 +1075,11 @@ private fun CommitDialog(
         },
         title = {
             Text(
-                "Commit changes  +" +
-                    additions +
-                    "  -" +
+                stringResource(
+                    R.string.editor_commit_summary,
+                    additions,
                     deletions,
+                ),
             )
         },
         text = {
