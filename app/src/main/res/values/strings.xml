@@ -634,4 +634,10 @@
     <string name="pulls_create_draft">Create as draft</string>
     <string name="pulls_maintainer_edits">Allow maintainer edits</string>
     <string name="releases_generate_notes">Generate release notes</string>
+
+    <string name="repository_language_not_detected">Not detected</string>
+    <string name="pr_checks_summary">%1$d passed · %2$d failed</string>
+    <string name="workflow_run_attempt">Run #%1$d · attempt %2$d</string>
+    <string name="workflow_branch_sha">%1$s · %2$s</string>
+    <string name="release_no_assets">This release has no assets.</string>
 </resources>
