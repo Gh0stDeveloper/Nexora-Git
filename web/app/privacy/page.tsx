@@ -61,11 +61,39 @@ export default function PrivacyPage() {
         </section>
 
         <section>
+          <h2 className="mb-2 text-xl font-semibold text-[#f0f6fc]">Accounts and retention</h2>
+          <p>
+            Nexora Git does not create or host a first-party user account. GitHub authentication
+            connects an existing GitHub account. The Auth Broker is designed to process OAuth
+            exchange and refresh requests without retaining repository contents or maintaining a
+            Nexora Git account database. Local tokens remain on the device until sign-out, app-data
+            removal or Android uninstallation.
+          </p>
+        </section>
+
+        <section>
           <h2 className="mb-2 text-xl font-semibold text-[#f0f6fc]">Deletion</h2>
           <p>
             Signing out removes locally stored authentication tokens for the account. You can also
             remove local workspaces or application data from your device. Data already sent to GitHub
             remains governed by your GitHub account and repository controls.
+          </p>
+        </section>
+
+        <section>
+          <h2 className="mb-2 text-xl font-semibold text-[#f0f6fc]">Contact and privacy inquiries</h2>
+          <p>
+            For non-sensitive privacy questions, use the{" "}
+            <a
+              className="text-[#58a6ff] hover:underline"
+              href={source + "/issues"}
+              target="_blank"
+              rel="noreferrer"
+            >
+              public issue tracker
+            </a>.
+            Do not include access tokens or private repository content. Security-sensitive reports
+            must follow the private reporting process in SECURITY.md.
           </p>
         </section>
 
