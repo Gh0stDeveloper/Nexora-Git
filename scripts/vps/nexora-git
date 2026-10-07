@@ -22,6 +22,10 @@ Usage:
   nexora-git reconfigure
   nexora-git config
   nexora-git version
+  nexora-git android status
+  nexora-git android doctor
+  nexora-git android setup
+  nexora-git android config
   nexora-git help
 EOF
 }
@@ -68,6 +72,17 @@ cmd_doctor() {
   fi
 
   compose ps
+
+  if [[ -r "$NEXORA_ANDROID_CONFIG_FILE" ]]; then
+    printf '\nAndroid build host:\n'
+    if ! android_doctor; then
+      failed=1
+    fi
+  else
+    log_error "Android builder configuration missing: $NEXORA_ANDROID_CONFIG_FILE"
+    failed=1
+  fi
+
   return "$failed"
 }
 

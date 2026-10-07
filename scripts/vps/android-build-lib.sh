@@ -127,8 +127,6 @@ install_android_cmdline_tools() {
   archive="$temp_dir/commandlinetools.zip"
   extracted="$temp_dir/extracted"
   version_dir="$NEXORA_ANDROID_SDK_ROOT/cmdline-tools/$NEXORA_ANDROID_CMDLINE_TOOLS_REV"
-  trap 'rm -rf "$temp_dir"' RETURN
-
   log_info "Downloading pinned Android command-line tools revision $NEXORA_ANDROID_CMDLINE_TOOLS_REV."
   curl --fail --location --retry 3 --retry-delay 2 \
     "$NEXORA_ANDROID_CMDLINE_TOOLS_URL" \
@@ -150,6 +148,7 @@ install_android_cmdline_tools() {
   ln -s "$NEXORA_ANDROID_CMDLINE_TOOLS_REV" "$NEXORA_ANDROID_SDK_ROOT/cmdline-tools/latest"
 
   [[ -x "$(android_sdkmanager)" ]] || die "sdkmanager was not installed correctly."
+  rm -rf "$temp_dir"
   log_ok "Android command-line tools installed and checksum verified."
 }
 
