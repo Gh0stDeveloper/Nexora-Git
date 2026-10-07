@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Nexora Git</string>
+
+    <string name="nav_home">Inicio</string>
+    <string name="nav_explore">Explorar</string>
+    <string name="nav_repositories">Repositorios</string>
+    <string name="nav_activity">Actividad</string>
+    <string name="nav_profile">Perfil</string>
+    <string name="nav_settings">Ajustes</string>
+
+    <string name="auth_dialog_title">Autenticación de GitHub</string>
+    <string name="action_ok">Aceptar</string>
+    <string name="action_done">Listo</string>
+    <string name="action_back">Atrás</string>
+    <string name="action_reset">Restablecer valores</string>
+    <string name="action_settings">Ajustes</string>
+
+    <string name="login_title">Iniciar sesión en GitHub</string>
+    <string name="login_description">Nexora Git usa la página oficial de autorización de GitHub. Las contraseñas, passkeys y el 2FA son gestionados únicamente por GitHub.</string>
+    <string name="login_continue">Continuar con GitHub</string>
+    <string name="login_not_configured">La autenticación está deshabilitada en esta compilación hasta configurar el Client ID de GitHub App, la URL del broker y la URL de callback.</string>
+
+    <string name="home_title">Nexora Git</string>
+    <string name="home_subtitle">Un espacio de trabajo Android completo para Git local y desarrollo con GitHub.</string>
+    <string name="home_repositories_title">Repositorios</string>
+    <string name="home_repositories_description">Crea, clona o importa un proyecto; después navega el código y usa el flujo Git local completo.</string>
+    <string name="home_repositories_button">Abrir repositorios</string>
+    <string name="home_explore_title">Explorar GitHub</string>
+    <string name="home_explore_description">Busca repositorios, usuarios y código usando la cuenta activa de GitHub.</string>
+    <string name="home_explore_button">Buscar en GitHub</string>
+    <string name="home_activity_title">Actividad</string>
+    <string name="home_activity_description">Revisa la actividad reciente de la cuenta y abre las notificaciones de GitHub cuando sea necesario.</string>
+    <string name="home_activity_button">Ver actividad</string>
+    <string name="home_auth_note">La autenticación de GitHub usa el flujo web oficial. Nexora Git nunca solicita tu contraseña o passkey de GitHub.</string>
+
+    <string name="settings_title">Ajustes</string>
+    <string name="settings_subtitle">Las preferencias del producto se guardan localmente en este dispositivo. Las credenciales nunca se guardan en los ajustes generales.</string>
+    <string name="settings_appearance">Apariencia</string>
+    <string name="settings_theme">Tema</string>
+    <string name="theme_system">Sistema</string>
+    <string name="theme_light">Claro</string>
+    <string name="theme_dark">Oscuro</string>
+    <string name="theme_amoled">AMOLED</string>
+    <string name="settings_dynamic_color">Color dinámico</string>
+    <string name="settings_dynamic_color_summary">Usa los colores del sistema Android cuando sea compatible.</string>
+    <string name="settings_language">Idioma</string>
+    <string name="language_system">Predeterminado del sistema</string>
+    <string name="language_english">English</string>
+    <string name="language_spanish">Español (México)</string>
+    <string name="settings_editor">Editor</string>
+    <string name="settings_indent">Sangría</string>
+    <string name="indent_tabs">Tabulaciones</string>
+    <string name="indent_spaces_2">2 espacios</string>
+    <string name="indent_spaces_4">4 espacios</string>
+    <string name="settings_git">Git</string>
+    <string name="settings_confirm_force_push">Confirmar force push</string>
+    <string name="settings_confirm_force_push_summary">Exige una confirmación explícita antes de un force-with-lease que pueda reescribir el historial remoto.</string>
+    <string name="settings_network">Red</string>
+    <string name="settings_wifi_only">Solo Wi-Fi para transferencias grandes</string>
+    <string name="settings_wifi_only_summary">Las descargas grandes y clones durables esperan una red sin medición.</string>
+    <string name="settings_accounts">Cuentas</string>
+    <string name="settings_accounts_summary">Las cuentas de GitHub y sesiones cifradas se administran desde Perfil.</string>
+    <string name="settings_security">Seguridad</string>
+    <string name="settings_security_summary">OAuth usa PKCE y un App Link HTTPS verificado. Los tokens permanecen cifrados con Android Keystore.</string>
+    <string name="settings_updates">Actualizaciones</string>
+    <string name="settings_updates_summary">Los releases estables están bloqueados hasta que una beta/RC calificada supere la matriz de lanzamiento.</string>
+    <string name="settings_privacy">Privacidad</string>
+    <string name="settings_privacy_summary">Nexora Git guarda los datos de repositorios localmente y no coloca credenciales de GitHub en preferencias generales.</string>
+    <string name="settings_diagnostics">Diagnóstico</string>
+    <string name="settings_diagnostics_summary">CI, identidad de firma y provenance de releases se pueden verificar desde el repositorio público y sus artefactos.</string>
+    <string name="settings_about">Acerca de</string>
+    <string name="settings_about_summary">Espacio de trabajo Git y GitHub para Android, de código abierto, por Ghost Developer.</string>
+
+    <string name="onboarding_title">Desarrolla desde tu teléfono</string>
+    <string name="onboarding_intro">Nexora Git combina Git local y GitHub. Los repositorios locales viven en tu dispositivo; la autenticación de GitHub solo concede los permisos necesarios para operaciones remotas.</string>
+    <string name="onboarding_auth_title">Autorización oficial de GitHub</string>
+    <string name="onboarding_auth_body">El inicio de sesión abre GitHub mediante un flujo seguro en el navegador. Nexora Git nunca solicita tu contraseña, passkey o código 2FA.</string>
+    <string name="onboarding_storage_title">Espacios de trabajo locales</string>
+    <string name="onboarding_storage_body">Los proyectos clonados e importados se guardan en espacios controlados por la app para que la edición local y Git continúen sin conexión cuando sea posible.</string>
+    <string name="onboarding_choose">Elige tu primera acción</string>
+    <string name="onboarding_clone">Clonar repositorio</string>
+    <string name="onboarding_import">Importar proyecto</string>
+    <string name="onboarding_create">Crear repositorio</string>
+    <string name="onboarding_skip">Omitir por ahora</string>
+    <string name="onboarding_replay">Repetir introducción</string>
+</resources>
