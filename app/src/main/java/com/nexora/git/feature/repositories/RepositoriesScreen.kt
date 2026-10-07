@@ -386,7 +386,7 @@ internal fun RepositoriesContent(
 
         item {
             SectionHeader(
-                title = "GitHub",
+                title = stringResource(R.string.repo_github_section),
                 actionLabel = if (state.refreshing) {
                     "Refreshing"
                 } else {
@@ -400,12 +400,12 @@ internal fun RepositoriesContent(
 
         if (state.loading && state.remoteRepositories.isEmpty()) {
             item {
-                LoadingCard("Loading GitHub repositories…")
+                LoadingCard(stringResource(R.string.repo_loading_github))
             }
         } else if (state.remoteRepositories.isEmpty()) {
             item {
                 EmptyCard(
-                    title = "No GitHub repositories",
+                    title = stringResource(R.string.repo_no_github),
                     body = "Create a repository or refresh after granting the GitHub App access to repositories.",
                 )
             }
@@ -440,7 +440,7 @@ internal fun RepositoriesContent(
 
         item {
             SectionHeader(
-                title = "On this device",
+                title = stringResource(R.string.repo_device_section),
                 actionLabel = null,
                 actionEnabled = false,
                 onAction = {},
@@ -450,7 +450,7 @@ internal fun RepositoriesContent(
         if (!state.loading && state.workspaces.isEmpty()) {
             item {
                 EmptyCard(
-                    title = "No local workspaces",
+                    title = stringResource(R.string.repo_no_local),
                     body = "Clone a GitHub repository or choose a project folder from Android storage.",
                 )
             }
