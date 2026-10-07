@@ -26,6 +26,7 @@ NEXORA_ANDROID_CANCEL_ROOT="${NEXORA_ANDROID_CANCEL_ROOT:-$NEXORA_ANDROID_STATE_
 NEXORA_ANDROID_LOCK_ROOT="${NEXORA_ANDROID_LOCK_ROOT:-$NEXORA_ANDROID_STATE_ROOT/locks}"
 NEXORA_ANDROID_WORKER_LOCK="${NEXORA_ANDROID_WORKER_LOCK:-$NEXORA_ANDROID_LOCK_ROOT/worker.lock}"
 NEXORA_ANDROID_CURRENT_JOB_FILE="${NEXORA_ANDROID_CURRENT_JOB_FILE:-$NEXORA_ANDROID_STATE_ROOT/current-job}"
+NEXORA_ANDROID_RESTART_MARKER="${NEXORA_ANDROID_RESTART_MARKER:-$NEXORA_ANDROID_STATE_ROOT/restart-worker.pending}"
 NEXORA_ANDROID_WORKER_SERVICE="${NEXORA_ANDROID_WORKER_SERVICE:-nexora-git-android-worker.service}"
 
 ANDROID_JOB_ID=""
@@ -256,6 +257,7 @@ android_worker_create_snapshot() {
 android_worker_enqueue() {
   local mode="${1:-release}"
   local ref="${2:-HEAD}"
+  local origin="${3:-manual}"
 
   require_root
   load_state || die "Nexora Git VPS is not installed."
@@ -264,6 +266,7 @@ android_worker_enqueue() {
   android_doctor || die "Android build host is not healthy."
 
   android_worker_valid_mode "$mode" || die "Build mode must be release or debug."
+  [[ "$origin" == "manual" || "$origin" == "autobuild" ]] || die "Build origin must be manual or autobuild."
 
   local commit
   commit="$(git -C "$INSTALL_DIR" rev-parse --verify "${ref}^{commit}" 2>/dev/null || true)"
@@ -271,14 +274,25 @@ android_worker_enqueue() {
 
   android_worker_read_public_config
 
-  local job_id created_at request
+  local job_id created_at request job_dir
   job_id="$(android_worker_make_job_id)"
   created_at="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
   request="$NEXORA_ANDROID_QUEUE_PENDING/$job_id.job"
 
   android_worker_create_snapshot "$job_id" "$commit"
+  job_dir="$(android_worker_job_dir "$job_id")"
   android_worker_write_request "$request" "$job_id" "$mode" "$commit" "$created_at"
   android_worker_write_state "$job_id" "$mode" "$commit" "$created_at" "QUEUED" ""
+  if [[ "$origin" == "autobuild" ]]; then
+    local marker
+    marker="$job_dir/autobuild.conf"
+    {
+      printf 'ORIGIN=autobuild\n'
+      printf 'COMMIT=%s\n' "$commit"
+      printf 'MODE=%s\n' "$mode"
+    } > "$marker"
+    chmod 0640 "$marker"
+  fi
 
   if [[ "${NEXORA_ANDROID_SKIP_SYSTEMD:-0}" != "1" ]]; then
     systemctl start "$NEXORA_ANDROID_WORKER_SERVICE"
@@ -333,6 +347,11 @@ android_worker_show_job() {
   printf 'Updated:   %s\n' "$UPDATED_AT"
   printf 'Status:    %s\n' "$STATUS"
   printf 'Exit code: %s\n' "${EXIT_CODE:-not available}"
+  if [[ -s "$(android_worker_job_dir "$job_id")/autobuild.conf" ]]; then
+    printf 'Origin:     autobuild\n'
+  else
+    printf 'Origin:     manual\n'
+  fi
 }
 
 android_worker_list_jobs() {
@@ -635,7 +654,13 @@ android_worker_run_forever() {
   android_worker_recover_orphans
 
   while true; do
-    if ! android_worker_process_one; then
+    if android_worker_process_one; then
+      if [[ -f "$NEXORA_ANDROID_RESTART_MARKER" ]]; then
+        rm -f "$NEXORA_ANDROID_RESTART_MARKER"
+        log_info "Android worker restarting after completed job to load updated runtime."
+        return 0
+      fi
+    else
       sleep 1
     fi
   done

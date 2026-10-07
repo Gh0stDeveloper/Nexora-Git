@@ -43,6 +43,8 @@ bash scripts/vps/test-android-build-lib.sh
 bash scripts/vps/test-android-signing-lib.sh
 bash scripts/vps/test-android-worker-lib.sh
 bash scripts/vps/test-android-artifacts-lib.sh
+bash scripts/vps/test-android-github-lib.sh
+bash scripts/vps/test-android-ops-lib.sh
 
 if [[ -f gradlew ]]; then
   chmod +x gradlew

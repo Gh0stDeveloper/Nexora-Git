@@ -467,6 +467,89 @@ Parity requires:
 
 The Stable Release workflow also performs an independent signing-parity gate: callback must equal `AUTH_BROKER_BASE_URL/oauth/callback`, and APK/AAB certificate fingerprints must equal the certificate inside the supplied production keystore.
 
+## Phase F — update automation, recovery and final hardening
+
+Phase F closes the Android Build Service in six subphases:
+
+| Subphase | Scope |
+| --- | --- |
+| F1 | serialized VPS updates with a dedicated `flock` update lock |
+| F2 | root-only pre-update operational checkpoints and bounded retention |
+| F3 | configurable Android autobuild after a successful update |
+| F4 | debounce and latest-pending-wins coalescing |
+| F5 | automatic rollback plus explicit checkpoint recovery |
+| F6 | runtime reload hardening, final diagnostics and regression tests |
+
+### Update lock and idempotent no-op updates
+
+Only one `nexora-git update` may run at a time. A second invocation fails immediately instead of racing Git, Docker, systemd or the queue.
+
+If the fetched branch already points to the installed commit, the updater no longer rebuilds the Auth Broker and does not queue another Android build. It refreshes managed runtime links/units and exits.
+
+### Operational checkpoints
+
+Before a real fast-forward, the updater creates a root-only checkpoint below:
+
+```text
+/var/lib/nexora-git/operations/checkpoints/CHECKPOINT_ID/
+```
+
+A checkpoint captures the exact Git commit plus deployment/runtime configuration such as the VPS state file, Android toolchain/autobuild config, broker environment, Nexora Nginx vhost, systemd units and GitHub synchronization metadata. Every captured file is covered by `SHA256SUMS`; unexpected paths or symlinks are rejected during verification.
+
+The private Android keystore is intentionally **not copied** into routine operational checkpoints. Its disaster-recovery path remains the separately encrypted Signing Vault backup from Phase B.
+
+The newest ten operational checkpoints are retained by default.
+
+Commands:
+
+```bash
+sudo nexora-git recovery status
+sudo nexora-git recovery checkpoint "before-maintenance"
+sudo nexora-git recovery list
+sudo nexora-git recovery verify CHECKPOINT_ID
+sudo nexora-git recovery restore CHECKPOINT_ID
+```
+
+An explicit restore verifies checksums, refuses tracked local Git modifications, restores the captured configuration, resets the managed repository to the recorded commit, refreshes systemd/runtime assets, rebuilds the Auth Broker and requires local health before succeeding.
+
+### Autobuild after update
+
+Autobuild is enabled by default for **release** candidates with a 30-second debounce:
+
+```bash
+sudo nexora-git android autobuild status
+sudo nexora-git android autobuild enable release 30
+sudo nexora-git android autobuild enable debug 30
+sudo nexora-git android autobuild disable
+```
+
+A successful `nexora-git update` writes the desired commit atomically and returns. The persistent systemd timer dispatches it after the debounce window, so SSH is not part of the build lifecycle.
+
+If several updates arrive during the window, the desired commit file is overwritten atomically and only the newest commit is dispatched. If an older autobuild is still **pending**, it is cancelled when the newer one is queued. A currently running build is allowed to finish, while at most the newest pending autobuild remains behind it.
+
+A commit that is already queued, running or successfully completed in the same mode is not queued again.
+
+Autobuild continues to produce an unsigned release candidate. The Phase E privileged signing command remains explicit by design; repository-controlled Gradle code never receives the release keystore automatically.
+
+### Runtime reload without destroying an active build
+
+When an update changes worker code, the runtime unit is refreshed immediately. If no Android build is active, the worker restarts at once. If a build is active, a protected restart marker is written instead; the worker finishes that job, exits before starting the next one, and systemd restarts it with the new runtime.
+
+This prevents a normal application update from needlessly killing a long-running Gradle/native build.
+
+### Automatic rollback
+
+Once the repository fast-forwards, an EXIT/INT/TERM rollback guard remains armed through:
+
+- Auth Broker image build;
+- container restart;
+- local health gate;
+- systemd/runtime refresh.
+
+If any of those critical stages fails or the update process is interrupted, the updater resets the previous commit, restores the pre-update checkpoint, rebuilds the known-good broker and refreshes the prior runtime.
+
+Public HTTPS failure remains a warning after local health passes because DNS/provider/TLS routing can fail independently of the application binary.
+
 ## Why the VPS and GitHub builds can match
 
 The Gradle project already reads production configuration and signing paths from environment variables. The final service will feed the VPS build the same public application configuration and the same signing identity that the release workflow receives through GitHub Secrets.

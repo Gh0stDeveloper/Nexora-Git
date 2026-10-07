@@ -72,6 +72,10 @@ jobs:
         shell: bash
         run: bash scripts/vps/test-android-github-lib.sh
 
+      - name: Test autobuild and recovery operations
+        shell: bash
+        run: bash scripts/vps/test-android-ops-lib.sh
+
       - name: Validate Compose model
         shell: bash
         run: |

@@ -15,6 +15,8 @@ source "$SCRIPT_DIR/android-artifacts-lib.sh"
 source "$SCRIPT_DIR/android-worker-lib.sh"
 # shellcheck source=android-release-lib.sh
 source "$SCRIPT_DIR/android-release-lib.sh"
+# shellcheck source=android-ops-lib.sh
+source "$SCRIPT_DIR/android-ops-lib.sh"
 
 usage() {
   cat <<'EOF'
@@ -57,11 +59,19 @@ Usage:
   nexora-git android sign <JOB_ID>
   nexora-git android signed <JOB_ID>
   nexora-git android parity [JOB_ID]
+  nexora-git android autobuild status
+  nexora-git android autobuild enable [release|debug] [DEBOUNCE_SECONDS]
+  nexora-git android autobuild disable
   nexora-git github status
   nexora-git github configure
   nexora-git github secrets status
   nexora-git github secrets export [PATH]
   nexora-git github secrets apply
+  nexora-git recovery status
+  nexora-git recovery checkpoint [REASON]
+  nexora-git recovery list [LIMIT]
+  nexora-git recovery verify <CHECKPOINT_ID>
+  nexora-git recovery restore <CHECKPOINT_ID>
   nexora-git help
 EOF
 }
@@ -245,6 +255,25 @@ cmd_android() {
     parity)
       android_release_parity "${2:-}"
       ;;
+    autobuild)
+      case "${2:-status}" in
+        status)
+          android_ops_autobuild_status
+          ;;
+        enable)
+          android_ops_autobuild_enable "${3:-release}" "${4:-30}"
+          ;;
+        disable)
+          android_ops_autobuild_disable
+          ;;
+        run-pending)
+          android_ops_autobuild_run_pending
+          ;;
+        *)
+          die "Unknown android autobuild command: ${2:-}"
+          ;;
+      esac
+      ;;
     cleanup)
       if [[ "${2:-}" == "--dry-run" ]]; then
         android_artifacts_apply_retention 1 "$NEXORA_ANDROID_RETENTION_KEEP" "$NEXORA_ANDROID_RETENTION_DAYS"
@@ -297,6 +326,9 @@ Usage:
   nexora-git android sign <JOB_ID>
   nexora-git android signed <JOB_ID>
   nexora-git android parity [JOB_ID]
+  nexora-git android autobuild status
+  nexora-git android autobuild enable [release|debug] [DEBOUNCE_SECONDS]
+  nexora-git android autobuild disable
 
 Builds run under the isolated nexora-build account and continue after SSH
 disconnects. The worker never receives the Android Signing Vault credentials;
@@ -358,6 +390,33 @@ EOF
   esac
 }
 
+cmd_recovery() {
+  require_install
+  local subcommand="${1:-status}"
+  case "$subcommand" in
+    status)
+      android_ops_recovery_status
+      ;;
+    checkpoint)
+      android_ops_checkpoint_create "${2:-manual}" >/dev/null
+      log_ok "Operational checkpoint created: $ANDROID_OPS_CHECKPOINT_ID"
+      ;;
+    list)
+      android_ops_checkpoint_list "${2:-20}"
+      ;;
+    verify)
+      android_ops_checkpoint_verify "${2:-}" || die "Operational checkpoint verification failed: ${2:-}"
+      log_ok "Operational checkpoint verified: ${2:-}"
+      ;;
+    restore)
+      android_ops_checkpoint_restore "${2:-}"
+      ;;
+    *)
+      die "Unknown recovery command: $subcommand"
+      ;;
+  esac
+}
+
 cmd_update() {
   require_install
   local temp
@@ -365,7 +424,7 @@ cmd_update() {
   cp "$INSTALL_DIR/scripts/vps/update.sh" "$temp"
   chmod 700 "$temp"
   trap 'rm -f "$temp"' EXIT
-  "$temp"
+  NEXORA_UPDATE_SOURCE_DIR="$INSTALL_DIR/scripts/vps" "$temp"
 }
 
 cmd_config() {
@@ -423,6 +482,10 @@ case "${1:-help}" in
   github)
     shift
     cmd_github "$@"
+    ;;
+  recovery)
+    shift
+    cmd_recovery "$@"
     ;;
   help|-h|--help) usage ;;
   *)

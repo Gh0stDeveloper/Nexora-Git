@@ -1,0 +1,12 @@
+[Unit]
+Description=Nexora Git Android autobuild debounce timer
+
+[Timer]
+OnBootSec=45s
+OnUnitActiveSec=30s
+AccuracySec=2s
+Persistent=true
+Unit=nexora-git-android-autobuild.service
+
+[Install]
+WantedBy=timers.target
