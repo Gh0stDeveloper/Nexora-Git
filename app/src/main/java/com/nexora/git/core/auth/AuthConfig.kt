@@ -18,6 +18,10 @@ class AuthConfig @Inject constructor() {
             isValidAuthEndpointPair(
                 brokerBaseUrl = brokerBaseUrl,
                 githubCallbackUrl = githubCallbackUrl,
+            ) &&
+            isValidAppCallbackUri(
+                brokerBaseUrl = brokerBaseUrl,
+                appCallbackUri = appCallbackUri,
             )
 }
 
@@ -36,6 +40,24 @@ internal fun isValidAuthEndpointPair(
     return callback.host.equals(broker.host, ignoreCase = true) &&
         effectivePort(callback) == effectivePort(broker) &&
         callback.path == "/oauth/callback"
+}
+
+
+internal fun isValidAppCallbackUri(
+    brokerBaseUrl: String,
+    appCallbackUri: String,
+): Boolean {
+    val broker = brokerBaseUrl.toStrictHttpsUri() ?: return false
+    val callback = appCallbackUri.toStrictHttpsUri() ?: return false
+
+    val brokerPath = broker.path.orEmpty()
+    if (brokerPath.isNotEmpty() && brokerPath != "/") {
+        return false
+    }
+
+    return callback.host.equals(broker.host, ignoreCase = true) &&
+        effectivePort(callback) == effectivePort(broker) &&
+        callback.path == "/oauth/android/callback"
 }
 
 private fun String.toStrictHttpsUri(): URI? =
