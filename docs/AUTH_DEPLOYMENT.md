@@ -46,7 +46,7 @@ NEXORA_AUTH_BROKER_BASE_URL
 NEXORA_GITHUB_CALLBACK_URL
 ```
 
-These values are no longer emitted as `BuildConfig` string constants. During the native CMake configuration step they are encoded into a dedicated `libnexoraconfig.so` using per-build split XOR masks and are decoded only at runtime through a registered JNI method.
+These values are no longer emitted as `BuildConfig` string constants. During the native CMake configuration step they are encoded into a native `libnexoragit.so` using per-build split XOR masks and are decoded only at runtime through a registered JNI method.
 
 For CI/VPS builds, keep using environment variables:
 
