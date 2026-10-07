@@ -16,6 +16,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -40,6 +41,9 @@ import com.nexora.git.feature.auth.LoginScreen
 import com.nexora.git.feature.explore.ExploreScreen
 import com.nexora.git.feature.editor.MobileEditorScreen
 import com.nexora.git.feature.home.HomeScreen
+import com.nexora.git.feature.onboarding.OnboardingAction
+import com.nexora.git.feature.onboarding.OnboardingScreen
+import com.nexora.git.feature.onboarding.OnboardingViewModel
 import com.nexora.git.feature.files.CodeBrowserScreen
 import com.nexora.git.feature.git.GitWorkspaceScreen
 import com.nexora.git.feature.issues.IssueDetailScreen
@@ -48,6 +52,7 @@ import com.nexora.git.feature.profile.ProfileScreen
 import com.nexora.git.feature.pulls.PullRequestDetailScreen
 import com.nexora.git.feature.pulls.PullRequestsScreen
 import com.nexora.git.feature.repositories.RepositoriesScreen
+import com.nexora.git.feature.repositories.RepositoryEntryAction
 import com.nexora.git.feature.repositories.RepositoryDetailScreen
 import com.nexora.git.feature.releases.ReleaseDetailScreen
 import com.nexora.git.feature.releases.ReleasesScreen
@@ -58,8 +63,10 @@ import com.nexora.git.ui.navigation.NexoraDestination
 fun NexoraGitApp(
     modifier: Modifier = Modifier,
     authViewModel: AuthViewModel = hiltViewModel(),
+    onboardingViewModel: OnboardingViewModel = hiltViewModel(),
 ) {
     val state by authViewModel.state.collectAsStateWithLifecycle()
+    val onboardingState by onboardingViewModel.state.collectAsStateWithLifecycle()
     val context = LocalContext.current
 
     LaunchedEffect(state.authorizationUri) {
@@ -109,10 +116,28 @@ fun NexoraGitApp(
             )
         }
 
+        !onboardingState.loaded -> {
+            Box(
+                modifier = modifier.fillMaxSize(),
+                contentAlignment = Alignment.Center,
+            ) {
+                CircularProgressIndicator()
+            }
+        }
+
+        !onboardingState.completed -> {
+            OnboardingScreen(
+                modifier = modifier,
+                onAction = onboardingViewModel::complete,
+            )
+        }
+
         else -> {
             AuthenticatedNexoraGitApp(
                 state = state,
                 modifier = modifier,
+                initialOnboardingAction = onboardingState.pendingAction,
+                onInitialActionConsumed = onboardingViewModel::consumePendingAction,
                 onSwitchAccount = authViewModel::switchAccount,
                 onAddAccount = authViewModel::startSignIn,
                 onSignOut = authViewModel::signOutActiveAccount,
@@ -124,6 +149,8 @@ fun NexoraGitApp(
 @Composable
 private fun AuthenticatedNexoraGitApp(
     state: AuthUiState,
+    initialOnboardingAction: OnboardingAction?,
+    onInitialActionConsumed: () -> Unit,
     onSwitchAccount: (Long) -> Unit,
     onAddAccount: () -> Unit,
     onSignOut: () -> Unit,
@@ -131,6 +158,13 @@ private fun AuthenticatedNexoraGitApp(
 ) {
     val activeAccount = requireNotNull(state.activeAccount)
     val navController = rememberNavController()
+    val startDestination = remember(initialOnboardingAction) {
+        if (initialOnboardingAction == null) {
+            NexoraDestination.HOME.route
+        } else {
+            NexoraDestination.REPOSITORIES.route
+        }
+    }
     val destinations = NexoraDestination.entries.filter { it.showInBottomBar }
     val backStackEntry by navController.currentBackStackEntryAsState()
     val currentRoute = backStackEntry?.destination?.route
@@ -170,7 +204,7 @@ private fun AuthenticatedNexoraGitApp(
     ) { paddingValues ->
         NavHost(
             navController = navController,
-            startDestination = NexoraDestination.HOME.route,
+            startDestination = startDestination,
         ) {
             composable(NexoraDestination.HOME.route) {
                 HomeScreen(
@@ -205,6 +239,13 @@ private fun AuthenticatedNexoraGitApp(
             composable(NexoraDestination.REPOSITORIES.route) {
                 RepositoriesScreen(
                     contentPadding = paddingValues,
+                    initialAction = when (initialOnboardingAction) {
+                        OnboardingAction.CLONE -> RepositoryEntryAction.CLONE
+                        OnboardingAction.IMPORT -> RepositoryEntryAction.IMPORT
+                        OnboardingAction.CREATE -> RepositoryEntryAction.CREATE
+                        else -> RepositoryEntryAction.NONE
+                    },
+                    onInitialActionConsumed = onInitialActionConsumed,
                     onOpenRepository = { owner, name ->
                         navController.navigate(
                             "repository/" + owner + "/" + name,
