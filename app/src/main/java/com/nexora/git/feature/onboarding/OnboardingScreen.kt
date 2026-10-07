@@ -23,35 +23,35 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.res.stringResource
+import androidx.annotation.StringRes
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.unit.dp
+import com.nexora.git.R
 
 private data class OnboardingPage(
     val icon: ImageVector,
-    val title: String,
-    val description: String,
+    @param:StringRes val titleRes: Int,
+    @param:StringRes val descriptionRes: Int,
 )
 
 private val onboardingPages = listOf(
     OnboardingPage(
         icon = Icons.Outlined.Code,
-        title = "A real Git workspace on Android",
-        description =
-            "Nexora Git works with real local repositories, branches, commits, diffs and GitHub workflows without requiring Termux.",
+        titleRes = R.string.onboarding_page_one_title,
+        descriptionRes = R.string.onboarding_page_one_description,
     ),
     OnboardingPage(
         icon = Icons.Outlined.Security,
-        title = "GitHub authentication stays on GitHub",
-        description =
-            "Sign-in uses GitHub's official authorization page, PKCE and a verified HTTPS callback. Nexora Git never asks for your GitHub password, passkey or 2FA secret.",
+        titleRes = R.string.onboarding_page_two_title,
+        descriptionRes = R.string.onboarding_page_two_description,
     ),
     OnboardingPage(
         icon = Icons.Outlined.FolderOpen,
-        title = "Start with the workflow you already use",
-        description =
-            "After sign-in you can clone a repository, import an existing local project or create a new repository and continue from your phone.",
+        titleRes = R.string.onboarding_page_three_title,
+        descriptionRes = R.string.onboarding_page_three_description,
     ),
 )
 
@@ -81,14 +81,14 @@ fun OnboardingScreen(
             Spacer(Modifier.height(22.dp))
 
             Text(
-                text = page.title,
+                text = stringResource(page.titleRes),
                 style = MaterialTheme.typography.headlineSmall,
             )
 
             Spacer(Modifier.height(12.dp))
 
             Text(
-                text = page.description,
+                text = stringResource(page.descriptionRes),
                 style = MaterialTheme.typography.bodyLarge,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
@@ -96,7 +96,7 @@ fun OnboardingScreen(
             Spacer(Modifier.height(28.dp))
 
             Text(
-                text = (pageIndex + 1).toString() + " / " + onboardingPages.size,
+                text = stringResource(R.string.onboarding_progress, pageIndex + 1, onboardingPages.size),
                 style = MaterialTheme.typography.labelLarge,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
@@ -109,7 +109,7 @@ fun OnboardingScreen(
                     if (isLast) onComplete() else pageIndex++
                 },
             ) {
-                Text(if (isLast) "Continue to sign in" else "Next")
+                Text(if (isLast) stringResource(R.string.onboarding_continue) else stringResource(R.string.common_next))
             }
 
             if (!isLast) {
@@ -118,7 +118,7 @@ fun OnboardingScreen(
                     modifier = Modifier.fillMaxWidth(),
                     onClick = onComplete,
                 ) {
-                    Text("Skip introduction")
+                    Text(stringResource(R.string.onboarding_skip))
                 }
             }
 
@@ -129,7 +129,7 @@ fun OnboardingScreen(
                     horizontalArrangement = Arrangement.Start,
                 ) {
                     OutlinedButton(onClick = { pageIndex-- }) {
-                        Text("Back")
+                        Text(stringResource(R.string.common_back))
                     }
                 }
             }
