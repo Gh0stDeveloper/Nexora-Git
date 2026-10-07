@@ -388,9 +388,9 @@ internal fun RepositoriesContent(
             SectionHeader(
                 title = stringResource(R.string.repo_github_section),
                 actionLabel = if (state.refreshing) {
-                    "Refreshing"
+                    stringResource(R.string.repo_refreshing)
                 } else {
-                    "Refresh"
+                    stringResource(R.string.repo_refresh)
                 },
                 actionEnabled =
                     !state.refreshing && !state.operationInProgress,
@@ -406,7 +406,7 @@ internal fun RepositoriesContent(
             item {
                 EmptyCard(
                     title = stringResource(R.string.repo_no_github),
-                    body = "Create a repository or refresh after granting the GitHub App access to repositories.",
+                    body = stringResource(R.string.repo_no_github_body),
                 )
             }
         } else {
@@ -451,7 +451,7 @@ internal fun RepositoriesContent(
             item {
                 EmptyCard(
                     title = stringResource(R.string.repo_no_local),
-                    body = "Clone a GitHub repository or choose a project folder from Android storage.",
+                    body = stringResource(R.string.repo_no_local_body),
                 )
             }
         }
@@ -563,9 +563,9 @@ private fun RemoteRepositoryCard(
                     contentDescription = if (
                         repository.privateRepository
                     ) {
-                        "Private repository"
+                        stringResource(R.string.repo_private_setting)
                     } else {
-                        "Public repository"
+                        stringResource(R.string.repo_public)
                     },
                 )
             }
@@ -584,15 +584,15 @@ private fun RemoteRepositoryCard(
                 RepositoryMetric(
                     icon = Icons.Outlined.StarBorder,
                     value = repository.stars.toString(),
-                    description = "Stars",
+                    description = stringResource(R.string.repo_stars),
                 )
                 RepositoryMetric(
                     icon = Icons.AutoMirrored.Outlined.CallSplit,
                     value = repository.forks.toString(),
-                    description = "Forks",
+                    description = stringResource(R.string.repo_forks),
                 )
                 Text(
-                    text = repository.language ?: "No language",
+                    text = repository.language ?: stringResource(R.string.repo_no_language),
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
@@ -683,8 +683,11 @@ private fun WorkspaceCard(
             }
 
             Text(
-                text = workspace.fileCount.toString() +
-                    " files · " + humanBytes(workspace.totalBytes),
+                text = stringResource(
+                    R.string.repo_files_size,
+                    workspace.fileCount,
+                    humanBytes(workspace.totalBytes),
+                ),
                 style = MaterialTheme.typography.bodyLarge,
             )
 
@@ -692,7 +695,7 @@ private fun WorkspaceCard(
                 ?.takeIf { it.isNotBlank() }
                 ?.let { branch ->
                     Text(
-                        text = "Branch: " + branch,
+                        text = stringResource(R.string.repo_branch, branch),
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
                 }
@@ -711,12 +714,12 @@ private fun WorkspaceCard(
                         tint = MaterialTheme.colorScheme.error,
                     )
                     Text(
-                        text = workspace.secretWarningCount.toString() +
-                            " secret · " +
-                            workspace.largeFileWarningCount.toString() +
-                            " large · " +
-                            workspace.syncConflictCount.toString() +
-                            " sync conflicts",
+                        text = stringResource(
+                            R.string.repo_risk_summary,
+                            workspace.secretWarningCount,
+                            workspace.largeFileWarningCount,
+                            workspace.syncConflictCount,
+                        ),
                         color = MaterialTheme.colorScheme.error,
                     )
                 }
@@ -755,9 +758,9 @@ private fun WorkspaceCard(
                     )
                     Text(
                         if (workspace.currentBranch.isNullOrBlank()) {
-                            "Init Git"
+                            stringResource(R.string.repo_init_git)
                         } else {
-                            "Git workspace"
+                            stringResource(R.string.repo_git_workspace)
                         },
                     )
                 }
@@ -778,9 +781,9 @@ private fun WorkspaceCard(
                             workspace.strategy ==
                                 WorkspaceStrategy.GENERATED
                         ) {
-                            "Rescan"
+                            stringResource(R.string.repo_rescan)
                         } else {
-                            "Sync"
+                            stringResource(R.string.repo_sync)
                         },
                     )
                 }
@@ -992,14 +995,14 @@ private fun CreateRepositoryDialog(
                     maxLines = 4,
                 )
                 SettingSwitch(
-                    label = "Private repository",
+                    label = stringResource(R.string.repo_private_setting),
                     checked = privateRepository,
                     onCheckedChange = {
                         privateRepository = it
                     },
                 )
                 SettingSwitch(
-                    label = "Initialize with README",
+                    label = stringResource(R.string.repo_readme_setting),
                     checked = initializeWithReadme,
                     onCheckedChange = {
                         initializeWithReadme = it
@@ -1104,9 +1107,9 @@ private fun ImportRiskDialog(
         title = {
             Text(
                 if (actionable.isEmpty()) {
-                    "Project ready"
+                    stringResource(R.string.repo_project_ready)
                 } else {
-                    "Review before push"
+                    stringResource(R.string.repo_review_before_push)
                 },
             )
         },
@@ -1117,9 +1120,7 @@ private fun ImportRiskDialog(
                 Text(projectName)
 
                 if (actionable.isEmpty()) {
-                    Text(
-                        "The project was scanned and no non-ignored secret or large-file risks were detected.",
-                    )
+                    Text(stringResource(R.string.repo_no_risks))
                 } else {
                     actionable.take(6).forEach { risk ->
                         Text(
@@ -1130,9 +1131,10 @@ private fun ImportRiskDialog(
 
                     if (actionable.size > 6) {
                         Text(
-                            text = "+" +
-                                (actionable.size - 6).toString() +
-                                " more warnings",
+                            text = stringResource(
+                                R.string.repo_more_warnings,
+                                actionable.size - 6,
+                            ),
                         )
                     }
                 }
@@ -1141,14 +1143,15 @@ private fun ImportRiskDialog(
     )
 }
 
+@Composable
 private fun workspaceStrategyLabel(
     strategy: WorkspaceStrategy,
 ): String =
     when (strategy) {
-        WorkspaceStrategy.DIRECT -> "Direct filesystem"
-        WorkspaceStrategy.MANAGED -> "Managed Android workspace"
-        WorkspaceStrategy.REMOTE_CLONE -> "GitHub clone"
-        WorkspaceStrategy.GENERATED -> "Generated template"
+        WorkspaceStrategy.DIRECT -> stringResource(R.string.repo_strategy_direct)
+        WorkspaceStrategy.MANAGED -> stringResource(R.string.repo_strategy_managed)
+        WorkspaceStrategy.REMOTE_CLONE -> stringResource(R.string.repo_strategy_clone)
+        WorkspaceStrategy.GENERATED -> stringResource(R.string.repo_strategy_generated)
     }
 
 private fun humanBytes(bytes: Long): String =
