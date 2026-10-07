@@ -83,13 +83,27 @@ func loadConfig() (config, error) {
 	if cfg.ClientID == "" || cfg.ClientSecret == "" {
 		return config{}, errors.New("GITHUB_APP_CLIENT_ID and GITHUB_APP_CLIENT_SECRET are required")
 	}
-	if !strings.HasPrefix(cfg.GitHubCallbackURL, "https://") {
-		return config{}, errors.New("GITHUB_CALLBACK_URL must use HTTPS")
+	githubCallback, err := url.Parse(cfg.GitHubCallbackURL)
+	if err != nil ||
+		!strings.EqualFold(githubCallback.Scheme, "https") ||
+		githubCallback.Host == "" ||
+		githubCallback.User != nil ||
+		githubCallback.Path != "/oauth/callback" ||
+		githubCallback.RawQuery != "" ||
+		githubCallback.Fragment != "" {
+		return config{}, errors.New("GITHUB_CALLBACK_URL must be an exact HTTPS /oauth/callback URL")
 	}
 
 	appURI, err := url.Parse(cfg.AppCallbackURI)
-	if err != nil || appURI.Scheme != "nexoragit" || appURI.Host != "oauth" || appURI.Path != "/callback" {
-		return config{}, errors.New("APP_CALLBACK_URI must be nexoragit://oauth/callback")
+	if err != nil ||
+		!strings.EqualFold(appURI.Scheme, "https") ||
+		appURI.Host == "" ||
+		appURI.User != nil ||
+		!strings.EqualFold(appURI.Host, githubCallback.Host) ||
+		appURI.Path != "/oauth/android/callback" ||
+		appURI.RawQuery != "" ||
+		appURI.Fragment != "" {
+		return config{}, errors.New("APP_CALLBACK_URI must be an HTTPS /oauth/android/callback URL on the callback authority")
 	}
 
 	return cfg, nil
