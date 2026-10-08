@@ -4,8 +4,15 @@ on:
   push:
     branches:
       - phase-s/p2-s16-discoverability
-    paths-ignore:
-      - "docs/assets/screenshots/**"
+    paths:
+      - "app/src/main/**"
+      - "app/src/androidTest/java/com/nexora/git/marketing/**"
+      - "app/build.gradle.kts"
+      - "gradle/**"
+      - "build.gradle.kts"
+      - "settings.gradle.kts"
+      - "gradle.properties"
+      - ".github/workflows/marketing-screenshots.yml"
 
 permissions:
   contents: write
