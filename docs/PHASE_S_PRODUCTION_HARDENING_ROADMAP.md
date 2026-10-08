@@ -546,32 +546,39 @@ Execute and record evidence for:
 
 ## S.16 — GitHub discoverability, community and repository presentation
 
-**Priority:** P2
+**Priority:** P2  
+**Development milestone:** implemented and ready for CI/review, subject to PR merge.  
+**External deployment exceptions:** homepage [#46](https://github.com/Gh0stDeveloper/Nexora-Git/issues/46); final screenshots [#47](https://github.com/Gh0stDeveloper/Nexora-Git/issues/47). Both remain **open work**, not completed deliverables.
 
 ### S.16.1 Repository metadata
 
-- [ ] Set project homepage to the production website.
-- [ ] Add focused GitHub topics, for example Android, Git, GitHub, Kotlin, Jetpack Compose, libgit2, Git client and code editor.
-- [ ] Review repository description for search clarity.
-- [ ] Decide whether Discussions should be enabled for questions/ideas/community support.
-- [ ] Configure automatic merged-branch deletion.
+- [x] Review repository description for search clarity — verified via repository API.
+- [x] Add all nine focused GitHub topics — verified via repository API.
+- [x] Enable Discussions for community support — verified via repository API.
+- [x] Enable automatic merged-branch deletion — verified via repository API.
+- [x] Protect main via active ruleset and required CI checks — verified via ruleset API.
+- [ ] Set homepage to the **real deployed** HTTPS product website; deliberately deferred to issue #46.
 
-### S.16.2 README visual proof
+### S.16.2 README presentation and captures
 
-- [ ] Add real application screenshots.
-- [ ] Show Home/dashboard.
-- [ ] Show repository detail.
-- [ ] Show editor.
-- [ ] Show Git changes/workbench.
-- [ ] Show Pull Requests.
-- [ ] Show Actions.
-- [ ] Show theme variants.
-- [ ] Keep screenshots versioned and representative of current UI.
-- [ ] Add concise install/download CTA once an official build exists.
+- [x] Clear project purpose, primary feature set, architecture and support links in README.
+- [x] Explain the verified-release download process without claiming unreleased builds exist.
+- [x] Provide contribution, support and security guidance, Issue templates and PR template.
+- [x] Track future owner-taken screenshots without showing broken images or fabricated placeholders.
+- [x] Make Community Readiness pass for the **documented development deferral**, while rejecting incomplete screenshot sets.
+- [ ] Capture eight real final Android screenshots manually **after working app and own VPS/Auth Broker qualification** (issue #47).
+- [ ] Publish Home (Light, Dark, AMOLED), repository detail, editor, Git workbench, PR and Actions screenshots.
+- [ ] Add and review the final README image gallery from approved screenshots.
+- [ ] Run the explicit `--require-screenshots` release presentation check.
 
-### Acceptance gate
+The user will capture the screenshots on an Android device once the application is verified with the production VPS. The optional `Marketing Screenshots` workflow performs **manual on-demand validation only**. It does not generate, commit or overwrite images. This prevents a broken emulated screenshot job from interrupting ongoing development; it does **not** assert screenshots exist.
 
-- [ ] A first-time visitor can understand what the product looks like, what it does and how to obtain a verified build without reading architecture documentation.
+### Acceptance gates
+
+- [x] **Development presentation gate:** project scope, contribution routes, support and trusted download instructions are understandable without broken image references. Deferred launch-only dependencies are documented and owned.
+- [ ] **Public launch presentation gate:** real product screenshots and verified live homepage are available and reviewed before they are advertised. Track via issues #46 and #47.
+
+**Audit rule:** keep the external dependencies open until independently verified. The subphase may be merged as development-ready only when its required GitHub CI checks pass; do not equate that merge with public-launch readiness.
 
 ---
 
