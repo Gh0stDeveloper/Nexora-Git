@@ -1,0 +1,50 @@
+name: Community Readiness
+
+on:
+  push:
+    branches:
+      - main
+      - "phase-*"
+    paths:
+      - "README.md"
+      - "CONTRIBUTING.md"
+      - "CODE_OF_CONDUCT.md"
+      - "SECURITY.md"
+      - "SUPPORT.md"
+      - ".github/ISSUE_TEMPLATE/**"
+      - ".github/pull_request_template.md"
+      - "docs/GITHUB_REPOSITORY_SETTINGS.md"
+      - "docs/assets/screenshots/**"
+      - "scripts/ci/validate-s16-discoverability.py"
+      - ".github/workflows/community-readiness.yml"
+  pull_request:
+    branches:
+      - main
+    paths:
+      - "README.md"
+      - "CONTRIBUTING.md"
+      - "CODE_OF_CONDUCT.md"
+      - "SECURITY.md"
+      - "SUPPORT.md"
+      - ".github/ISSUE_TEMPLATE/**"
+      - ".github/pull_request_template.md"
+      - "docs/GITHUB_REPOSITORY_SETTINGS.md"
+      - "docs/assets/screenshots/**"
+      - "scripts/ci/validate-s16-discoverability.py"
+      - ".github/workflows/community-readiness.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  repository-presentation:
+    name: Validate repository presentation
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Checkout
+        uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
+
+      - name: Validate S.16 repository assets
+        shell: bash
+        run: python3 scripts/ci/validate-s16-discoverability.py
