@@ -1,0 +1,79 @@
+name: Store Distribution CI
+
+on:
+  push:
+    branches:
+      - main
+      - "phase-s/**"
+    paths:
+      - "fastlane/**"
+      - "metadata/**"
+      - "docs/store/**"
+      - "docs/FDROID_READINESS.md"
+      - "docs/PLAY_STORE_READINESS.md"
+      - "native/git/CMakeLists.txt"
+      - "scripts/ci/validate-s17-distribution.py"
+      - "scripts/ci/create-release-signing-evidence.py"
+      - ".github/workflows/store-distribution-ci.yml"
+  pull_request:
+    branches:
+      - main
+    paths:
+      - "fastlane/**"
+      - "metadata/**"
+      - "docs/store/**"
+      - "docs/FDROID_READINESS.md"
+      - "docs/PLAY_STORE_READINESS.md"
+      - "native/git/CMakeLists.txt"
+      - "scripts/ci/validate-s17-distribution.py"
+      - "scripts/ci/create-release-signing-evidence.py"
+      - ".github/workflows/store-distribution-ci.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  store-metadata:
+    name: Validate S.17 development metadata
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
+      - name: Check Python syntax
+        shell: bash
+        run: |
+          python3 -m py_compile scripts/ci/validate-s17-distribution.py
+          python3 -m py_compile scripts/ci/create-release-signing-evidence.py
+      - name: Validate bilingual metadata and F-Droid disclosure
+        run: python3 scripts/ci/validate-s17-distribution.py
+      - name: Verify public-release gate rejects missing real assets and HTTPS privacy URL
+        shell: bash
+        run: |
+          set -euo pipefail
+          if python3 scripts/ci/validate-s17-distribution.py --release \
+            --privacy-url "https://example.invalid/privacy" \
+            --source-url "https://github.com/Gh0stDeveloper/Nexora-Git"; then
+            echo "::error::S.17 release gate incorrectly accepted unreleased assets."
+            exit 1
+          fi
+
+  native-offline-safety:
+    name: Validate offline source failure policy
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
+      - name: Fail closed without preseeded native sources
+        shell: bash
+        run: |
+          set -euo pipefail
+          if cmake -S native/git -B "$RUNNER_TEMP/nexora-native-offline" \
+            -DNEXORA_NATIVE_SOURCE_ROOT="$RUNNER_TEMP/absent-native-sources" \
+            > "$RUNNER_TEMP/native-offline.log" 2>&1; then
+            echo "::error::Offline CMake unexpectedly accepted missing sources."
+            exit 1
+          fi
+          grep -q 'Offline native source is missing:' "$RUNNER_TEMP/native-offline.log" || {
+            cat "$RUNNER_TEMP/native-offline.log"
+            exit 1
+          }
