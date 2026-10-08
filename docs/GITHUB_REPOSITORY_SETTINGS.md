@@ -44,6 +44,17 @@ The repository API and active branch ruleset were read back after the maintainer
 
 **External deployment deferral:** the product website is still under development, so the Homepage field is deliberately empty. Do not set a fabricated domain or claim launch readiness. Track the owner, risk, rationale, and final verification in [the homepage launch issue](https://github.com/Gh0stDeveloper/Nexora-Git/issues/46). The release gate continues to require a real HTTPS origin before the corresponding public release. This is an approved **P2 development deferral, not an implemented website**.
 
+## Deferred product screenshots (maintainer decision)
+
+The Android app and self-hosted VPS/Auth Broker are still in development. The maintainer has explicitly deferred screenshots until the **working final application can be captured manually on an Android device**. The README intentionally displays no gallery or broken image placeholders.
+
+- Tracking: [#47 — official screenshot capture](https://github.com/Gh0stDeveloper/Nexora-Git/issues/47).
+- Validation: `python3 scripts/ci/validate-s16-discoverability.py --require-screenshots` after uploading the eight official PNG files.
+- GitHub Actions: `Marketing Screenshots` is **manual-only**, and does not overwrite photos or run a failing emulator capture job on every push.
+- `Community Readiness` validates the active development presentation; zero screenshots are permitted only while the tracked deferral is explicitly documented. Partial screenshots are rejected. The production launch visual checklist remains open.
+
+Do not mark the future screenshots or website as delivered until evidence exists.
+
 ## Manual configuration
 
 Repository administrators should open **Settings** and configure the repository About/homepage/topics, enable Discussions, enable automatic deletion of merged head branches, and enable the main ruleset/branch protection. Re-run the release gate afterwards; the API result, not this checklist, is authoritative.
