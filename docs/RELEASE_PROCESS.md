@@ -49,6 +49,14 @@ Pushing the tag triggers `Stable Release`.
 
 It validates configuration, decodes the PKCS#12 keystore into the runner's temporary directory, builds the signed APK/AAB, runs tests/lint, verifies APK/AAB signatures and signing-certificate parity, requires the callback to equal the broker base URL plus `/oauth/callback`, enforces size budgets, generates SHA-256 checksums and publishes/updates the GitHub Release.
 
+## 4.1 Public signing transparency
+
+The signed APK and AAB in the same GitHub Release must be signed with the **same verified upload/release certificate**. After signing verification, the pipeline exports `SIGNING-CERTIFICATE-SHA256.txt` and `SIGNING-IDENTITY.json` (certificate SHA-256, version, full commit SHA, APK/AAB hashes). `SHA256SUMS.txt` covers these public evidence files as well as the release artifacts.
+
+The VPS website's `latest.json` includes the verified `signingCertificateSha256` alongside the APK digest. The website displays both and rejects publication without valid signer metadata.
+
+**Play App Signing distinction:** Google Play may re-sign Play-delivered APKs using Google's app-signing certificate, which differs from the APK/AAB upload certificate. Verify the Play fingerprint separately in Play Console. See [Signer identity guide](store/SIGNING_TRANSPARENCY.md).
+
 ## 5. Play Store
 
 Upload the generated AAB as the Play upload artifact. Keep the Play App Signing key and project upload key lifecycle separate according to Play Console guidance.
