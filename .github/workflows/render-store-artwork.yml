@@ -1,0 +1,52 @@
+name: Render Play Store artwork
+
+on:
+  push:
+    branches: ["phase-s/p2-s17-store-artwork"]
+    paths: ["docs/store/artwork/**", ".github/workflows/render-store-artwork.yml"]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: store-artwork-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  render:
+    name: Export Play Store 512px icon and 1024x500 banners
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
+      - name: Install SVG renderer
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y --no-install-recommends librsvg2-bin fonts-dejavu-core
+      - name: Render verified bilingual artwork
+        shell: bash
+        run: |
+          set -euo pipefail
+          for locale in en-US es-MX; do
+            dest="fastlane/metadata/android/$locale/images"
+            mkdir -p "$dest"
+            rsvg-convert --format=png --width=512 --height=512 --output "$dest/icon.png" docs/store/artwork/icon.svg
+            rsvg-convert --format=png --width=1024 --height=500 --output "$dest/featureGraphic.png" "docs/store/artwork/featureGraphic.$locale.svg"
+          done
+          python3 scripts/ci/validate-s17-store-artwork.py
+      - name: Commit exports on feature branch only
+        shell: bash
+        env:
+          BRANCH: ${{ github.ref_name }}
+        run: |
+          set -euo pipefail
+          test "$BRANCH" = "phase-s/p2-s17-store-artwork"
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add fastlane/metadata/android/en-US/images/icon.png fastlane/metadata/android/es-MX/images/icon.png
+          git add fastlane/metadata/android/en-US/images/featureGraphic.png fastlane/metadata/android/es-MX/images/featureGraphic.png
+          if ! git diff --cached --quiet; then
+            git commit -m "build(s17): render official-brand Play store artwork candidates"
+            git push origin "HEAD:refs/heads/$BRANCH"
+          fi
