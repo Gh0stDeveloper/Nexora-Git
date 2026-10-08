@@ -26,6 +26,40 @@ Build, edit, version, review, automate and release complete repositories directl
 
 ---
 
+## Get Nexora Git
+
+Official public builds are published through [GitHub Releases](https://github.com/Gh0stDeveloper/Nexora-Git/releases). Nexora Git does not treat random APK mirrors as trusted distribution.
+
+Before installing a direct APK, verify both:
+
+- the APK SHA-256 published with the release;
+- the Android signing-certificate SHA-256 published by the official release pipeline.
+
+Stable `v1.0.0` is intentionally blocked until the public beta/RC qualification matrix passes. See [Release process](docs/RELEASE_PROCESS.md) and [Security](SECURITY.md) for the trust model.
+
+## Product screenshots
+
+These images are generated from the real Jetpack Compose product surfaces by the repository's Android screenshot workflow. They are versioned with the UI so the README does not depend on hand-made mockups.
+
+<table>
+  <tr>
+    <td align="center"><strong>Home · Dark</strong><br><img src="docs/assets/screenshots/home-dark.png" alt="Nexora Git Home dashboard in dark theme" width="260"></td>
+    <td align="center"><strong>Repository</strong><br><img src="docs/assets/screenshots/repository-detail.png" alt="Nexora Git repository detail" width="260"></td>
+    <td align="center"><strong>Editor</strong><br><img src="docs/assets/screenshots/editor.png" alt="Nexora Git mobile code editor" width="260"></td>
+  </tr>
+  <tr>
+    <td align="center"><strong>Git workbench</strong><br><img src="docs/assets/screenshots/git-workbench.png" alt="Nexora Git local Git workbench" width="260"></td>
+    <td align="center"><strong>Pull Request</strong><br><img src="docs/assets/screenshots/pull-request.png" alt="Nexora Git pull request review" width="260"></td>
+    <td align="center"><strong>GitHub Actions</strong><br><img src="docs/assets/screenshots/actions.png" alt="Nexora Git Actions workflow surface" width="260"></td>
+  </tr>
+</table>
+
+### Theme variants
+
+| Light | Dark | AMOLED |
+| --- | --- | --- |
+| ![Home light](docs/assets/screenshots/home-light.png) | ![Home dark](docs/assets/screenshots/home-dark.png) | ![Home AMOLED](docs/assets/screenshots/home-amoled.png) |
+
 ## Overview
 
 Nexora Git is an Android-first development workspace for people who need a serious Git and GitHub workflow away from a desktop. It is **not a WebView wrapper** and it does not depend on Termux or an external Git installation.
@@ -164,11 +198,16 @@ Key references:
 - [`nexora-git` command reference](docs/NEXORA_GIT_COMMANDS.md)
 - [Roadmap and implementation history](docs/ROADMAP.md)
 
-## Contributing
+## Community and contributing
 
-Contributions are welcome when they preserve the project's security boundaries, native Git architecture and mobile-first goals. Read **[CONTRIBUTING.md](CONTRIBUTING.md)** before opening a pull request.
+Contributions are welcome when they preserve the project's security boundaries, native Git architecture and mobile-first goals.
 
-For security issues, follow **[SECURITY.md](SECURITY.md)** and do not publish secrets or working exploits in public issues.
+- Read **[CONTRIBUTING.md](CONTRIBUTING.md)** before opening a pull request.
+- Read **[SUPPORT.md](SUPPORT.md)** for usage help and bug-report guidance.
+- Follow **[CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md)** in project spaces.
+- Use the structured GitHub issue forms for reproducible bugs and focused feature requests.
+- When GitHub Discussions is enabled, use it for questions, ideas and community support rather than bug tracking.
+- For security issues, follow **[SECURITY.md](SECURITY.md)** and never publish secrets or working exploits in public issues or Discussions.
 
 ## License
 
