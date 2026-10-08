@@ -1,139 +1,30 @@
+# Optional validation of the maintainer's manual Android captures.
+# Does not run during normal CI and never creates, replaces or commits images.
 name: Marketing Screenshots
 
 on:
   workflow_dispatch:
-  push:
-    branches:
-      - phase-s/p2-s16-discoverability
-    paths:
-      - "app/src/main/**"
-      - "app/src/androidTest/java/com/nexora/git/marketing/**"
-      - "scripts/ci/capture-marketing-screenshots.sh"
-      - "scripts/ci/validate-s16-discoverability.py"
-      - "app/build.gradle.kts"
-      - "gradle/**"
-      - "build.gradle.kts"
-      - "settings.gradle.kts"
-      - "gradle.properties"
-      - ".github/workflows/marketing-screenshots.yml"
 
 permissions:
-  contents: write
-
-concurrency:
-  group: marketing-screenshots-${{ github.ref }}
-  cancel-in-progress: true
+  contents: read
 
 jobs:
-  capture:
-    name: Capture real Android UI screenshots
+  verify-manual-captures:
+    name: Validate owner-provided screenshots
     runs-on: ubuntu-latest
-    timeout-minutes: 45
-
-    env:
-      NEXORA_GITHUB_CLIENT_ID: Iv1.NexoraScreenshots
-      NEXORA_AUTH_BROKER_BASE_URL: https://screenshots.example
-      NEXORA_GITHUB_CALLBACK_URL: https://screenshots.example/oauth/callback
+    timeout-minutes: 5
 
     steps:
-      - name: Checkout
+      - name: Checkout source
         uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
-        with:
-          fetch-depth: 0
 
-      - name: Set up JDK 17
-        uses: actions/setup-java@b6effb05e454b25005698d916606bdc6ffcbf961 # v5
-        with:
-          distribution: temurin
-          java-version: "17"
+      - name: Validate eight final Android screenshots
+        run: python3 scripts/ci/validate-s16-discoverability.py --require-screenshots
 
-      - name: Install Android build prerequisites
-        shell: bash
-        run: |
-          set -euo pipefail
-          SDK_ROOT="${ANDROID_SDK_ROOT:-${ANDROID_HOME:-/usr/local/lib/android/sdk}}"
-          SDKMANAGER="$SDK_ROOT/cmdline-tools/latest/bin/sdkmanager"
-          yes | "$SDKMANAGER" --licenses >/dev/null || true
-          "$SDKMANAGER" --channel=3 \
-            "platform-tools" \
-            "platforms;android-35" \
-            "platforms;android-37.0" \
-            "build-tools;37.0.0" \
-            "ndk;27.2.12479018" \
-            "cmake;3.22.1"
-
-      - name: Set up Gradle
-        uses: gradle/actions/setup-gradle@3f5f9adaf7d9fecd50b5935e54106014257a94e6 # v6.4.0
-
-      - name: Enable KVM acceleration for Android emulator
-        shell: bash
-        run: |
-          set -euo pipefail
-          # GitHub-hosted Ubuntu can expose /dev/kvm without user permissions.
-          test -e /dev/kvm || { echo "::error::KVM is unavailable on this runner"; exit 1; }
-          sudo chmod 0666 /dev/kvm
-          test -r /dev/kvm && test -w /dev/kvm
-          ls -l /dev/kvm
-
-      - name: Capture screenshots on Pixel 6
-        uses: ReactiveCircus/android-emulator-runner@a421e43855164a8197daf9d8d40fe71c6996bb0d # v2
-        with:
-          api-level: 35
-          arch: x86_64
-          target: default
-          profile: pixel_6
-          disable-animations: false
-          script: bash scripts/ci/capture-marketing-screenshots.sh
-
-      - name: Archive Android instrumentation diagnostics
-        if: always()
+      - name: Publish approved screenshot evidence
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
-          name: NexoraGit-marketing-instrumentation-report
-          path: |
-            app/build/outputs/androidTest-results/connected/**
-            app/build/reports/androidTests/connected/**
-          if-no-files-found: warn
-          retention-days: 14
-
-      - name: Validate generated screenshot evidence
-        shell: bash
-        run: python3 scripts/ci/validate-s16-discoverability.py
-
-      - name: Version screenshots
-        shell: bash
-        run: |
-          set -euo pipefail
-
-          snapshot_dir="$RUNNER_TEMP/nexora-marketing-screenshots"
-          rm -rf "$snapshot_dir"
-          mkdir -p "$snapshot_dir"
-          cp -a docs/assets/screenshots/. "$snapshot_dir/"
-
-          # The branch may have received documentation-only commits while the
-          # emulator was running. Rebase the generated evidence onto the latest
-          # remote head instead of risking a non-fast-forward push.
-          git fetch origin "$GITHUB_REF_NAME"
-          git reset --hard "origin/$GITHUB_REF_NAME"
-          rm -rf docs/assets/screenshots
-          mkdir -p docs/assets/screenshots
-          cp -a "$snapshot_dir/." docs/assets/screenshots/
-
-          git add docs/assets/screenshots
-          if git diff --cached --quiet; then
-            echo "Screenshots already match the current UI."
-            exit 0
-          fi
-
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git commit -m "docs(screenshots): refresh real Android UI captures [skip ci]"
-          git push origin "HEAD:${GITHUB_REF_NAME}"
-
-      - name: Upload screenshot evidence
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
-        with:
-          name: NexoraGit-marketing-screenshots
+          name: NexoraGit-owner-approved-screenshots
           path: docs/assets/screenshots/*.png
           if-no-files-found: error
           retention-days: 30
