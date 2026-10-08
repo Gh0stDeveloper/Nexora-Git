@@ -37,7 +37,9 @@
 - Existing online developer/native CI mode is untouched by default.
 - F-Droid metadata remains explicitly disabled and retains `NonFreeNet` disclosure.
 
-**External/engineering gate remains:** fdroidserver acquisition and fully network-isolated, repeatable native/Gradle build have **not been demonstrated**. No F-Droid build publication.
+**Verified follow-up:** The prefetch source manifest is pinned, Mbed TLS framework's gitlink is checked, and native host code built and passed CTest in a network-isolated namespace ([run #37806822320](https://github.com/Gh0stDeveloper/Nexora-Git/actions/runs/37806822320)). Public provenance artifact retained by CI.
+
+**External/engineering gate remains:** fdroidserver-compatible Gradle/Maven acquisition, Android APK build inside an isolated network namespace and two-build reproducibility verification are **not yet demonstrated**. F-Droid metadata remains disabled; no Play/F-Droid release was published.
 
 ## Release exclusions and owner decisions
 

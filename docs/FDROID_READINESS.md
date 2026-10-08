@@ -47,6 +47,39 @@ Android Gradle can now forward this source directory using `-Pnexora.nativeSourc
 
 This command is illustrative: full Gradle/Maven offline dependency acquisition, controlled signing and end-to-end fdroidserver reproducibility are **not yet certified**.
 
+## Qualified native offline build — 2026-10-08
+
+The source-level preparation has advanced beyond fail-closed negative checks:
+
+- `native/git/fdroid-sources.lock.json` identifies all **nine pinned native Git checkouts**. Mbed TLS additionally includes one pinned `framework` Git submodule; the Git superproject's gitlink SHA is independently checked.
+- `scripts/fdroid/prepare-native-sources.py --prepare` downloads sources **before** entering the isolated build environment, validates each Git SHA/origin, pre-applies the repository's libgit2 patch and emits a public source-provenance JSON.
+- `--verify-only` performs verification without any source downloads and explicitly rejects absent or mismatched dependencies.
+- `F-Droid Offline Native Qualification` runs host CMake, Ninja and CTest inside `sudo unshare --net`, ensuring the compilation has **no network interfaces**. It fails if source acquisition, isolation, compilation or tests fail.
+- **Verified success:** [GitHub Actions run #37806822320](https://github.com/Gh0stDeveloper/Nexora-Git/actions/runs/37806822320), source commit `3bf603aa482684b7edd0fff089f13ffa3333ccf4`. The workflow published `fdroid-native-revision-provenance` as an artifact.
+
+```bash
+# Stage 1: networked prefetch on a separate, trusted host or acquisition step.
+python3 scripts/fdroid/prepare-native-sources.py --prepare \
+  --source-root /absolute/native-source-cache \
+  --report /absolute/source-provenance.json
+
+# Stage 2: no network calls; must match the pinned source bundle exactly.
+python3 scripts/fdroid/prepare-native-sources.py --verify-only \
+  --source-root /absolute/native-source-cache
+
+# Stage 3: CMake/CTest in network-isolated execution (validated in CI).
+sudo unshare --net -- bash -euo pipefail -c '
+  cmake -S native/git -B build/fdroid-offline -G Ninja \
+    -DNEXORA_NATIVE_SOURCE_ROOT=/absolute/native-source-cache \
+    -DNEXORA_BUILD_NATIVE_TESTS=ON \
+    -DFETCHCONTENT_FULLY_DISCONNECTED=ON
+  cmake --build build/fdroid-offline --parallel 2
+  ctest --test-dir build/fdroid-offline --output-on-failure
+'
+```
+
+**Boundary:** This establishes only host-native build isolation and pinned-source acquisition. It does **not** establish an Android APK compiled with Gradle fully offline, reproducible binaries from two isolated builds, or acceptance by the F-Droid repository. The metadata remains **disabled**.
+
 ## Outstanding release blockers
 
 - [ ] Declare and verify nine pinned upstream sources through auditable `fdroidserver` source-library/prebuild configuration; review archive licensing.
