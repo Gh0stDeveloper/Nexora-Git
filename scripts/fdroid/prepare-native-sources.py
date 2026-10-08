@@ -55,7 +55,7 @@ def load_lock() -> list[dict[str, str]]:
             raise ValueError(f"Invalid upstream URL: {name}")
         if not isinstance(commit, str) or not SHA_RE.fullmatch(commit):
             raise ValueError(f"Invalid revision: {name}")
-        if not isinstance(var, str) or not re.fullmatch(r"NEXORA_[A-Z_]+_REF", var) or var in variables:
+        if not isinstance(var, str) or not re.fullmatch(r"NEXORA_[A-Z0-9_]+_REF", var) or var in variables:
             raise ValueError(f"Invalid/duplicate CMake ref var: {name}")
         pattern = r"set\(\s*" + re.escape(var) + r'\s+"([0-9a-f]{40})"'
         m = re.search(pattern, cmake)
