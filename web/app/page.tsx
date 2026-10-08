@@ -228,6 +228,11 @@ export default async function HomePage() {
           </article>
         </div>
       </section>
+      <footer className="mx-auto max-w-7xl border-t border-[#30363d] px-4 py-6 text-sm text-[#8b949e] sm:px-6 lg:px-8">
+        <a className="text-[#58a6ff] hover:underline" href="/privacy">Privacy policy</a>
+        <span className="mx-3">·</span>
+        <a className="text-[#58a6ff] hover:underline" href="/terms">Terms</a>
+      </footer>
     </main>
   );
 }
