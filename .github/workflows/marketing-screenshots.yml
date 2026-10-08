@@ -8,6 +8,8 @@ on:
     paths:
       - "app/src/main/**"
       - "app/src/androidTest/java/com/nexora/git/marketing/**"
+      - "scripts/ci/capture-marketing-screenshots.sh"
+      - "scripts/ci/validate-s16-discoverability.py"
       - "app/build.gradle.kts"
       - "gradle/**"
       - "build.gradle.kts"
