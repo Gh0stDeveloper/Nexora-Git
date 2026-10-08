@@ -78,7 +78,8 @@ jobs:
               -Pandroid.testInstrumentationRunnerArguments.class=com.nexora.git.marketing.MarketingScreenshotTest
             rm -rf docs/assets/screenshots
             mkdir -p docs/assets/screenshots
-            adb pull /sdcard/Android/data/com.nexora.git/files/screenshots/. docs/assets/screenshots/
+            # Debug builds use applicationIdSuffix = .debug.
+            adb pull /sdcard/Android/data/com.nexora.git.debug/files/screenshots/. docs/assets/screenshots/
             test -s docs/assets/screenshots/home-light.png
             test -s docs/assets/screenshots/home-dark.png
             test -s docs/assets/screenshots/home-amoled.png
