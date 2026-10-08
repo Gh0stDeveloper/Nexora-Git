@@ -4,6 +4,9 @@ on:
   push:
     branches: ["phase-s/p2-s17-store-artwork"]
     paths: ["docs/store/artwork/**", "scripts/ci/validate-s17-store-artwork.py", ".github/workflows/render-store-artwork.yml"]
+  pull_request:
+    branches: [main]
+    paths: ["docs/store/artwork/**", "scripts/ci/validate-s17-store-artwork.py", ".github/workflows/render-store-artwork.yml"]
   workflow_dispatch:
 
 permissions:
@@ -20,6 +23,8 @@ jobs:
     timeout-minutes: 12
     steps:
       - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
+        with:
+          ref: ${{ github.head_ref || github.ref_name }}
       - name: Install SVG renderer
         run: |
           sudo apt-get update -qq
@@ -38,7 +43,7 @@ jobs:
       - name: Commit exports on feature branch only
         shell: bash
         env:
-          BRANCH: ${{ github.ref_name }}
+          BRANCH: ${{ github.head_ref || github.ref_name }}
         run: |
           set -euo pipefail
           test "$BRANCH" = "phase-s/p2-s17-store-artwork"
