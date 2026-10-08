@@ -14,6 +14,7 @@ on:
       - "native/git/CMakeLists.txt"
       - "scripts/ci/validate-s17-distribution.py"
       - "scripts/ci/create-release-signing-evidence.py"
+      - "scripts/ci/test-s17-signing-evidence.py"
       - ".github/workflows/store-distribution-ci.yml"
   pull_request:
     branches:
@@ -27,6 +28,7 @@ on:
       - "native/git/CMakeLists.txt"
       - "scripts/ci/validate-s17-distribution.py"
       - "scripts/ci/create-release-signing-evidence.py"
+      - "scripts/ci/test-s17-signing-evidence.py"
       - ".github/workflows/store-distribution-ci.yml"
 
 permissions:
@@ -44,6 +46,9 @@ jobs:
         run: |
           python3 -m py_compile scripts/ci/validate-s17-distribution.py
           python3 -m py_compile scripts/ci/create-release-signing-evidence.py
+          python3 -m py_compile scripts/ci/test-s17-signing-evidence.py
+      - name: Unit-test certificate fingerprint parsing
+        run: python3 scripts/ci/test-s17-signing-evidence.py
       - name: Validate bilingual metadata and F-Droid disclosure
         run: python3 scripts/ci/validate-s17-distribution.py
       - name: Verify public-release gate rejects missing real assets and HTTPS privacy URL
