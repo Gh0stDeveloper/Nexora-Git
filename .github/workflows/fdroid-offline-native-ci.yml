@@ -1,0 +1,70 @@
+name: F-Droid Offline Native Qualification
+
+on:
+  push:
+    branches: [main, "phase-s/**"]
+    paths: ["native/git/fdroid-sources.lock.json", "native/git/CMakeLists.txt", "native/git/cmake/libgit2-no-install.patch", "scripts/fdroid/**", ".github/workflows/fdroid-offline-native-ci.yml"]
+  pull_request:
+    branches: [main]
+    paths: ["native/git/fdroid-sources.lock.json", "native/git/CMakeLists.txt", "native/git/cmake/libgit2-no-install.patch", "scripts/fdroid/**", ".github/workflows/fdroid-offline-native-ci.yml"]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: fdroid-native-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  qualify-native:
+    name: Pinned native build without network
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    env:
+      NEXORA_GITHUB_CLIENT_ID: Iv1.FdroidNativeQualification
+      NEXORA_AUTH_BROKER_BASE_URL: https://native-fdroid.example
+      NEXORA_GITHUB_CALLBACK_URL: https://native-fdroid.example/oauth/callback
+    steps:
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
+      - name: Host prerequisites
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y --no-install-recommends ninja-build cmake git
+      - name: Require all native sources and reject missing checkouts
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 -m py_compile scripts/fdroid/prepare-native-sources.py
+          if python3 scripts/fdroid/prepare-native-sources.py --verify-only --source-root "$RUNNER_TEMP/nexora-pinned"; then
+            echo "::error::Missing source checkouts were accepted"
+            exit 1
+          fi
+      - name: Acquire pinned Git trees before disconnecting network
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 scripts/fdroid/prepare-native-sources.py --prepare --source-root "$RUNNER_TEMP/nexora-pinned" --report "$RUNNER_TEMP/native-provenance.json"
+      - name: Verify sources and network isolation
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 scripts/fdroid/prepare-native-sources.py --verify-only --source-root "$RUNNER_TEMP/nexora-pinned"
+          sudo unshare --net true
+      - name: Compile and test with no network interfaces
+        shell: bash
+        run: |
+          set -euo pipefail
+          sudo --preserve-env=NEXORA_GITHUB_CLIENT_ID,NEXORA_AUTH_BROKER_BASE_URL,NEXORA_GITHUB_CALLBACK_URL unshare --net -- bash -euo pipefail -c '
+            cmake -S native/git -B build/fdroid-native-offline -G Ninja -DNEXORA_NATIVE_SOURCE_ROOT="$1" -DNEXORA_BUILD_NATIVE_TESTS=ON -DFETCHCONTENT_FULLY_DISCONNECTED=ON -DCMAKE_BUILD_TYPE=Release
+            cmake --build build/fdroid-native-offline --parallel 2
+            ctest --test-dir build/fdroid-native-offline --output-on-failure
+          ' _ "$RUNNER_TEMP/nexora-pinned"
+      - name: Publish public revision provenance
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: fdroid-native-revision-provenance
+          path: ${{ runner.temp }}/native-provenance.json
+          if-no-files-found: warn
+          retention-days: 30
