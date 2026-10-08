@@ -3,7 +3,7 @@ name: Render Play Store artwork
 on:
   push:
     branches: ["phase-s/p2-s17-store-artwork"]
-    paths: ["docs/store/artwork/**", ".github/workflows/render-store-artwork.yml"]
+    paths: ["docs/store/artwork/**", "scripts/ci/validate-s17-store-artwork.py", ".github/workflows/render-store-artwork.yml"]
   workflow_dispatch:
 
 permissions:
