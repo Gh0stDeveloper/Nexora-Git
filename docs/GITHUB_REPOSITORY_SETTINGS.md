@@ -6,10 +6,10 @@ Phase S P2 treats GitHub repository presentation as part of the product launch s
 
 Before any beta/RC is published, the repository must expose:
 
-- **Description:** concise Android Git/GitHub positioning, maintained as the product evolves.
+- **Description:** `Advanced open-source Git and GitHub client for Android. Manage repositories, branches, commits, pull requests, issues, Actions, releases and complete local projects directly from your phone.`
 - **Homepage:** the production HTTPS Nexora Git website, identical to the configured production Auth Broker/site origin.
-- **Topics:** at minimum `android`, `git`, `github`, `kotlin`, `jetpack-compose`, `libgit2`, `open-source`.
-- **Discussions:** enabled for community questions and non-sensitive feedback.
+- **Topics:** `android`, `git`, `github`, `kotlin`, `jetpack-compose`, `libgit2`, `open-source`, `git-client`, `code-editor`.
+- **Discussions:** **decision: enable it** for community questions, ideas and non-sensitive feedback. Bugs remain in Issues and vulnerabilities remain in private security reporting.
 - **Delete head branches after merge:** enabled.
 - **Default branch:** `main`.
 - **Main protection/ruleset:** enabled separately under the P0 release gate.
