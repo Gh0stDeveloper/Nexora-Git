@@ -4,6 +4,10 @@ project(nexoragit_git_engine LANGUAGES C CXX)
 
 include(FetchContent)
 
+# Pinned 40-character commit IDs are not necessarily reachable by a shallow
+# clone of a moving upstream default branch; fetching complete Git history is
+# required for deterministic checkout by commit SHA.
+
 set(NEXORA_LIBGIT2_REF "49e408b3208bc3093757a1c2db938d3590f3f412" CACHE STRING "Pinned libgit2 commit")
 set(NEXORA_MBEDTLS_REF "068ff080b369adfac81509f9b57b2afabaf82dc5" CACHE STRING "Pinned Mbed TLS commit")
 set(NEXORA_TREE_SITTER_REF "752c612a1359f00e4c113593837a0c1e880214e3" CACHE STRING "Pinned Tree-sitter commit")
@@ -100,7 +104,7 @@ FetchContent_Declare(
     mbedtls
     GIT_REPOSITORY https://github.com/Mbed-TLS/mbedtls.git
     GIT_TAG ${NEXORA_MBEDTLS_REF}
-    GIT_SHALLOW TRUE
+    GIT_SHALLOW FALSE
 )
 FetchContent_MakeAvailable(mbedtls)
 
@@ -126,7 +130,7 @@ FetchContent_Declare(
     libgit2
     GIT_REPOSITORY https://github.com/libgit2/libgit2.git
     GIT_TAG ${NEXORA_LIBGIT2_REF}
-    GIT_SHALLOW TRUE
+    GIT_SHALLOW FALSE
     PATCH_COMMAND
         git apply --whitespace=nowarn
         "${CMAKE_CURRENT_SOURCE_DIR}/cmake/libgit2-no-install.patch"
@@ -147,7 +151,7 @@ FetchContent_Declare(
     tree_sitter
     GIT_REPOSITORY https://github.com/tree-sitter/tree-sitter.git
     GIT_TAG ${NEXORA_TREE_SITTER_REF}
-    GIT_SHALLOW TRUE
+    GIT_SHALLOW FALSE
     SOURCE_SUBDIR "__nexora_source_only__"
 )
 FetchContent_MakeAvailable(tree_sitter)
@@ -175,7 +179,7 @@ function(nexora_fetch_grammar target repository ref)
         ${target}_source
         GIT_REPOSITORY ${repository}
         GIT_TAG ${ref}
-        GIT_SHALLOW TRUE
+        GIT_SHALLOW FALSE
         SOURCE_SUBDIR "__nexora_source_only__"
     )
     FetchContent_MakeAvailable(${target}_source)
@@ -227,7 +231,7 @@ FetchContent_Declare(
     nexora_ts_typescript_source
     GIT_REPOSITORY https://github.com/tree-sitter/tree-sitter-typescript.git
     GIT_TAG ${NEXORA_TREE_SITTER_TYPESCRIPT_REF}
-    GIT_SHALLOW TRUE
+    GIT_SHALLOW FALSE
     SOURCE_SUBDIR "__nexora_source_only__"
 )
 FetchContent_MakeAvailable(nexora_ts_typescript_source)
