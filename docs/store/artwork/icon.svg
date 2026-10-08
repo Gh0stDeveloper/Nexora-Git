@@ -1,5 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512">
   <title>Nexora Git — original Git-branch brand icon, high resolution</title>
+  <desc>Original purple background and three white Git nodes; independent open-source Android brand.</desc>
   <defs>
     <linearGradient id="purple" x1="0" y1="0" x2="1" y2="1">
       <stop stop-color="#25104B"/><stop offset=".53" stop-color="#6230BA"/><stop offset="1" stop-color="#8952E1"/>
