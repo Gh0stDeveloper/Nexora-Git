@@ -19,8 +19,12 @@ repo = json.loads(sys.argv[2])
 errors = []
 
 description = (repo.get("description") or "").strip()
-if len(description) < 40:
+if len(description) < 60:
     errors.append("repository description is missing or too short")
+description_lower = description.lower()
+for keyword in ("android", "git", "github"):
+    if keyword not in description_lower:
+        errors.append(f"repository description must include {keyword!r}")
 
 homepage = (repo.get("homepage") or "").rstrip("/")
 if homepage != expected_homepage:
@@ -35,6 +39,8 @@ required_topics = {
     "jetpack-compose",
     "libgit2",
     "open-source",
+    "git-client",
+    "code-editor",
 }
 missing = sorted(required_topics - topics)
 if missing:
