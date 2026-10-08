@@ -13,6 +13,14 @@
 - Product website source contains `/privacy` and discovery links, **not yet deployed**.
 - Data safety checklist and asset delivery specification exist; **no declaration has been submitted**.
 
+#### Follow-up: original Play Store artwork candidates (PR #51)
+
+- Editable purple/white Git branch vectors sourced from Nexora Git's existing brand.
+- High-resolution icon 512 × 512 and localized feature graphics 1024 × 500, in `en-US` and `es-MX`.
+- GitHub Actions renderer and PNG integrity validation run on an isolated artwork branch, requiring the maintainer's approval before merging.
+- Real Android phone screenshots remain **deferred to issue #47** until the self-hosted app and VPS are working.
+- These are not claims that Play Console listing, official certificate or storefront are live.
+
 ### S.17.2 · Signing identity
 
 - Signed-release workflow is wired to generate `SIGNING-CERTIFICATE-SHA256.txt` and `SIGNING-IDENTITY.json`.
