@@ -38,7 +38,14 @@ cmake --build build/offline-native
 ctest --test-dir build/offline-native --output-on-failure
 ```
 
-Android NDK builds must additionally forward the same CMake variable from the fdroidserver environment/Gradle configuration and resolve all Maven/Gradle artifacts offline. **That full integration and a reproducible fdroidserver build are not yet certified.**
+Android Gradle can now forward this source directory using `-Pnexora.nativeSourceRoot=/absolute/path` or the `NEXORA_NATIVE_SOURCE_ROOT` environment variable. Only **absolute paths** are accepted. The source checkouts must be prepared **before** Gradle configuration.
+
+```bash
+./gradlew --offline :app:assembleRelease \
+  -Pnexora.nativeSourceRoot=/path/to/pinned-checkouts
+```
+
+This command is illustrative: full Gradle/Maven offline dependency acquisition, controlled signing and end-to-end fdroidserver reproducibility are **not yet certified**.
 
 ## Outstanding release blockers
 
