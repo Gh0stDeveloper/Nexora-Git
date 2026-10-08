@@ -33,3 +33,16 @@ These are **account-level controls**. The connected GitHub integration does not 
 ## Manual configuration
 
 Repository administrators should open **Settings** and configure the repository About/homepage/topics, enable Discussions, enable automatic deletion of merged head branches, and enable the main ruleset/branch protection. Re-run the release gate afterwards; the API result, not this checklist, is authoritative.
+
+
+## Automated administration path
+
+When an administrator has a `gh` session with repository **Administration: write** permission, all four mutable launch settings can be applied and verified in one command:
+
+```bash
+bash scripts/github/apply-launch-settings.sh "https://<production-origin>"
+```
+
+The script is idempotent. It configures the homepage, enables Discussions, enables automatic deletion of merged head branches, replaces repository topics with the reviewed S.16 topic set, and then runs the read-back validator.
+
+The normal connected GitHub integration intentionally cannot perform this Administration mutation, so the script must be executed from an administrator-authenticated environment.
