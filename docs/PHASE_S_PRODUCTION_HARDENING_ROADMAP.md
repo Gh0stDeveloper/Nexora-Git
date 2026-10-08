@@ -614,6 +614,7 @@ The user will capture the screenshots on an Android device once the application 
 
 - [x] Keep `NonFreeNet` disclosure for GitHub-dependent operations.
 - [x] Opt-in CMake preseeded source mode verifies pinned Git revisions and disables network FetchContent.
+- [x] Complete network-isolated host-native CMake/Ninja/CTest on nine pinned upstream sources plus the Mbed TLS framework gitlink ([CI #37806822320](https://github.com/Gh0stDeveloper/Nexora-Git/actions/runs/37806822320)).
 - [ ] Prove offline transitive native/Gradle dependencies with repeatable fdroidserver build.
 - [ ] Enable F-Droid build metadata **only after** successful independent reproducibility validation (currently explicitly disabled).
 
