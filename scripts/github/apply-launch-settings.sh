@@ -21,10 +21,19 @@ gh auth status >/dev/null 2>&1 || {
 
 echo "Applying Nexora Git launch settings to $repository"
 
-gh api   --method PATCH   -H "Accept: application/vnd.github+json"   "repos/$repository"   -f homepage="$site_url"   -F has_discussions=true   -F delete_branch_on_merge=true   >/dev/null
+gh api \
+  --method PATCH \
+  -H "Accept: application/vnd.github+json" \
+  "repos/$repository" \
+  -f homepage="$site_url" \
+  -F has_discussions=true \
+  -F delete_branch_on_merge=true \
+  >/dev/null
 
-python3 - <<'PY' |
+topics_json="$(
+  python3 - <<'PY'
 import json
+
 print(json.dumps({
     "names": [
         "android",
@@ -39,8 +48,17 @@ print(json.dumps({
     ]
 }))
 PY
-gh api   --method PUT   -H "Accept: application/vnd.github+json"   "repos/$repository/topics"   --input -   >/dev/null
+)"
 
-GITHUB_REPOSITORY="$repository"   bash scripts/ci/validate-github-launch-settings.sh "$site_url"
+printf '%s' "$topics_json" |
+  gh api \
+    --method PUT \
+    -H "Accept: application/vnd.github+json" \
+    "repos/$repository/topics" \
+    --input - \
+    >/dev/null
+
+GITHUB_REPOSITORY="$repository" \
+  bash scripts/ci/validate-github-launch-settings.sh "$site_url"
 
 echo "GitHub launch settings applied and verified."
