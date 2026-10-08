@@ -193,12 +193,26 @@ jobs:
           VERSION="${GITHUB_REF_NAME#v}"
           python3 scripts/ci/generate-release-sbom.py             "$VERSION"             dist/NexoraGit-$VERSION-SBOM.spdx.json
 
+      - name: Publish auditable APK and AAB signing identity
+        shell: bash
+        run: |
+          set -euo pipefail
+          VERSION="${GITHUB_REF_NAME#v}"
+          SDK_ROOT="${ANDROID_SDK_ROOT:-${ANDROID_HOME:-/usr/local/lib/android/sdk}}"
+          python3 scripts/ci/create-release-signing-evidence.py \
+            --apk "dist/NexoraGit-$VERSION.apk" \
+            --aab "dist/NexoraGit-$VERSION.aab" \
+            --output dist \
+            --version "$VERSION" \
+            --commit "$GITHUB_SHA" \
+            --apksigner "$SDK_ROOT/build-tools/37.0.0/apksigner"
+
       - name: Generate release checksums
         shell: bash
         run: |
           (
             cd dist
-            sha256sum NexoraGit-* > SHA256SUMS.txt
+            sha256sum NexoraGit-* SIGNING-CERTIFICATE-SHA256.txt SIGNING-IDENTITY.json > SHA256SUMS.txt
           )
 
       - name: Attest release build provenance
