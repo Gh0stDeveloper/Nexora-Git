@@ -63,7 +63,7 @@ import zlib
 
 def validate_png(path: Path) -> tuple[int, int, str]:
     raw = path.read_bytes()
-    if len(raw) < 10_000 or raw[:8] != b"\\x89PNG\\r\\n\\x1a\\n":
+    if len(raw) < 10_000 or raw[:8] != b"\x89PNG\r\n\x1a\n":
         raise ValueError("missing PNG signature or image is unexpectedly small")
 
     offset = 8
