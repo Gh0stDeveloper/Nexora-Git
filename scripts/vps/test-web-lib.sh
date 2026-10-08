@@ -62,6 +62,7 @@ JOB_ID=$job
 SIGNED_AT=2026-10-07T04:00:00Z
 SIGNED_APK=$job-signed.apk
 SIGNED_AAB=$job-signed.aab
+SIGNING_CERT_SHA256=AA:AA:AA:AA:AA:AA:AA:AA:AA:AA:AA:AA:AA:AA:AA:AA:AA:AA:AA:AA:AA:AA:AA:AA:AA:AA:AA:AA:AA:AA:AA:AA
 EOF
 cat > "$NEXORA_ANDROID_STATE_ROOT/builds/$job/job.conf" <<EOF
 JOB_ID=$job
@@ -90,6 +91,7 @@ web_publish_signed_release "$job" "$signed"
 grep -q '"versionName": "1.0.0"' "$NEXORA_WEB_RELEASE_ROOT/current/latest.json"
 grep -q '"versionCode": 10000' "$NEXORA_WEB_RELEASE_ROOT/current/latest.json"
 grep -q '"downloadUrl": "/download/nexora-git.apk"' "$NEXORA_WEB_RELEASE_ROOT/current/latest.json"
+grep -q '"signingCertificateSha256": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"' "$NEXORA_WEB_RELEASE_ROOT/current/latest.json"
 if grep -Rqs 'super-secret-must-survive' "$NEXORA_WEB_RELEASE_ROOT"; then
   printf 'Broker secret leaked into public release metadata.\n' >&2
   exit 1

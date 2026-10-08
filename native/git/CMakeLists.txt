@@ -4,6 +4,10 @@ project(nexoragit_git_engine LANGUAGES C CXX)
 
 include(FetchContent)
 
+# Pinned 40-character commit IDs are not necessarily reachable by a shallow
+# clone of a moving upstream default branch; fetching complete Git history is
+# required for deterministic checkout by commit SHA.
+
 set(NEXORA_LIBGIT2_REF "49e408b3208bc3093757a1c2db938d3590f3f412" CACHE STRING "Pinned libgit2 commit")
 set(NEXORA_MBEDTLS_REF "068ff080b369adfac81509f9b57b2afabaf82dc5" CACHE STRING "Pinned Mbed TLS commit")
 set(NEXORA_TREE_SITTER_REF "752c612a1359f00e4c113593837a0c1e880214e3" CACHE STRING "Pinned Tree-sitter commit")
@@ -13,6 +17,65 @@ set(NEXORA_TREE_SITTER_JSON_REF "254c42a6476413b776221e03982ac8ae159eeb72" CACHE
 set(NEXORA_TREE_SITTER_PYTHON_REF "26855eabccb19c6abf499fbc5b8dc7cc9ab8bc64" CACHE STRING "Pinned Python grammar commit")
 set(NEXORA_TREE_SITTER_JAVASCRIPT_REF "58404d8cf191d69f2674a8fd507bd5776f46cb11" CACHE STRING "Pinned JavaScript grammar commit")
 set(NEXORA_TREE_SITTER_TYPESCRIPT_REF "75b3874edb2dc714fb1fd77a32013d0f8699989f" CACHE STRING "Pinned TypeScript grammar commit")
+# Optional F-Droid/offline mode: source acquisition is controlled by the
+# packaging system. Default online FetchContent operation is unchanged.
+# Every supplied Git checkout must match the hard-pinned upstream revision.
+set(NEXORA_NATIVE_SOURCE_ROOT "" CACHE PATH "Directory holding all pinned native source checkouts")
+if(NEXORA_NATIVE_SOURCE_ROOT)
+    get_filename_component(NEXORA_NATIVE_SOURCE_ROOT "${NEXORA_NATIVE_SOURCE_ROOT}" ABSOLUTE)
+    set(_nexora_offline_sources
+        "mbedtls|${NEXORA_MBEDTLS_REF}"
+        "libgit2|${NEXORA_LIBGIT2_REF}"
+        "tree_sitter|${NEXORA_TREE_SITTER_REF}"
+        "nexora_ts_kotlin_source|${NEXORA_TREE_SITTER_KOTLIN_REF}"
+        "nexora_ts_java_source|${NEXORA_TREE_SITTER_JAVA_REF}"
+        "nexora_ts_json_source|${NEXORA_TREE_SITTER_JSON_REF}"
+        "nexora_ts_python_source|${NEXORA_TREE_SITTER_PYTHON_REF}"
+        "nexora_ts_javascript_source|${NEXORA_TREE_SITTER_JAVASCRIPT_REF}"
+        "nexora_ts_typescript_source|${NEXORA_TREE_SITTER_TYPESCRIPT_REF}"
+    )
+    foreach(_item IN LISTS _nexora_offline_sources)
+        string(REPLACE "|" ";" _fields "${_item}")
+        list(GET _fields 0 _name)
+        list(GET _fields 1 _pinned)
+        set(_source "${NEXORA_NATIVE_SOURCE_ROOT}/${_name}")
+        if(NOT IS_DIRECTORY "${_source}")
+            message(FATAL_ERROR "Offline native source is missing: ${_source}")
+        endif()
+        execute_process(
+            COMMAND git -C "${_source}" rev-parse HEAD
+            OUTPUT_VARIABLE _actual
+            OUTPUT_STRIP_TRAILING_WHITESPACE
+            RESULT_VARIABLE _git_status
+            ERROR_QUIET
+        )
+        if(NOT _git_status EQUAL 0 OR NOT _actual STREQUAL _pinned)
+            message(FATAL_ERROR
+                "Offline native dependency ${_name} must be a Git checkout at pinned ${_pinned}; got ${_actual}"
+            )
+        endif()
+        string(TOUPPER "${_name}" _upper)
+        set(FETCHCONTENT_SOURCE_DIR_${_upper} "${_source}" CACHE PATH "Offline ${_name} source" FORCE)
+    endforeach()
+
+    # With an override, FetchContent skips its normal PATCH_COMMAND.
+    # libgit2 must therefore arrive prepatched and revision-pinned.
+    execute_process(
+        COMMAND git -C "${NEXORA_NATIVE_SOURCE_ROOT}/libgit2" apply --reverse --check
+                "${CMAKE_CURRENT_SOURCE_DIR}/cmake/libgit2-no-install.patch"
+        RESULT_VARIABLE _libgit2_patch_status
+        OUTPUT_QUIET
+        ERROR_QUIET
+    )
+    if(NOT _libgit2_patch_status EQUAL 0)
+        message(FATAL_ERROR
+            "Offline libgit2 checkout must have native/git/cmake/libgit2-no-install.patch preapplied."
+        )
+    endif()
+    set(FETCHCONTENT_FULLY_DISCONNECTED ON CACHE BOOL "Never contact network for offline native sources" FORCE)
+    message(STATUS "Nexora native dependencies preseeded and revision-checked: ${NEXORA_NATIVE_SOURCE_ROOT}")
+endif()
+
 option(NEXORA_BUILD_NATIVE_TESTS "Build host native Git tests" OFF)
 option(NEXORA_BUILD_NATIVE_FUZZERS "Build project-owned host fuzz targets" OFF)
 option(NEXORA_ENABLE_PROJECT_SANITIZERS "Instrument project-owned native code with ASan/UBSan" OFF)
@@ -41,7 +104,7 @@ FetchContent_Declare(
     mbedtls
     GIT_REPOSITORY https://github.com/Mbed-TLS/mbedtls.git
     GIT_TAG ${NEXORA_MBEDTLS_REF}
-    GIT_SHALLOW TRUE
+    GIT_SHALLOW FALSE
 )
 FetchContent_MakeAvailable(mbedtls)
 
@@ -67,7 +130,7 @@ FetchContent_Declare(
     libgit2
     GIT_REPOSITORY https://github.com/libgit2/libgit2.git
     GIT_TAG ${NEXORA_LIBGIT2_REF}
-    GIT_SHALLOW TRUE
+    GIT_SHALLOW FALSE
     PATCH_COMMAND
         git apply --whitespace=nowarn
         "${CMAKE_CURRENT_SOURCE_DIR}/cmake/libgit2-no-install.patch"
@@ -88,7 +151,7 @@ FetchContent_Declare(
     tree_sitter
     GIT_REPOSITORY https://github.com/tree-sitter/tree-sitter.git
     GIT_TAG ${NEXORA_TREE_SITTER_REF}
-    GIT_SHALLOW TRUE
+    GIT_SHALLOW FALSE
     SOURCE_SUBDIR "__nexora_source_only__"
 )
 FetchContent_MakeAvailable(tree_sitter)
@@ -116,7 +179,7 @@ function(nexora_fetch_grammar target repository ref)
         ${target}_source
         GIT_REPOSITORY ${repository}
         GIT_TAG ${ref}
-        GIT_SHALLOW TRUE
+        GIT_SHALLOW FALSE
         SOURCE_SUBDIR "__nexora_source_only__"
     )
     FetchContent_MakeAvailable(${target}_source)
@@ -168,7 +231,7 @@ FetchContent_Declare(
     nexora_ts_typescript_source
     GIT_REPOSITORY https://github.com/tree-sitter/tree-sitter-typescript.git
     GIT_TAG ${NEXORA_TREE_SITTER_TYPESCRIPT_REF}
-    GIT_SHALLOW TRUE
+    GIT_SHALLOW FALSE
     SOURCE_SUBDIR "__nexora_source_only__"
 )
 FetchContent_MakeAvailable(nexora_ts_typescript_source)

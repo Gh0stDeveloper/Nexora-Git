@@ -370,6 +370,14 @@ web_publish_signed_release() {
   [[ "$signed_at" =~ ^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$ ]] ||
     die "Signed release timestamp is invalid."
 
+  # The Signing Vault's public SHA-256 certificate identity must accompany
+  # each published APK; a missing/malformed value blocks publication.
+  local signing_certificate_sha256 signing_certificate_hex
+  signing_certificate_sha256="$(sed -n 's/^SIGNING_CERT_SHA256=//p' "$signed_dir/signing-manifest.conf" | tr -d "'\" " | head -n 1)"
+  signing_certificate_hex="$(printf '%s' "$signing_certificate_sha256" | tr -d ':' | tr '[:lower:]' '[:upper:]')"
+  [[ "$signing_certificate_hex" =~ ^[A-F0-9]{64}$ ]] ||
+    die "Signing manifest must contain a valid certificate SHA-256 fingerprint."
+
   local sha size final stage
   sha="$(sha256sum "$apk" | awk '{print $1}')"
   size="$(stat -c '%s' "$apk")"
@@ -378,6 +386,8 @@ web_publish_signed_release() {
   if [[ -d "$final" ]]; then
     [[ -s "$final/Nexora-Git.apk" && "$(sha256sum "$final/Nexora-Git.apk" | awk '{print $1}')" == "$sha" ]] ||
       die "Published website release exists with different APK content: $job_id"
+    grep -Fq "\"signingCertificateSha256\": \"$signing_certificate_hex\"" "$final/latest.json" ||
+      die "Published website release is missing or mismatches signing-certificate identity: $job_id"
   else
     stage="$(mktemp -d "$NEXORA_WEB_RELEASE_ROOT/.staging-$job_id.XXXXXX")"
     chmod 0755 "$stage"
@@ -390,6 +400,7 @@ web_publish_signed_release() {
   "commit": "$commit",
   "signedAt": "$signed_at",
   "sha256": "$sha",
+  "signingCertificateSha256": "$signing_certificate_hex",
   "sizeBytes": $size,
   "downloadUrl": "/download/nexora-git.apk"
 }

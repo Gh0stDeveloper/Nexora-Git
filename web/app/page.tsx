@@ -111,6 +111,13 @@ export default async function HomePage() {
                     <p className="mb-1 text-xs font-medium uppercase tracking-wide text-[#8b949e]">SHA-256</p>
                     <p className="code-value rounded-md bg-[#010409] p-2 text-xs leading-5 text-[#c9d1d9]">{release.sha256}</p>
                   </div>
+                  <div className="border-t border-[#21262d] pt-4">
+                    <p className="mb-1 text-xs font-medium uppercase tracking-wide text-[#8b949e]">APK signing certificate · SHA-256</p>
+                    <p className="code-value rounded-md bg-[#010409] p-2 text-xs leading-5 text-[#c9d1d9]">{release.signingCertificateSha256}</p>
+                    <p className="mt-2 text-xs leading-5 text-[#8b949e]">
+                      Compare this fingerprint with the certificate reported by Android apksigner. For Google Play, the Play App Signing certificate may be different from the upload key.
+                    </p>
+                  </div>
                   <div className="flex items-center gap-2 text-xs text-[#3fb950]">
                     <ShieldIcon />
                     Signed and verified by the VPS release pipeline
@@ -221,6 +228,11 @@ export default async function HomePage() {
           </article>
         </div>
       </section>
+      <footer className="mx-auto max-w-7xl border-t border-[#30363d] px-4 py-6 text-sm text-[#8b949e] sm:px-6 lg:px-8">
+        <a className="text-[#58a6ff] hover:underline" href="/privacy">Privacy policy</a>
+        <span className="mx-3">·</span>
+        <a className="text-[#58a6ff] hover:underline" href="/terms">Terms</a>
+      </footer>
     </main>
   );
 }
