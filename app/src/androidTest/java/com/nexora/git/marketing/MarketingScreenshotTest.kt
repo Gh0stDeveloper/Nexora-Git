@@ -1,6 +1,7 @@
 package com.nexora.git.marketing
 
 import android.graphics.Bitmap
+import android.os.ParcelFileDescriptor
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
@@ -498,5 +499,19 @@ class MarketingScreenshotTest {
             check(bitmap.compress(Bitmap.CompressFormat.PNG, 100, stream))
         }
         check(output.length() > 0L)
+
+        // Android Gradle instrumentation may uninstall the debug target after tests.
+        // Stage genuine captures outside app-specific storage before test teardown.
+        val staging = "/sdcard/Download/NexoraGitMarketing"
+        val target = "$staging/$name.png"
+        val command = "mkdir -p '$staging' && cp '${output.absolutePath}' '$target' " +
+            "&& test -s '$target' && echo CAPTURE_EXPORTED"
+        val response = ParcelFileDescriptor.AutoCloseInputStream(
+            InstrumentationRegistry.getInstrumentation()
+                .uiAutomation.executeShellCommand(command),
+        ).bufferedReader().use { reader -> reader.readText() }
+        check("CAPTURE_EXPORTED" in response) {
+            "Failed to stage screenshot $name: $response"
+        }
     }
 }
