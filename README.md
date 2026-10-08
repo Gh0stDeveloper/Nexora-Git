@@ -39,26 +39,11 @@ Stable `v1.0.0` is intentionally blocked until the public beta/RC qualification 
 
 ## Product screenshots
 
-These captures are rendered by the actual Jetpack Compose UI components on an Android emulator, using deterministic **demonstration data** rather than a signed-in account or live GitHub API responses. The screenshots are versioned with the UI and are not hand-made mockups.
+**Pending — official captures will be added after the Android application and self-hosted VPS/Auth Broker are tested end-to-end.** The project maintainer will take the final screenshots personally from the working Android app, including Light, Dark and AMOLED themes.
 
-<table>
-  <tr>
-    <td align="center"><strong>Home · Dark</strong><br><img src="docs/assets/screenshots/home-dark.png" alt="Nexora Git Home dashboard in dark theme" width="260"></td>
-    <td align="center"><strong>Repository</strong><br><img src="docs/assets/screenshots/repository-detail.png" alt="Nexora Git repository detail" width="260"></td>
-    <td align="center"><strong>Editor</strong><br><img src="docs/assets/screenshots/editor.png" alt="Nexora Git mobile code editor" width="260"></td>
-  </tr>
-  <tr>
-    <td align="center"><strong>Git workbench</strong><br><img src="docs/assets/screenshots/git-workbench.png" alt="Nexora Git local Git workbench" width="260"></td>
-    <td align="center"><strong>Pull Request</strong><br><img src="docs/assets/screenshots/pull-request.png" alt="Nexora Git pull request review" width="260"></td>
-    <td align="center"><strong>GitHub Actions</strong><br><img src="docs/assets/screenshots/actions.png" alt="Nexora Git Actions workflow surface" width="260"></td>
-  </tr>
-</table>
+There are **no published product screenshots yet**. We deliberately do not display broken image links, fictional mockups or temporary emulator fixtures as product evidence. The plan and acceptance checklist are tracked in [screenshot follow-up #47](https://github.com/Gh0stDeveloper/Nexora-Git/issues/47). Once the real PNGs are approved, the README gallery will be enabled in a separate review.
 
-### Theme variants
-
-| Light | Dark | AMOLED |
-| --- | --- | --- |
-| ![Home light](docs/assets/screenshots/home-light.png) | ![Home dark](docs/assets/screenshots/home-dark.png) | ![Home AMOLED](docs/assets/screenshots/home-amoled.png) |
+The production website is also under development; its homepage and deployment readiness are tracked in [website follow-up #46](https://github.com/Gh0stDeveloper/Nexora-Git/issues/46).
 
 ## Overview
 
