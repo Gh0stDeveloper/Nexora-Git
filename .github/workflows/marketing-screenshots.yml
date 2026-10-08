@@ -71,7 +71,9 @@ jobs:
           profile: pixel_6
           disable-animations: true
           script: |
-            set -euo pipefail
+            # android-emulator-runner executes this script using /bin/sh.
+            # Run the instrumentation commands explicitly with Bash for pipefail.
+            bash -euo pipefail <<'BASH'
             ./gradlew --no-daemon :app:connectedDebugAndroidTest \
               -Pandroid.testInstrumentationRunnerArguments.class=com.nexora.git.marketing.MarketingScreenshotTest
             rm -rf docs/assets/screenshots
@@ -85,6 +87,7 @@ jobs:
             test -s docs/assets/screenshots/git-workbench.png
             test -s docs/assets/screenshots/pull-request.png
             test -s docs/assets/screenshots/actions.png
+            BASH
 
       - name: Version screenshots
         shell: bash
