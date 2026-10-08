@@ -28,7 +28,7 @@ Build, edit, version, review, automate and release complete repositories directl
 
 ## Get Nexora Git
 
-Official public builds are published through [GitHub Releases](https://github.com/Gh0stDeveloper/Nexora-Git/releases). Nexora Git does not treat random APK mirrors as trusted distribution.
+Once signed public beta/RC builds are approved, they will be published through [GitHub Releases](https://github.com/Gh0stDeveloper/Nexora-Git/releases). **No verified public build should be assumed available until a signed release is actually published.** Nexora Git does not treat random APK mirrors as trusted distribution.
 
 Before installing a direct APK, verify both:
 
@@ -39,7 +39,7 @@ Stable `v1.0.0` is intentionally blocked until the public beta/RC qualification 
 
 ## Product screenshots
 
-These images are generated from the real Jetpack Compose product surfaces by the repository's Android screenshot workflow. They are versioned with the UI so the README does not depend on hand-made mockups.
+These captures are rendered by the actual Jetpack Compose UI components on an Android emulator, using deterministic **demonstration data** rather than a signed-in account or live GitHub API responses. The screenshots are versioned with the UI and are not hand-made mockups.
 
 <table>
   <tr>
