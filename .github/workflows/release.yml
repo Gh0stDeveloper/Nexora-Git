@@ -53,6 +53,23 @@ jobs:
 
           git merge-base --is-ancestor "$GITHUB_SHA" origin/main
 
+      - name: Validate GitHub launch metadata and homepage
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          # Homepage must match the deployed production HTTPS origin.
+          expected_origin="$(python3 -c '
+          import os
+          from urllib.parse import urlsplit
+          url = urlsplit(os.environ["NEXORA_AUTH_BROKER_BASE_URL"])
+          if url.scheme != "https" or not url.netloc:
+              raise SystemExit("The production site/broker origin must use HTTPS")
+          print(f"{url.scheme}://{url.netloc}")
+          ')"
+          bash scripts/ci/validate-github-launch-settings.sh "$expected_origin"
+
       - name: Validate production configuration
         shell: bash
         env:

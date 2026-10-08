@@ -13,6 +13,7 @@ Describe the problem, the solution and why this change belongs in Nexora Git.
 - [ ] Release / distribution
 - [ ] Documentation
 - [ ] CI / build
+- [ ] Community / repository presentation
 
 ## Validation
 
@@ -49,3 +50,7 @@ Describe migrations, changed permissions, API assumptions, destructive operation
 ## Screenshots / evidence
 
 Add screenshots, logs or workflow links when they materially help review. Redact credentials and private data.
+
+- [ ] Real UI screenshots are attached or refreshed when this PR changes a user-visible surface.
+- [ ] Screenshot evidence contains no credentials, private repository content or personal data.
+- [ ] README/community links remain valid when this PR changes repository presentation.

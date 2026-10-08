@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Security vulnerability
+    url: https://github.com/Gh0stDeveloper/Nexora-Git/security/policy
+    about: Do not disclose security-sensitive details in a public issue.
+  - name: Support and usage
+    url: https://github.com/Gh0stDeveloper/Nexora-Git/blob/main/SUPPORT.md
+    about: Read the support guide before filing a bug.

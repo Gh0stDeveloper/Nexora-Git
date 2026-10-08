@@ -50,6 +50,35 @@ fun HomeScreen(
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
 
+    HomeContent(
+        state = state,
+        contentPadding = contentPadding,
+        activeLogin = activeLogin,
+        onOpenRepositories = onOpenRepositories,
+        onOpenExplore = onOpenExplore,
+        onOpenActivity = onOpenActivity,
+        onOpenWorkspace = onOpenWorkspace,
+        onOpenRepository = onOpenRepository,
+        onClone = onClone,
+        onImport = onImport,
+        onCreate = onCreate,
+    )
+}
+
+@Composable
+internal fun HomeContent(
+    state: HomeUiState,
+    contentPadding: PaddingValues,
+    activeLogin: String,
+    onOpenRepositories: () -> Unit,
+    onOpenExplore: () -> Unit,
+    onOpenActivity: () -> Unit,
+    onOpenWorkspace: (String) -> Unit,
+    onOpenRepository: (String, String) -> Unit,
+    onClone: () -> Unit,
+    onImport: () -> Unit,
+    onCreate: () -> Unit,
+) {
     LazyColumn(
         contentPadding = PaddingValues(
             start = 20.dp,
