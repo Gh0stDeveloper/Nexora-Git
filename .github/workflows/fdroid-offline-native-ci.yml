@@ -45,6 +45,32 @@ jobs:
         run: |
           set -euo pipefail
           python3 scripts/fdroid/prepare-native-sources.py --prepare --source-root "$RUNNER_TEMP/nexora-pinned" --report "$RUNNER_TEMP/native-provenance.json"
+      - name: Reject modified origins and submodule provenance
+        shell: bash
+        run: |
+          set -euo pipefail
+          source_root="$RUNNER_TEMP/nexora-pinned"
+          mbtls="$source_root/mbedtls"
+          sub="$mbtls/framework"
+          orig="https://github.com/Mbed-TLS/mbedtls.git"
+          suborig="https://github.com/Mbed-TLS/mbedtls-framework"
+          trap 'git -C "$mbtls" remote set-url origin "$orig"; git -C "$sub" remote set-url origin "$suborig"' EXIT
+
+          git -C "$mbtls" remote set-url origin "https://github.com/example/mbedtls.git"
+          if python3 scripts/fdroid/prepare-native-sources.py --verify-only --source-root "$source_root"; then
+            echo "::error::Modified upstream origin was accepted"
+            exit 1
+          fi
+          git -C "$mbtls" remote set-url origin "$orig"
+
+          git -C "$sub" remote set-url origin "https://github.com/example/framework.git"
+          if python3 scripts/fdroid/prepare-native-sources.py --verify-only --source-root "$source_root"; then
+            echo "::error::Modified framework submodule origin was accepted"
+            exit 1
+          fi
+          git -C "$sub" remote set-url origin "$suborig"
+          python3 scripts/fdroid/prepare-native-sources.py --verify-only --source-root "$source_root"
+
       - name: Verify sources and network isolation
         shell: bash
         run: |
