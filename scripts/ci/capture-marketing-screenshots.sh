@@ -6,8 +6,10 @@ set -Eeuo pipefail
 ./gradlew --no-daemon :app:connectedDebugAndroidTest \
   -Pandroid.testInstrumentationRunnerArguments.class=com.nexora.git.marketing.MarketingScreenshotTest
 
-# Debug applicationId uses the .debug suffix (see app/build.gradle.kts).
-screenshot_source="/sdcard/Android/data/com.nexora.git.debug/files/screenshots/."
+# Android Gradle may uninstall/clear the debug package after instrumentation.
+# The instrumentation explicitly exports each real screenshot to this public
+# emulator-only staging directory before test teardown.
+screenshot_source="/sdcard/Download/NexoraGitMarketing/."
 screenshot_target="docs/assets/screenshots"
 rm -rf "$screenshot_target"
 mkdir -p "$screenshot_target"
