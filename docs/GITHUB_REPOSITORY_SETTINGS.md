@@ -30,6 +30,20 @@ At the start of P2 the API reported:
 
 These are **account-level controls**. The connected GitHub integration does not expose repository-administration mutations, so they must not be marked complete merely because this document exists.
 
+## Verified development-state configuration (2026-10-07)
+
+The repository API and active branch ruleset were read back after the maintainer's GitHub configuration:
+
+- Description: exactly the reviewed project description above.
+- Topics: all **nine** reviewed Topics are present.
+- Discussions: enabled.
+- Automatic deletion of merged branches: enabled.
+- Default branch: `main`.
+- Active `main` ruleset `nexora-git`: blocks deletion and non-fast-forward updates; requires a pull request and resolved review conversations; requires up-to-date checks.
+- Ruleset required status checks: Analyze Kotlin/Java, Analyze Go Auth Broker, Analyze C/C++, Analyze TypeScript/JavaScript, Review dependency changes and Validate repository foundation.
+
+**External deployment deferral:** the product website is still under development, so the Homepage field is deliberately empty. Do not set a fabricated domain or claim launch readiness. Track the owner, risk, rationale, and final verification in [the homepage launch issue](https://github.com/Gh0stDeveloper/Nexora-Git/issues/46). The release gate continues to require a real HTTPS origin before the corresponding public release. This is an approved **P2 development deferral, not an implemented website**.
+
 ## Manual configuration
 
 Repository administrators should open **Settings** and configure the repository About/homepage/topics, enable Discussions, enable automatic deletion of merged head branches, and enable the main ruleset/branch protection. Re-run the release gate afterwards; the API result, not this checklist, is authoritative.
