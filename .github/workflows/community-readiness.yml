@@ -16,6 +16,8 @@ on:
       - "docs/GITHUB_REPOSITORY_SETTINGS.md"
       - "docs/assets/screenshots/**"
       - "scripts/ci/validate-s16-discoverability.py"
+      - "scripts/ci/validate-github-launch-settings.sh"
+      - "scripts/github/apply-launch-settings.sh"
       - ".github/workflows/community-readiness.yml"
   pull_request:
     branches:
@@ -31,6 +33,8 @@ on:
       - "docs/GITHUB_REPOSITORY_SETTINGS.md"
       - "docs/assets/screenshots/**"
       - "scripts/ci/validate-s16-discoverability.py"
+      - "scripts/ci/validate-github-launch-settings.sh"
+      - "scripts/github/apply-launch-settings.sh"
       - ".github/workflows/community-readiness.yml"
 
 permissions:
@@ -44,6 +48,12 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
+
+      - name: Validate administration scripts
+        shell: bash
+        run: |
+          bash -n scripts/ci/validate-github-launch-settings.sh
+          bash -n scripts/github/apply-launch-settings.sh
 
       - name: Validate S.16 repository assets
         shell: bash
