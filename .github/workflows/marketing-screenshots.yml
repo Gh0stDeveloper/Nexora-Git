@@ -90,11 +90,27 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
+
+          snapshot_dir="$RUNNER_TEMP/nexora-marketing-screenshots"
+          rm -rf "$snapshot_dir"
+          mkdir -p "$snapshot_dir"
+          cp -a docs/assets/screenshots/. "$snapshot_dir/"
+
+          # The branch may have received documentation-only commits while the
+          # emulator was running. Rebase the generated evidence onto the latest
+          # remote head instead of risking a non-fast-forward push.
+          git fetch origin "$GITHUB_REF_NAME"
+          git reset --hard "origin/$GITHUB_REF_NAME"
+          rm -rf docs/assets/screenshots
+          mkdir -p docs/assets/screenshots
+          cp -a "$snapshot_dir/." docs/assets/screenshots/
+
           git add docs/assets/screenshots
           if git diff --cached --quiet; then
             echo "Screenshots already match the current UI."
             exit 0
           fi
+
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git commit -m "docs(screenshots): refresh real Android UI captures [skip ci]"
