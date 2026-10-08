@@ -6,7 +6,14 @@
       "name": "mbedtls",
       "url": "https://github.com/Mbed-TLS/mbedtls.git",
       "commit": "068ff080b369adfac81509f9b57b2afabaf82dc5",
-      "cmakeVariable": "NEXORA_MBEDTLS_REF"
+      "cmakeVariable": "NEXORA_MBEDTLS_REF",
+      "submodules": [
+        {
+          "path": "framework",
+          "url": "https://github.com/Mbed-TLS/mbedtls-framework",
+          "commit": "dde0c4a0e448a0552f18817dcea633bb851fd288"
+        }
+      ]
     },
     {
       "name": "libgit2",
