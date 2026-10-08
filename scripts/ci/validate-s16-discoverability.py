@@ -1,8 +1,20 @@
 #!/usr/bin/env python3
-from pathlib import Path
-import sys
+"""Check active S.16 presentation without faking deferred launch screenshots.
 
-required_files = [
+Normal Community Readiness accepts zero screenshots only while the README
+and the tracked issue explain why the maintainer deferred manual capture.
+Once any screenshot exists, ALL eight must be valid and consistent. The
+manual publication gate requires all screenshots explicitly.
+"""
+
+import argparse
+import hashlib
+from pathlib import Path
+import struct
+import sys
+import zlib
+
+BASE_FILES = (
     "README.md",
     "CONTRIBUTING.md",
     "CODE_OF_CONDUCT.md",
@@ -13,53 +25,78 @@ required_files = [
     ".github/ISSUE_TEMPLATE/feature.yml",
     ".github/ISSUE_TEMPLATE/config.yml",
     "docs/GITHUB_REPOSITORY_SETTINGS.md",
-    "docs/assets/screenshots/home-light.png",
-    "docs/assets/screenshots/home-dark.png",
-    "docs/assets/screenshots/home-amoled.png",
-    "docs/assets/screenshots/repository-detail.png",
-    "docs/assets/screenshots/editor.png",
-    "docs/assets/screenshots/git-workbench.png",
-    "docs/assets/screenshots/pull-request.png",
-    "docs/assets/screenshots/actions.png",
-]
+)
 
-missing = [path for path in required_files if not Path(path).is_file()]
+SCREENSHOT_FILES = tuple(
+    "docs/assets/screenshots/" + name + ".png"
+    for name in (
+        "home-light",
+        "home-dark",
+        "home-amoled",
+        "repository-detail",
+        "editor",
+        "git-workbench",
+        "pull-request",
+        "actions",
+    )
+)
+THEME_VARIANTS = SCREENSHOT_FILES[:3]
+
+parser = argparse.ArgumentParser()
+parser.add_argument(
+    "--require-screenshots",
+    action="store_true",
+    help="Require all eight final maintainer-approved Android PNG captures.",
+)
+args = parser.parse_args()
+
+missing = [p for p in BASE_FILES if not Path(p).is_file()]
 if missing:
-    print("S.16 launch presentation is incomplete:", file=sys.stderr)
+    print("S.16 repository presentation is incomplete:", file=sys.stderr)
     for path in missing:
         print(f" - missing {path}", file=sys.stderr)
     raise SystemExit(1)
 
 readme = Path("README.md").read_text(encoding="utf-8")
-required_readme_markers = [
+settings = Path("docs/GITHUB_REPOSITORY_SETTINGS.md").read_text(encoding="utf-8")
+required_readme_markers = (
     "## Get Nexora Git",
     "## Product screenshots",
-    "docs/assets/screenshots/home-dark.png",
-    "docs/assets/screenshots/repository-detail.png",
-    "docs/assets/screenshots/editor.png",
-    "docs/assets/screenshots/git-workbench.png",
-    "docs/assets/screenshots/pull-request.png",
-    "docs/assets/screenshots/actions.png",
     "## Community and contributing",
     "SUPPORT.md",
     "SECURITY.md",
-]
-missing_markers = [
-    marker for marker in required_readme_markers
-    if marker not in readme
-]
-if missing_markers:
-    print("README launch surface is incomplete:", file=sys.stderr)
-    for marker in missing_markers:
-        print(f" - missing marker: {marker}", file=sys.stderr)
+)
+for marker in required_readme_markers:
+    if marker not in readme:
+        print(f"Missing README marker: {marker}", file=sys.stderr)
+        raise SystemExit(1)
+
+available = [p for p in SCREENSHOT_FILES if Path(p).is_file()]
+if not available:
+    if args.require_screenshots:
+        print("Manual screenshot release gate: 8 final PNGs required.", file=sys.stderr)
+        raise SystemExit(1)
+    if (
+        "issues/47" not in readme
+        or "screenshots" not in readme.lower()
+        or "issues/47" not in settings
+    ):
+        print("Screenshot deferral must be documented and tracked in #47.", file=sys.stderr)
+        raise SystemExit(1)
+    if "docs/assets/screenshots/" in readme:
+        print("README must not refer to missing screenshot image files.", file=sys.stderr)
+        raise SystemExit(1)
+    print("S.16 active presentation passed; all 8 official screenshots deferred to issue #47.")
+    raise SystemExit(0)
+
+if len(available) != len(SCREENSHOT_FILES):
+    missing_png = sorted(set(SCREENSHOT_FILES) - set(available))
+    print(
+        "Partial screenshot publication is not allowed; missing: "
+        + ", ".join(missing_png),
+        file=sys.stderr,
+    )
     raise SystemExit(1)
-
-# Check screenshot bytes, not just existence or extension. Build evidence must be
-# a non-trivial portrait PNG produced by the Android capture pipeline.
-import hashlib
-import struct
-import zlib
-
 
 def validate_png(path: Path) -> tuple[int, int, str]:
     raw = path.read_bytes()
@@ -100,29 +137,21 @@ def validate_png(path: Path) -> tuple[int, int, str]:
     return (width, height, hashlib.sha256(raw).hexdigest())
 
 
-screenshots = {
-    path: Path(path)
-    for path in required_files
-    if path.endswith(".png")
-}
+
 results = {}
-for name, file in screenshots.items():
+for path in SCREENSHOT_FILES:
     try:
-        results[name] = validate_png(file)
+        results[path] = validate_png(Path(path))
     except ValueError as exc:
-        print(f"Invalid marketing screenshot {name}: {exc}", file=sys.stderr)
+        print(f"Invalid screenshot {path}: {exc}", file=sys.stderr)
         raise SystemExit(1) from exc
 
-variants = [
-    "docs/assets/screenshots/home-light.png",
-    "docs/assets/screenshots/home-dark.png",
-    "docs/assets/screenshots/home-amoled.png",
-]
-if len({results[name][2] for name in variants}) != len(variants):
-    print("Theme screenshot variants are identical.", file=sys.stderr)
-    raise SystemExit(1)
-if len({results[name][:2] for name in screenshots}) != 1:
-    print("Marketing screenshots must use one consistent device size.", file=sys.stderr)
+if len({results[path][2] for path in THEME_VARIANTS}) != len(THEME_VARIANTS):
+    print("Light/Dark/AMOLED images must be visually distinct.", file=sys.stderr)
     raise SystemExit(1)
 
-print("S.16 repository presentation assets passed.")
+if len({results[path][:2] for path in SCREENSHOT_FILES}) != 1:
+    print("Screenshots must use consistent portrait dimensions.", file=sys.stderr)
+    raise SystemExit(1)
+
+print("S.16 all 8 screenshot files passed integrity checks.")
