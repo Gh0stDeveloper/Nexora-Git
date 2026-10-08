@@ -584,41 +584,46 @@ The user will capture the screenshots on an Android device once the application 
 
 ## S.17 — Store/ASO and distribution completeness
 
-**Priority:** P2
+**Priority:** P2  
+**Status: IN PROGRESS.** The source-level distribution foundation can be merged independently of owner-operated Play Console, VPS deployment and later marketing screenshots. Public distribution remains **NO-GO** until these external approvals and the F-Droid reproducibility review are completed.
 
 ### S.17.1 Play Store assets
 
-- [ ] Final app title.
-- [ ] Short description.
-- [ ] Full description.
-- [ ] English listing.
-- [ ] Spanish listing.
-- [ ] Phone screenshots.
-- [ ] Feature graphic.
-- [ ] High-resolution icon.
-- [ ] Privacy URL.
-- [ ] Support/source URL.
-- [ ] Release notes/changelog process.
-- [ ] Data Safety answers reviewed against actual runtime behavior.
+- [x] Final draft app title: Nexora Git.
+- [x] Localized short description, English and Spanish.
+- [x] Localized full description, English and Spanish.
+- [x] Automated Play listing length and content checks.
+- [ ] Owner-approved phone screenshots (after working app + VPS; issue #47).
+- [ ] Final 1024×500 feature graphic (owner approval required).
+- [ ] Final 512×512 high-resolution icon (owner approval required).
+- [ ] Live HTTPS Privacy URL (route committed; deployment pending #46).
+- [x] Source/support URL documented in the public repository.
+- [x] Version-specific release notes and changelog policy.
+- [ ] Play Data safety review from actual signed release/VPS logs, then owner Play Console approval.
 
 ### S.17.2 Signing transparency
 
-- [ ] Publish the production signing-certificate SHA-256 fingerprint.
-- [ ] Show it on the official website.
-- [ ] Show it in release documentation.
-- [ ] Preserve APK SHA-256 display/download.
-- [ ] Document independent verification commands.
+- [x] Pipeline derives SHA-256 fingerprint from signed APK and signed AAB, compares identities and exports evidence files.
+- [x] Website source validates and displays real signing certificate fingerprint alongside APK SHA-256; still awaiting deployment.
+- [x] Publication documentation and independent APK verification commands.
+- [ ] First official signed RC certificate SHA-256 published and independently verified.
+- [ ] Production website actually serving verified signer identity.
+- [ ] Play App Signing vs upload-certificate separation reviewed in Play Console.
 
 ### S.17.3 F-Droid
 
-- [ ] Resolve build-time network dependency acquisition.
-- [ ] Make native source acquisition compatible with reproducible/offline F-Droid builds.
-- [ ] Re-enable F-Droid build metadata only after successful reproducibility validation.
-- [ ] Keep `NonFreeNet` disclosure for GitHub-dependent features where applicable.
+- [x] Keep `NonFreeNet` disclosure for GitHub-dependent operations.
+- [x] Opt-in CMake preseeded source mode verifies pinned Git revisions and disables network FetchContent.
+- [ ] Prove offline transitive native/Gradle dependencies with repeatable fdroidserver build.
+- [ ] Enable F-Droid build metadata **only after** successful independent reproducibility validation (currently explicitly disabled).
 
 ### Acceptance gate
 
-- [ ] Store metadata and direct-download metadata describe the same product behavior and signing identity.
+- [ ] Store and direct-download product claims, real UX and signing identity are consistent on **production**.
+- [ ] Real owner-approved art, public privacy policy, release signing identity and actual Data safety approval are published.
+- [ ] Final F-Droid artifact is certified or its independent optional distribution remains clearly blocked.
+
+**Evidence:** [S.17 progress report](PHASE_S_S17_DISTRIBUTION_REPORT.md), [store assets](store/ASSET_DELIVERY.md), [signer identity](store/SIGNING_TRANSPARENCY.md) and [Data safety worksheet](store/DATA_SAFETY_REVIEW.md).
 
 ---
 
