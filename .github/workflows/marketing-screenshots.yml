@@ -81,25 +81,7 @@ jobs:
           target: default
           profile: pixel_6
           disable-animations: false
-          script: |
-            # android-emulator-runner executes this script using /bin/sh.
-            # Run the instrumentation commands explicitly with Bash for pipefail.
-            bash -euo pipefail <<'BASH'
-            ./gradlew --no-daemon :app:connectedDebugAndroidTest \
-              -Pandroid.testInstrumentationRunnerArguments.class=com.nexora.git.marketing.MarketingScreenshotTest
-            rm -rf docs/assets/screenshots
-            mkdir -p docs/assets/screenshots
-            # Debug builds use applicationIdSuffix = .debug.
-            adb pull /sdcard/Android/data/com.nexora.git.debug/files/screenshots/. docs/assets/screenshots/
-            test -s docs/assets/screenshots/home-light.png
-            test -s docs/assets/screenshots/home-dark.png
-            test -s docs/assets/screenshots/home-amoled.png
-            test -s docs/assets/screenshots/repository-detail.png
-            test -s docs/assets/screenshots/editor.png
-            test -s docs/assets/screenshots/git-workbench.png
-            test -s docs/assets/screenshots/pull-request.png
-            test -s docs/assets/screenshots/actions.png
-            BASH
+          script: bash scripts/ci/capture-marketing-screenshots.sh
 
       - name: Validate generated screenshot evidence
         shell: bash
