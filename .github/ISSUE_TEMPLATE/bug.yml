@@ -1,0 +1,80 @@
+name: Bug report
+description: Report a reproducible problem in Nexora Git
+title: "[Bug]: "
+labels:
+  - bug
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for helping improve Nexora Git. Do not include access tokens, private repository contents, signing material, or other secrets.
+  - type: input
+    id: version
+    attributes:
+      label: Nexora Git version
+      description: Use the version shown in the app or release page.
+      placeholder: v1.0.0-beta.1
+    validations:
+      required: true
+  - type: input
+    id: device
+    attributes:
+      label: Device and Android version
+      placeholder: Pixel 8, Android 16
+    validations:
+      required: true
+  - type: dropdown
+    id: area
+    attributes:
+      label: Affected area
+      options:
+        - Authentication/accounts
+        - Repositories/workspaces
+        - Local Git
+        - Editor/code browser
+        - Issues/Pull Requests
+        - GitHub Actions
+        - Releases
+        - Settings/themes/localization
+        - VPS/Auth Broker
+        - Website/downloads
+        - Other
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Reproduction steps
+      placeholder: |
+        1. Open...
+        2. Tap...
+        3. Observe...
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behavior
+    validations:
+      required: true
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual behavior
+    validations:
+      required: true
+  - type: textarea
+    id: logs
+    attributes:
+      label: Relevant logs
+      description: Redact tokens, private URLs, repository content, email addresses and signing data.
+      render: shell
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Safety checks
+      options:
+        - label: I removed credentials and private repository data.
+          required: true
+        - label: I searched existing issues for the same problem.
+          required: true
