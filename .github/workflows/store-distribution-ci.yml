@@ -15,6 +15,7 @@ on:
       - "scripts/ci/validate-s17-distribution.py"
       - "scripts/ci/create-release-signing-evidence.py"
       - "scripts/ci/test-s17-signing-evidence.py"
+      - "scripts/ci/validate-s17-store-artwork.py"
       - ".github/workflows/store-distribution-ci.yml"
   pull_request:
     branches:
@@ -29,6 +30,7 @@ on:
       - "scripts/ci/validate-s17-distribution.py"
       - "scripts/ci/create-release-signing-evidence.py"
       - "scripts/ci/test-s17-signing-evidence.py"
+      - "scripts/ci/validate-s17-store-artwork.py"
       - ".github/workflows/store-distribution-ci.yml"
 
 permissions:
@@ -51,6 +53,15 @@ jobs:
         run: python3 scripts/ci/test-s17-signing-evidence.py
       - name: Validate bilingual metadata and F-Droid disclosure
         run: python3 scripts/ci/validate-s17-distribution.py
+      - name: Validate Play Store art when deliverables are present
+        shell: bash
+        run: |
+          set -euo pipefail
+          if find fastlane/metadata/android -path '*/images/*.png' -type f | grep -q .; then
+            python3 scripts/ci/validate-s17-store-artwork.py
+          else
+            echo "Store graphics not committed yet; Play release gate stays blocked."
+          fi
       - name: Verify public-release gate rejects missing real assets and HTTPS privacy URL
         shell: bash
         run: |

@@ -594,8 +594,8 @@ The user will capture the screenshots on an Android device once the application 
 - [x] Localized full description, English and Spanish.
 - [x] Automated Play listing length and content checks.
 - [ ] Owner-approved phone screenshots (after working app + VPS; issue #47).
-- [ ] Final 1024×500 feature graphic (owner approval required).
-- [ ] Final 512×512 high-resolution icon (owner approval required).
+- [x] Original localized 1024×500 feature graphic candidate designed (PR #51); final owner approval pending.
+- [x] Original 512×512 high-resolution icon candidate designed (PR #51); final owner approval pending.
 - [ ] Live HTTPS Privacy URL (route committed; deployment pending #46).
 - [x] Source/support URL documented in the public repository.
 - [x] Version-specific release notes and changelog policy.
