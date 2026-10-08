@@ -1,6 +1,7 @@
 name: Marketing Screenshots
 
 on:
+  workflow_dispatch:
   push:
     branches:
       - phase-s/p2-s16-discoverability
@@ -62,6 +63,16 @@ jobs:
       - name: Set up Gradle
         uses: gradle/actions/setup-gradle@3f5f9adaf7d9fecd50b5935e54106014257a94e6 # v6.4.0
 
+      - name: Enable KVM acceleration for Android emulator
+        shell: bash
+        run: |
+          set -euo pipefail
+          # GitHub-hosted Ubuntu can expose /dev/kvm without user permissions.
+          test -e /dev/kvm || { echo "::error::KVM is unavailable on this runner"; exit 1; }
+          sudo chmod 0666 /dev/kvm
+          test -r /dev/kvm && test -w /dev/kvm
+          ls -l /dev/kvm
+
       - name: Capture screenshots on Pixel 6
         uses: ReactiveCircus/android-emulator-runner@a421e43855164a8197daf9d8d40fe71c6996bb0d # v2
         with:
@@ -69,7 +80,7 @@ jobs:
           arch: x86_64
           target: default
           profile: pixel_6
-          disable-animations: true
+          disable-animations: false
           script: |
             # android-emulator-runner executes this script using /bin/sh.
             # Run the instrumentation commands explicitly with Bash for pipefail.
@@ -89,6 +100,10 @@ jobs:
             test -s docs/assets/screenshots/pull-request.png
             test -s docs/assets/screenshots/actions.png
             BASH
+
+      - name: Validate generated screenshot evidence
+        shell: bash
+        run: python3 scripts/ci/validate-s16-discoverability.py
 
       - name: Version screenshots
         shell: bash
