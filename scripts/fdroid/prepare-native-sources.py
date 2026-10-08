@@ -46,7 +46,9 @@ def load_lock() -> list[dict[str, str]]:
     names: set[str] = set()
     variables: set[str] = set()
     for item in sources:
-        if set(item) != {"name", "url", "commit", "cmakeVariable"}:
+        required = {"name", "url", "commit", "cmakeVariable"}
+        allowed = required | ({"submodules"} if item.get("name") == "mbedtls" else set())
+        if not required.issubset(item) or set(item) != allowed and set(item) != required:
             raise ValueError("Unexpected lockfile source fields")
         name, url, commit, var = (item[k] for k in ("name","url","commit","cmakeVariable"))
         if not isinstance(name, str) or not NAME_RE.fullmatch(name) or name in names:
@@ -61,6 +63,18 @@ def load_lock() -> list[dict[str, str]]:
         m = re.search(pattern, cmake)
         if not m or m.group(1) != commit:
             raise ValueError(f"Lockfile revision differs from CMake: {name}")
+        if name == "mbedtls":
+            submodules = item.get("submodules")
+            if not isinstance(submodules, list) or len(submodules) != 1:
+                raise ValueError("MbedTLS must lock its framework Git submodule")
+            sub = submodules[0]
+            if (
+                set(sub) != {"path", "url", "commit"}
+                or sub["path"] != "framework"
+                or sub["url"] != "https://github.com/Mbed-TLS/mbedtls-framework"
+                or not SHA_RE.fullmatch(sub["commit"])
+            ):
+                raise ValueError("MbedTLS framework submodule is not pinned")
         names.add(name)
         variables.add(var)
     return sources
@@ -75,6 +89,20 @@ def check_one(path: Path, entry: dict[str,str]) -> None:
     origin = run(["git","-C",str(path),"remote","get-url","origin"])
     if origin != entry["url"]:
         raise ValueError(f"Upstream URL mismatch: {entry['name']}")
+    if entry["name"] == "mbedtls":
+        sub = entry["submodules"][0]
+        tree = run(["git","-C",str(path),"ls-tree","HEAD",sub["path"]])
+        if f"160000 commit {sub['commit']}" not in tree:
+            raise ValueError("MbedTLS framework gitlink differs from locked revision")
+        framework = path / sub["path"]
+        if not framework.is_dir() or framework.is_symlink():
+            raise ValueError("MbedTLS framework submodule is missing")
+        if run(["git","-C",str(framework),"rev-parse","HEAD"]) != sub["commit"]:
+            raise ValueError("MbedTLS framework checkout differs from gitlink")
+        if run(["git","-C",str(framework),"remote","get-url","origin"]) != sub["url"]:
+            raise ValueError("MbedTLS framework origin mismatch")
+        if run(["git","-C",str(framework),"status","--porcelain"]):
+            raise ValueError("Dirty MbedTLS framework")
     if entry["name"] == "libgit2":
         # An offline override bypasses CMake's normal FetchContent PATCH_COMMAND.
         run(["git","-C",str(path),"apply","--reverse","--check",str(PATCH)])
@@ -95,6 +123,13 @@ def prepare(root: Path, entry: dict[str,str]) -> None:
         run(["git","clone","--filter=blob:none","--no-checkout","--no-tags",
              entry["url"],str(staging)],timeout=900)
         run(["git","-C",str(staging),"checkout","--detach",entry["commit"]],timeout=900)
+        if entry["name"] == "mbedtls":
+            # Initialize exactly the audited submodule; never recurse into
+            # unexpected upstream dependencies in the networked stage.
+            sub = entry["submodules"][0]
+            run(["git","-C",str(staging),"-c",
+                 "submodule.framework.url="+sub["url"],"submodule",
+                 "update","--init","--",sub["path"]],timeout=900)
         if entry["name"] == "libgit2":
             run(["git","-C",str(staging),"apply","--whitespace=nowarn",str(PATCH)])
         check_one(staging, entry)
@@ -131,8 +166,8 @@ def main() -> int:
                 "schemaVersion":1,
                 "sourceLockSha256":hashlib.sha256(LOCK.read_bytes()).hexdigest(),
                 "libgit2PatchSha256":hashlib.sha256(PATCH.read_bytes()).hexdigest(),
-                "sources":[{"name":e["name"],"origin":e["url"],"commit":e["commit"]}
-                           for e in sources],
+                "sources":[{"name":e["name"],"origin":e["url"],"commit":e["commit"],
+                            "submodules":e.get("submodules",[])} for e in sources],
                 "status":"nine-pinned-source-checkouts-verified",
                 "releaseQualified":False,
             }
