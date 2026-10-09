@@ -74,8 +74,8 @@ ${wrapper_sha}"
   exit 1
 }
 
-command -v sudo >/dev/null && command -v runuser >/dev/null || {
-  printf 'sudo and runuser are required for verified network namespace isolation.\n' >&2
+command -v sudo >/dev/null && command -v runuser >/dev/null && command -v ip >/dev/null || {
+  printf 'sudo, runuser and iproute2 are required for verified network namespace isolation.\n' >&2
   exit 1
 }
 sudo unshare --net -- true || {
@@ -91,7 +91,22 @@ rm -rf app/.cxx app/build baselineprofile/build build .gradle
 # unshare runs as root solely to create a network namespace. Build immediately
 # drops privileges to the ordinary checkout owner to avoid root-owned caches,
 # git unsafe-directory errors and unexpected permissions.
-sudo unshare --net -- runuser -u "$(id -un)" -- env \
+# Gradle's FileLockContentionHandler requires a usable local IP address.
+# An entirely DOWN loopback device causes "Could not determine a usable
+# wildcard IP". Bring up only lo INSIDE the isolated namespace; no external
+# interface or default route is allowed. The namespace remains offline.
+sudo unshare --net -- bash -euo pipefail -c '
+  ip link set dev lo up
+  [[ "$(ip -o link show | wc -l)" -eq 1 ]] || {
+    echo "Unexpected network interface inside isolated namespace" >&2
+    exit 1
+  }
+  [[ -z "$(ip -4 route show table main)" && -z "$(ip -6 route show table main)" ]] || {
+    echo "Unexpected external route inside isolated namespace" >&2
+    exit 1
+  }
+  exec "$@"
+' _ runuser -u "$(id -un)" -- env \
   HOME="$HOME" \
   PATH="$PATH" \
   JAVA_HOME="${JAVA_HOME:-}" \
