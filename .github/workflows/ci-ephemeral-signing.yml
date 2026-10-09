@@ -14,6 +14,7 @@ on:
       - "settings.gradle.kts"
       - ".github/workflows/ci-ephemeral-signing.yml"
       - "scripts/ci/verify-release-signing.sh"
+      - "scripts/ci/verify-production-signing-pin.sh"
   workflow_dispatch:
 
 permissions:
@@ -113,6 +114,24 @@ jobs:
             exit 1
           }
           echo "Ephemeral APK and AAB signing parity and isolated package ID verified."
+
+      - name: Test trusted signer pin against matching and mismatched fingerprints
+        shell: bash
+        run: |
+          set -euo pipefail
+          actual="$(keytool -list -v \
+            -alias "$NEXORA_SIGNING_KEY_ALIAS" \
+            -keystore "$NEXORA_SIGNING_STORE_FILE" \
+            -storepass "$NEXORA_SIGNING_STORE_PASSWORD" 2>/dev/null |
+            awk -F': ' '/SHA256:/ { print $2; exit }')"
+          test -n "$actual"
+          NEXORA_EXPECTED_SIGNER_SHA256="$actual" bash scripts/ci/verify-production-signing-pin.sh
+          wrong="$(printf '%064d' 0)"
+          if NEXORA_EXPECTED_SIGNER_SHA256="$wrong" \
+            bash scripts/ci/verify-production-signing-pin.sh >/dev/null 2>&1; then
+            echo "::error::Signing pin accepted a mismatched certificate."
+            exit 1
+          fi
 
       - name: Stage explicitly nonproduction test artifacts
         shell: bash
