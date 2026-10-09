@@ -80,6 +80,20 @@ sudo unshare --net -- bash -euo pipefail -c '
 
 **Boundary:** This establishes only host-native build isolation and pinned-source acquisition. It does **not** establish an Android APK compiled with Gradle fully offline, reproducible binaries from two isolated builds, or acceptance by the F-Droid repository. The metadata remains **disabled**.
 
+## Experimental Android Gradle offline qualification — S.17.3 follow-up
+
+A separate [F-Droid Offline Android Qualification (Experimental)](../.github/workflows/fdroid-offline-android-ci.yml) workflow now exercises the previously missing Android/Gradle side of the dependency boundary. It is an **experimental acceptance test, not proof of F-Droid eligibility**. The outcome must be read from its actual GitHub Actions run; source code and workflow definitions alone are not evidence of success.
+
+1. A connected acquisition stage obtains the same nine pinned native source trees and Mbed TLS submodule with `prepare-native-sources.py --prepare`, then builds both unsigned APK and AAB to prewarm Gradle plugin, KSP, Android and Maven dependencies. The warm-up binds to the current Git commit, native source lock, libgit2 patch, Gradle version catalog and wrapper properties.
+2. Before offline rebuild, `qualify-offline-android.sh offline` rejects missing or outdated preflight state, verifies the actual Git checkouts, removes `app/.cxx`, `app/build`, `baselineprofile/build`, project `build` and `.gradle`, and checks that `sudo unshare --net` is available.
+3. Inside a **network namespace without interfaces**, the script drops root privileges back to the checkout owner using `runuser`. It verifies pinned sources again and invokes `./gradlew --offline --no-daemon --no-build-cache --rerun-tasks :app:assembleRelease :app:bundleRelease`. A missing Maven/Gradle/Android artifact must fail instead of reaching the network.
+4. `report-offline-android.py` verifies the unsigned APK and AAB exist and are ZIP files, checks the actual Android application ID `com.nexora.git` and three native ABI directories, and records the APK/AAB hashes, dependency lock hashes and warm-up byte comparison. It explicitly reports `releaseQualified: false`, `independentBuildsCompared: false` and `fdroidserverQualified: false`.
+5. A short-retention CI artifact contains the audit **JSON only**, not an installable APK. No release signer or GitHub account credential is supplied to this workflow; the OAuth URL uses a deliberately nonfunctional `.invalid` hostname.
+
+This first diagnostic build can establish whether the current project can compile its complete Android release artifact under network isolation **once Maven/Gradle and native sources have been prefetched**. It does not prove a clean F-Droid build farm, fdroidserver `srclibs` recipe compatibility, two independent source cleanrooms, APK byte-for-byte reproducibility, or future signature/update continuity.
+
+**Next qualification steps after the experimental CI passes:** audit all Maven coordinates and transitive toolchain inputs in the F-Droid-approved build environment; author/verify the real fdroidserver source-acquisition and prebuild recipe; run two separate build jobs with independent caches and compare unsigned/signing-stripped outputs and APK manifests; then request maintainer review. Keep `disable:` in F-Droid metadata until all those stages succeed.
+
 ## Outstanding release blockers
 
 - [ ] Declare and verify nine pinned upstream sources through auditable `fdroidserver` source-library/prebuild configuration; review archive licensing.

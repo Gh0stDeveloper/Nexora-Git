@@ -1,0 +1,142 @@
+name: F-Droid Offline Android Qualification (Experimental)
+
+# Never publishes a Release and never enables F-Droid metadata.
+# Networked acquisition and an isolated, networkless Gradle rebuild are
+# different steps. Passing this job is NOT two-build fdroidserver qualification.
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - "scripts/fdroid/**"
+      - "docs/FDROID_READINESS.md"
+      - ".github/workflows/fdroid-offline-android-ci.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: fdroid-android-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  offline-android:
+    name: Rebuild unsigned Android APK/AAB without network
+    runs-on: ubuntu-latest
+    timeout-minutes: 95
+
+    env:
+      # Offline test configuration is deliberately not a usable GitHub OAuth
+      # registration or real VPS domain, and no signing secrets are supplied.
+      NEXORA_GITHUB_CLIENT_ID: Iv1.FdroidOfflineAndroidTest
+      NEXORA_AUTH_BROKER_BASE_URL: https://offline-android.invalid
+      NEXORA_GITHUB_CALLBACK_URL: https://offline-android.invalid/oauth/callback
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
+
+      - name: Initialize isolated caches from runner environment
+        shell: bash
+        run: |
+          set -euo pipefail
+          echo "GRADLE_USER_HOME=$RUNNER_TEMP/nexora-fdroid-gradle" >> "$GITHUB_ENV"
+          echo "NEXORA_NATIVE_SOURCE_ROOT=$RUNNER_TEMP/nexora-fdroid-native-sources" >> "$GITHUB_ENV"
+
+      - name: Static qualification script tests
+        shell: bash
+        run: |
+          set -euo pipefail
+          bash -n scripts/fdroid/qualify-offline-android.sh
+          python3 -m py_compile \
+            scripts/fdroid/prepare-native-sources.py \
+            scripts/fdroid/report-offline-android.py \
+            scripts/fdroid/test-offline-qualification.py
+          python3 scripts/fdroid/test-offline-qualification.py
+          # Neither a Gradle cache nor a native source directory may be
+          # implicitly assumed present in a clean runner.
+          if bash scripts/fdroid/qualify-offline-android.sh invalid; then
+            echo "::error::Invalid qualification mode was accepted"
+            exit 1
+          fi
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@b6effb05e454b25005698d916606bdc6ffcbf961 # v5
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - name: Install Android SDK 37.0 and native toolchain
+        shell: bash
+        run: |
+          set -euo pipefail
+          sdk="${ANDROID_SDK_ROOT:-${ANDROID_HOME:-/usr/local/lib/android/sdk}}"
+          echo "ANDROID_SDK_ROOT=$sdk" >> "$GITHUB_ENV"
+          manager="$sdk/cmdline-tools/latest/bin/sdkmanager"
+          test -x "$manager"
+          yes | "$manager" --licenses >/dev/null || true
+          "$manager" --channel=3 \
+            "platform-tools" \
+            "platforms;android-37.0" \
+            "build-tools;37.0.0" \
+            "ndk;27.2.12479018" \
+            "cmake;3.22.1"
+          command -v unshare
+          command -v runuser
+          sudo unshare --net true
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@3f5f9adaf7d9fecd50b5935e54106014257a94e6 # v6.4.0
+
+      - name: Acquire the nine pinned native Git checkouts
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 scripts/fdroid/prepare-native-sources.py --prepare \
+            --source-root "$NEXORA_NATIVE_SOURCE_ROOT" \
+            --report "$RUNNER_TEMP/native-source-provenance.json"
+
+      - name: Warm Maven and Gradle dependency cache (networked)
+        shell: bash
+        run: bash scripts/fdroid/qualify-offline-android.sh warm
+
+      - name: Preserve online warm-up APK/AAB for comparison
+        shell: bash
+        run: |
+          set -euo pipefail
+          warm="$RUNNER_TEMP/fdroid-warm"
+          mkdir -p "$warm"
+          apk="$(find app/build/outputs/apk/release -maxdepth 1 -name '*-unsigned.apk' -type f -print -quit)"
+          aab="$(find app/build/outputs/bundle/release -maxdepth 1 -name '*.aab' -type f -print -quit)"
+          test -s "$apk" && test -s "$aab"
+          cp "$apk" "$warm/warm-unsigned.apk"
+          cp "$aab" "$warm/warm.aab"
+
+      - name: Delete outputs and rebuild with no network interfaces
+        shell: bash
+        run: bash scripts/fdroid/qualify-offline-android.sh offline
+
+      - name: Validate offline Android packages and export evidence
+        shell: bash
+        run: |
+          set -euo pipefail
+          apk="$(find app/build/outputs/apk/release -maxdepth 1 -name '*-unsigned.apk' -type f -print -quit)"
+          aab="$(find app/build/outputs/bundle/release -maxdepth 1 -name '*.aab' -type f -print -quit)"
+          sdk="$ANDROID_SDK_ROOT"
+          python3 scripts/fdroid/report-offline-android.py \
+            --apk "$apk" --aab "$aab" \
+            --aapt "$sdk/build-tools/37.0.0/aapt" \
+            --warm-apk "$RUNNER_TEMP/fdroid-warm/warm-unsigned.apk" \
+            --warm-aab "$RUNNER_TEMP/fdroid-warm/warm.aab" \
+            --output "$RUNNER_TEMP/fdroid-android-offline-evidence.json"
+
+      - name: Upload audit metadata only (no test APK distribution)
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: fdroid-offline-android-qualification-evidence
+          path: |
+            ${{ runner.temp }}/native-source-provenance.json
+            ${{ runner.temp }}/fdroid-android-offline-evidence.json
+          if-no-files-found: warn
+          retention-days: 14
