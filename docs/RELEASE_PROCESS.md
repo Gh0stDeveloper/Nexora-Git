@@ -23,6 +23,10 @@ Required production secrets:
 
 Never commit these values. On a managed VPS, use `sudo nexora-git github secrets export` for a protected manual bundle or authenticate GitHub CLI and run `sudo nexora-git github secrets apply` to synchronize the exact Signing Vault identity and domain-derived public URLs into the `production` environment. The GitHub App Client Secret is intentionally excluded because it belongs only to the Auth Broker.
 
+## 1.1 Signing before VPS deployment
+
+GitHub Actions can generate a **new throwaway PKCS#12 test keystore in each ephemeral signing CI run**. This produces separate `com.nexora.git.ci` APK/AAB diagnostic artifacts and **does not** satisfy the public release gate. The permanent `com.nexora.git` signer remains unavailable until the VPS Signing Vault is initialized and synchronized to protected GitHub `production` secrets. See [CI ephemeral signing](CI_EPHEMERAL_SIGNING.md).
+
 ## 2. Merge gate
 
 Before tagging, `main` must have green Android, Native Git, Auth Broker, Foundation, Production and CodeQL checks.
