@@ -30,7 +30,7 @@ function isReleaseInfo(value: unknown): value is ReleaseInfo {
     typeof item.sha256 === "string" &&
     /^[a-f0-9]{64}$/.test(item.sha256) &&
     typeof item.signingCertificateSha256 === "string" &&
-    /^([A-F0-9]{2}:){31}[A-F0-9]{2}$/.test(item.signingCertificateSha256) &&
+    /^[A-F0-9]{64}$/.test(item.signingCertificateSha256) &&
     typeof item.sizeBytes === "number" &&
     item.sizeBytes > 0 &&
     item.downloadUrl === "/download/nexora-git.apk"

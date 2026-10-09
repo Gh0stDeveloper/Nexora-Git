@@ -1,8 +1,7 @@
 import { CheckIcon, CodeIcon, DownloadIcon, ExternalIcon, GitBranchIcon, ShieldIcon, StarIcon } from "../components/icons";
 import { formatBytes, formatSignedAt, getLatestRelease } from "../lib/release";
-import { getSiteUrl } from "../lib/site";
 
-export const revalidate = 60;
+export const dynamic = "force-dynamic";
 
 const source = "https://github.com/Gh0stDeveloper/Nexora-Git";
 
@@ -15,41 +14,9 @@ const features = [
 
 export default async function HomePage() {
   const release = await getLatestRelease();
-  const siteUrl = getSiteUrl();
-  const structuredData = {
-    "@context": "https://schema.org",
-    "@type": "MobileApplication",
-    name: "Nexora Git",
-    applicationCategory: "DeveloperApplication",
-    operatingSystem: "Android 8.0+",
-    description:
-      "Open-source Git and GitHub workspace for Android with a real local Git engine and native developer workflows.",
-    url: siteUrl,
-    codeRepository: source,
-    license: "https://www.apache.org/licenses/LICENSE-2.0",
-    isAccessibleForFree: true,
-    ...(release
-      ? {
-          softwareVersion: release.versionName,
-          downloadUrl: new URL(release.downloadUrl, siteUrl).toString(),
-          releaseNotes: source + "/releases/tag/v" + release.versionName,
-        }
-      : {}),
-    offers: {
-      "@type": "Offer",
-      price: "0",
-      priceCurrency: "USD",
-    },
-  };
 
   return (
     <main>
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{
-          __html: JSON.stringify(structuredData).replace(/</g, "\\u003c"),
-        }}
-      />
       <section className="relative overflow-hidden border-b border-[#21262d] bg-[#010409]">
         <div className="github-grid pointer-events-none absolute inset-0 opacity-60" />
         <div className="relative mx-auto max-w-7xl px-4 py-14 sm:px-6 sm:py-20 lg:px-8 lg:py-24">
@@ -141,19 +108,16 @@ export default async function HomePage() {
                     <span>{formatSignedAt(release.signedAt)}</span>
                   </div>
                   <div className="border-t border-[#21262d] pt-4">
-                    <p className="mb-1 text-xs font-medium uppercase tracking-wide text-[#8b949e]">APK SHA-256</p>
-                    <p className="code-value break-all rounded-md bg-[#010409] p-2 text-xs leading-5 text-[#c9d1d9]">{release.sha256}</p>
+                    <p className="mb-1 text-xs font-medium uppercase tracking-wide text-[#8b949e]">SHA-256</p>
+                    <p className="code-value rounded-md bg-[#010409] p-2 text-xs leading-5 text-[#c9d1d9]">{release.sha256}</p>
                   </div>
-                  <div>
-                    <p className="mb-1 text-xs font-medium uppercase tracking-wide text-[#8b949e]">Signing certificate SHA-256</p>
-                    <p className="code-value break-all rounded-md bg-[#010409] p-2 text-xs leading-5 text-[#c9d1d9]">{release.signingCertificateSha256}</p>
+                  <div className="border-t border-[#21262d] pt-4">
+                    <p className="mb-1 text-xs font-medium uppercase tracking-wide text-[#8b949e]">APK signing certificate · SHA-256</p>
+                    <p className="code-value rounded-md bg-[#010409] p-2 text-xs leading-5 text-[#c9d1d9]">{release.signingCertificateSha256}</p>
+                    <p className="mt-2 text-xs leading-5 text-[#8b949e]">
+                      Compare this fingerprint with the certificate reported by Android apksigner. For Google Play, the Play App Signing certificate may be different from the upload key.
+                    </p>
                   </div>
-                  <a
-                    href="/verify"
-                    className="focus-ring inline-flex w-full items-center justify-center rounded-md border border-[#30363d] bg-[#21262d] px-3 py-2 text-xs font-semibold text-[#f0f6fc] hover:bg-[#30363d]"
-                  >
-                    Verify this build
-                  </a>
                   <div className="flex items-center gap-2 text-xs text-[#3fb950]">
                     <ShieldIcon />
                     Signed and verified by the VPS release pipeline
@@ -264,6 +228,11 @@ export default async function HomePage() {
           </article>
         </div>
       </section>
+      <footer className="mx-auto max-w-7xl border-t border-[#30363d] px-4 py-6 text-sm text-[#8b949e] sm:px-6 lg:px-8">
+        <a className="text-[#58a6ff] hover:underline" href="/privacy">Privacy policy</a>
+        <span className="mx-3">·</span>
+        <a className="text-[#58a6ff] hover:underline" href="/terms">Terms</a>
+      </footer>
     </main>
   );
 }

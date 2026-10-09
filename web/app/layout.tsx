@@ -2,12 +2,11 @@ import type { Metadata } from "next";
 import "./globals.css";
 import { Footer } from "../components/footer";
 import { SiteHeader } from "../components/site-header";
-import { getSiteUrl } from "../lib/site";
 
 const description =
   "Nexora Git is a native open-source Git and GitHub workspace for Android with a real local Git engine, code editing, GitHub workflows and self-hosted signed releases.";
 
-const siteUrl = getSiteUrl();
+const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "https://nexora-git.invalid";
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),

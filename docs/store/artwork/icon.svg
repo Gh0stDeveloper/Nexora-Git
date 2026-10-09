@@ -1,0 +1,33 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512">
+  <title>Nexora Git — original Git-branch brand icon, high resolution</title>
+  <desc>Original purple background and three white Git nodes; independent open-source Android brand.</desc>
+  <defs>
+    <linearGradient id="purple" x1="0" y1="0" x2="1" y2="1">
+      <stop stop-color="#25104B"/><stop offset=".53" stop-color="#6230BA"/><stop offset="1" stop-color="#8952E1"/>
+    </linearGradient>
+    <radialGradient id="aura" cx=".8" cy=".1" r=".86">
+      <stop stop-color="#A47AFF" stop-opacity=".56"/><stop offset="1" stop-color="#A47AFF" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="branch" x1="0" y1="0" x2="1" y2="1">
+      <stop stop-color="#FFFFFF"/><stop offset="1" stop-color="#E6DAFF"/>
+    </linearGradient>
+  </defs>
+  <rect width="512" height="512" fill="url(#purple)"/>
+  <rect width="512" height="512" fill="url(#aura)"/>
+  <circle cx="409" cy="104" r="146" fill="#D0B6FF" opacity=".045"/>
+  <circle cx="86" cy="469" r="212" fill="#110927" opacity=".12"/>
+  <g fill="none" stroke="#FFFFFF" stroke-width="23" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M154 159 L154 349"/>
+    <path d="M178 133 H241 C309 133 359 183 359 250 V351"/>
+  </g>
+  <g fill="url(#branch)">
+    <circle cx="154" cy="121" r="39"/>
+    <circle cx="154" cy="390" r="39"/>
+    <circle cx="359" cy="390" r="39"/>
+  </g>
+  <g fill="#FFFFFF" opacity=".3">
+    <circle cx="146" cy="109" r="10"/>
+    <circle cx="146" cy="378" r="10"/>
+    <circle cx="351" cy="378" r="10"/>
+  </g>
+</svg>

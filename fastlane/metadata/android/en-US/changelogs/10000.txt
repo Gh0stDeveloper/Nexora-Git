@@ -1,5 +1,0 @@
-Initial Nexora Git release candidate.
-
-Real local Git with libgit2, GitHub OAuth, repositories, Issues, Pull Requests, Actions, Releases, mobile editor, offline workspaces, EN/ES, themes, durable background Git operations, and signed-release verification.
-
-This build remains pre-release until the full RC qualification matrix passes.

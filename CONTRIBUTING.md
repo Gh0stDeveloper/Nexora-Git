@@ -58,6 +58,12 @@ chore:
 
 Keep commits scoped and reviewable. Avoid mixing unrelated formatting churn with behavior changes.
 
+## Issues, discussions and support
+
+Use the structured issue forms for reproducible bugs and focused feature requests. Read [SUPPORT.md](SUPPORT.md) before filing operational or usage questions.
+
+The project decision is to use GitHub Discussions for questions, ideas and community support once Discussions is enabled at repository level. Public Issues remain for actionable defects/work items. Security vulnerabilities must follow [SECURITY.md](SECURITY.md) and must not be disclosed publicly.
+
 ## Pull requests
 
 A pull request should:
@@ -70,7 +76,7 @@ A pull request should:
 6. avoid credentials, private repository data and generated secrets;
 7. document any migration, destructive operation or compatibility impact.
 
-Use the repository pull request template and complete the security checklist honestly.
+Use the repository pull request template and complete the security checklist honestly. UI changes should include real screenshots or reproducible visual evidence when they materially affect the product surface.
 
 ## Architecture rules
 

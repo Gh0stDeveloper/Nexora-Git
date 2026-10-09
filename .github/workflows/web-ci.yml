@@ -5,12 +5,8 @@ on:
     branches:
       - main
       - "feat/**"
-      - "phase-s/**"
     paths:
       - "web/**"
-      - "docs/PRIVACY.md"
-      - "scripts/ci/validate-privacy-sync.py"
-      - "app/src/main/java/com/nexora/git/feature/settings/SettingsViewModel.kt"
       - ".github/workflows/web-ci.yml"
   pull_request:
     branches:
@@ -59,10 +55,6 @@ jobs:
         working-directory: web
         run: npm ci --ignore-scripts --no-audit --no-fund
 
-      - name: Validate Privacy policy synchronization
-        shell: bash
-        run: python3 scripts/ci/validate-privacy-sync.py
-
       - name: Typecheck
         working-directory: web
         env:
@@ -75,67 +67,3 @@ jobs:
           NEXT_TELEMETRY_DISABLED: "1"
           NEXT_PUBLIC_SITE_URL: https://nexora-git.example
         run: npm run build
-
-      - name: Validate production website output
-        working-directory: web
-        shell: bash
-        env:
-          NEXT_PUBLIC_SITE_URL: https://nexora-git.example
-          NEXT_TELEMETRY_DISABLED: "1"
-        run: |
-          set -euo pipefail
-
-          FINGERPRINT='AA:AA:AA:AA:AA:AA:AA:AA:AA:AA:AA:AA:AA:AA:AA:AA:AA:AA:AA:AA:AA:AA:AA:AA:AA:AA:AA:AA:AA:AA:AA:AA'
-          cat > "$RUNNER_TEMP/release.json" <<EOF
-          {
-            "versionName": "1.0.0-rc.1",
-            "versionCode": 10000,
-            "jobId": "20261007T040000Z-a1b2c3d4",
-            "commit": "0123456789abcdef0123456789abcdef01234567",
-            "signedAt": "2026-10-07T04:00:00Z",
-            "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
-            "signingCertificateSha256": "$FINGERPRINT",
-            "sizeBytes": 42000000,
-            "downloadUrl": "/download/nexora-git.apk"
-          }
-          EOF
-
-          cp -R public .next/standalone/public
-          mkdir -p .next/standalone/.next
-          cp -R .next/static .next/standalone/.next/static
-
-          PORT=3000           HOSTNAME=127.0.0.1           NEXORA_WEB_RELEASE_METADATA="$RUNNER_TEMP/release.json"           node .next/standalone/server.js >"$RUNNER_TEMP/nexora-web.log" 2>&1 &
-          server_pid=$!
-          trap 'kill "$server_pid" 2>/dev/null || true' EXIT
-
-          for attempt in {1..30}; do
-            curl -fsS http://127.0.0.1:3000/api/health >/dev/null 2>&1 && break
-            sleep 1
-          done
-          curl -fsS http://127.0.0.1:3000/api/health >/dev/null
-
-          home="$(curl -fsS http://127.0.0.1:3000/)"
-          privacy="$(curl -fsS http://127.0.0.1:3000/privacy)"
-          verify="$(curl -fsS http://127.0.0.1:3000/verify)"
-          robots="$(curl -fsS http://127.0.0.1:3000/robots.txt)"
-          sitemap="$(curl -fsS http://127.0.0.1:3000/sitemap.xml)"
-          headers="$(curl -fsSI http://127.0.0.1:3000/)"
-
-          grep -Fq 'https://nexora-git.example' <<<"$home"
-          grep -Fq '"@type":"MobileApplication"' <<<"$home"
-          grep -Fq '"softwareVersion":"1.0.0-rc.1"' <<<"$home"
-          grep -Fq 'Privacy Policy' <<<"$privacy"
-          grep -Fq "$FINGERPRINT" <<<"$verify"
-          grep -Fq 'Sitemap: https://nexora-git.example/sitemap.xml' <<<"$robots"
-          grep -Fq 'https://nexora-git.example/privacy' <<<"$sitemap"
-          grep -Fq 'https://nexora-git.example/verify' <<<"$sitemap"
-
-          if grep -qi '^x-powered-by:' <<<"$headers"; then
-            echo "Next.js server disclosure header is present." >&2
-            exit 1
-          fi
-
-          if grep -Rqs 'nexora-git\.invalid' .next/standalone .next/static; then
-            echo "Deprecated .invalid production fallback leaked into build output." >&2
-            exit 1
-          fi

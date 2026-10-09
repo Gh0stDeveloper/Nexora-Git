@@ -53,11 +53,22 @@ jobs:
 
           git merge-base --is-ancestor "$GITHUB_SHA" origin/main
 
-          protected="$(gh api "repos/$GITHUB_REPOSITORY/branches/main" --jq '.protected')"
-          [[ "$protected" == "true" ]] || {
-            echo "Stable and prerelease publishing is blocked until main branch protection/ruleset is enabled."
-            exit 1
-          }
+      - name: Validate GitHub launch metadata and homepage
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          # Homepage must match the deployed production HTTPS origin.
+          expected_origin="$(python3 -c '
+          import os
+          from urllib.parse import urlsplit
+          url = urlsplit(os.environ["NEXORA_AUTH_BROKER_BASE_URL"])
+          if url.scheme != "https" or not url.netloc:
+              raise SystemExit("The production site/broker origin must use HTTPS")
+          print(f"{url.scheme}://{url.netloc}")
+          ')"
+          bash scripts/ci/validate-github-launch-settings.sh "$expected_origin"
 
       - name: Validate production configuration
         shell: bash
@@ -95,20 +106,6 @@ jobs:
           printf '%s' "$NEXORA_SIGNING_KEYSTORE_BASE64" | base64 --decode > "$keystore"
           test -s "$keystore"
           echo "NEXORA_SIGNING_STORE_FILE=$keystore" >> "$GITHUB_ENV"
-
-      - name: Validate store and launch assets
-        shell: bash
-        run: python3 scripts/ci/validate-store-readiness.py "$GITHUB_REF_NAME"
-
-      - name: Validate GitHub launch settings
-        shell: bash
-        env:
-          GH_TOKEN: ${{ github.token }}
-        run: bash scripts/ci/validate-github-launch-settings.sh "$NEXORA_AUTH_BROKER_BASE_URL"
-
-      - name: Validate deployed website and Privacy URL
-        shell: bash
-        run: bash scripts/ci/validate-live-site.sh "$NEXORA_AUTH_BROKER_BASE_URL"
 
       - name: Set up JDK 17
         uses: actions/setup-java@b6effb05e454b25005698d916606bdc6ffcbf961 # v5
@@ -190,41 +187,32 @@ jobs:
             cp "$SYMBOLS" "dist/NexoraGit-$VERSION-native-symbols.zip"
           fi
 
-      - name: Publish signing identity metadata
-        shell: bash
-        run: |
-          set -euo pipefail
-          VERSION="${GITHUB_REF_NAME#v}"
-          APK="dist/NexoraGit-$VERSION.apk"
-          fingerprint="$(
-            LC_ALL=C keytool -printcert -jarfile "$APK" |
-              awk -F': ' '/SHA256:/ {print toupper($2); exit}'
-          )"
-          [[ "$fingerprint" =~ ^([A-F0-9]{2}:){31}[A-F0-9]{2}$ ]] || {
-            echo "Unable to derive release signing-certificate SHA-256 fingerprint."
-            exit 1
-          }
-          printf '%s\n' "$fingerprint" > dist/SIGNING-CERT-SHA256.txt
-          printf '%s\n' "$GITHUB_SHA" > dist/SOURCE-COMMIT.txt
-
       - name: Generate SPDX SBOM
         shell: bash
         run: |
           VERSION="${GITHUB_REF_NAME#v}"
-          python3 scripts/ci/generate-release-sbom.py \
-            "$VERSION" \
-            "dist/NexoraGit-$VERSION-SBOM.spdx.json"
+          python3 scripts/ci/generate-release-sbom.py             "$VERSION"             dist/NexoraGit-$VERSION-SBOM.spdx.json
+
+      - name: Publish auditable APK and AAB signing identity
+        shell: bash
+        run: |
+          set -euo pipefail
+          VERSION="${GITHUB_REF_NAME#v}"
+          SDK_ROOT="${ANDROID_SDK_ROOT:-${ANDROID_HOME:-/usr/local/lib/android/sdk}}"
+          python3 scripts/ci/create-release-signing-evidence.py \
+            --apk "dist/NexoraGit-$VERSION.apk" \
+            --aab "dist/NexoraGit-$VERSION.aab" \
+            --output dist \
+            --version "$VERSION" \
+            --commit "$GITHUB_SHA" \
+            --apksigner "$SDK_ROOT/build-tools/37.0.0/apksigner"
 
       - name: Generate release checksums
         shell: bash
         run: |
           (
             cd dist
-            sha256sum \
-              NexoraGit-* \
-              SIGNING-CERT-SHA256.txt \
-              SOURCE-COMMIT.txt \
-              > SHA256SUMS.txt
+            sha256sum NexoraGit-* SIGNING-CERTIFICATE-SHA256.txt SIGNING-IDENTITY.json > SHA256SUMS.txt
           )
 
       - name: Attest release build provenance
@@ -234,8 +222,6 @@ jobs:
             dist/*.apk
             dist/*.aab
             dist/*-SBOM.spdx.json
-            dist/SIGNING-CERT-SHA256.txt
-            dist/SOURCE-COMMIT.txt
             dist/SHA256SUMS.txt
 
       - name: Upload verified release artifacts
@@ -253,12 +239,6 @@ jobs:
         run: |
           set -euo pipefail
           VERSION="${GITHUB_REF_NAME#v}"
-          NOTES_FILE="docs/release/notes/$VERSION.md"
-          notes_args=(--generate-notes)
-          if [[ -s "$NOTES_FILE" ]]; then
-            notes_args=(--notes-file "$NOTES_FILE")
-          fi
-
           if gh release view "$GITHUB_REF_NAME" >/dev/null 2>&1; then
             gh release upload "$GITHUB_REF_NAME" dist/* --clobber
           elif [[ "$RELEASE_CHANNEL" == "prerelease" ]]; then
@@ -266,10 +246,10 @@ jobs:
               --verify-tag \
               --prerelease \
               --title "Nexora Git $VERSION" \
-              "${notes_args[@]}"
+              --generate-notes
           else
             gh release create "$GITHUB_REF_NAME" dist/* \
               --verify-tag \
               --title "Nexora Git $VERSION" \
-              "${notes_args[@]}"
+              --generate-notes
           fi

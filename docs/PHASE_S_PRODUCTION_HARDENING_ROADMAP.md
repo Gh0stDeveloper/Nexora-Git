@@ -546,72 +546,85 @@ Execute and record evidence for:
 
 ## S.16 — GitHub discoverability, community and repository presentation
 
-**Priority:** P2
+**Priority:** P2  
+**Development milestone:** implemented and ready for CI/review, subject to PR merge.  
+**External deployment exceptions:** homepage [#46](https://github.com/Gh0stDeveloper/Nexora-Git/issues/46); final screenshots [#47](https://github.com/Gh0stDeveloper/Nexora-Git/issues/47). Both remain **open work**, not completed deliverables.
 
 ### S.16.1 Repository metadata
 
-- [ ] Set project homepage to the production website.
-- [ ] Add focused GitHub topics, for example Android, Git, GitHub, Kotlin, Jetpack Compose, libgit2, Git client and code editor.
-- [ ] Review repository description for search clarity.
-- [ ] Decide whether Discussions should be enabled for questions/ideas/community support.
-- [ ] Configure automatic merged-branch deletion.
+- [x] Review repository description for search clarity — verified via repository API.
+- [x] Add all nine focused GitHub topics — verified via repository API.
+- [x] Enable Discussions for community support — verified via repository API.
+- [x] Enable automatic merged-branch deletion — verified via repository API.
+- [x] Protect main via active ruleset and required CI checks — verified via ruleset API.
+- [ ] Set homepage to the **real deployed** HTTPS product website; deliberately deferred to issue #46.
 
-### S.16.2 README visual proof
+### S.16.2 README presentation and captures
 
-- [ ] Add real application screenshots.
-- [ ] Show Home/dashboard.
-- [ ] Show repository detail.
-- [ ] Show editor.
-- [ ] Show Git changes/workbench.
-- [ ] Show Pull Requests.
-- [ ] Show Actions.
-- [ ] Show theme variants.
-- [ ] Keep screenshots versioned and representative of current UI.
-- [ ] Add concise install/download CTA once an official build exists.
+- [x] Clear project purpose, primary feature set, architecture and support links in README.
+- [x] Explain the verified-release download process without claiming unreleased builds exist.
+- [x] Provide contribution, support and security guidance, Issue templates and PR template.
+- [x] Track future owner-taken screenshots without showing broken images or fabricated placeholders.
+- [x] Make Community Readiness pass for the **documented development deferral**, while rejecting incomplete screenshot sets.
+- [ ] Capture eight real final Android screenshots manually **after working app and own VPS/Auth Broker qualification** (issue #47).
+- [ ] Publish Home (Light, Dark, AMOLED), repository detail, editor, Git workbench, PR and Actions screenshots.
+- [ ] Add and review the final README image gallery from approved screenshots.
+- [ ] Run the explicit `--require-screenshots` release presentation check.
 
-### Acceptance gate
+The user will capture the screenshots on an Android device once the application is verified with the production VPS. The optional `Marketing Screenshots` workflow performs **manual on-demand validation only**. It does not generate, commit or overwrite images. This prevents a broken emulated screenshot job from interrupting ongoing development; it does **not** assert screenshots exist.
 
-- [ ] A first-time visitor can understand what the product looks like, what it does and how to obtain a verified build without reading architecture documentation.
+### Acceptance gates
+
+- [x] **Development presentation gate:** project scope, contribution routes, support and trusted download instructions are understandable without broken image references. Deferred launch-only dependencies are documented and owned.
+- [ ] **Public launch presentation gate:** real product screenshots and verified live homepage are available and reviewed before they are advertised. Track via issues #46 and #47.
+
+**Audit rule:** keep the external dependencies open until independently verified. The subphase may be merged as development-ready only when its required GitHub CI checks pass; do not equate that merge with public-launch readiness.
 
 ---
 
 ## S.17 — Store/ASO and distribution completeness
 
-**Priority:** P2
+**Priority:** P2  
+**Status: IN PROGRESS.** The source-level distribution foundation can be merged independently of owner-operated Play Console, VPS deployment and later marketing screenshots. Public distribution remains **NO-GO** until these external approvals and the F-Droid reproducibility review are completed.
 
 ### S.17.1 Play Store assets
 
-- [ ] Final app title.
-- [ ] Short description.
-- [ ] Full description.
-- [ ] English listing.
-- [ ] Spanish listing.
-- [ ] Phone screenshots.
-- [ ] Feature graphic.
-- [ ] High-resolution icon.
-- [ ] Privacy URL.
-- [ ] Support/source URL.
-- [ ] Release notes/changelog process.
-- [ ] Data Safety answers reviewed against actual runtime behavior.
+- [x] Final draft app title: Nexora Git.
+- [x] Localized short description, English and Spanish.
+- [x] Localized full description, English and Spanish.
+- [x] Automated Play listing length and content checks.
+- [ ] Owner-approved phone screenshots (after working app + VPS; issue #47).
+- [x] Original localized 1024×500 feature graphic candidate designed (PR #51); final owner approval pending.
+- [x] Original 512×512 high-resolution icon candidate designed (PR #51); final owner approval pending.
+- [ ] Live HTTPS Privacy URL (route committed; deployment pending #46).
+- [x] Source/support URL documented in the public repository.
+- [x] Version-specific release notes and changelog policy.
+- [ ] Play Data safety review from actual signed release/VPS logs, then owner Play Console approval.
 
 ### S.17.2 Signing transparency
 
-- [ ] Publish the production signing-certificate SHA-256 fingerprint.
-- [ ] Show it on the official website.
-- [ ] Show it in release documentation.
-- [ ] Preserve APK SHA-256 display/download.
-- [ ] Document independent verification commands.
+- [x] Pipeline derives SHA-256 fingerprint from signed APK and signed AAB, compares identities and exports evidence files.
+- [x] Website source validates and displays real signing certificate fingerprint alongside APK SHA-256; still awaiting deployment.
+- [x] Publication documentation and independent APK verification commands.
+- [ ] First official signed RC certificate SHA-256 published and independently verified.
+- [ ] Production website actually serving verified signer identity.
+- [ ] Play App Signing vs upload-certificate separation reviewed in Play Console.
 
 ### S.17.3 F-Droid
 
-- [ ] Resolve build-time network dependency acquisition.
-- [ ] Make native source acquisition compatible with reproducible/offline F-Droid builds.
-- [ ] Re-enable F-Droid build metadata only after successful reproducibility validation.
-- [ ] Keep `NonFreeNet` disclosure for GitHub-dependent features where applicable.
+- [x] Keep `NonFreeNet` disclosure for GitHub-dependent operations.
+- [x] Opt-in CMake preseeded source mode verifies pinned Git revisions and disables network FetchContent.
+- [x] Complete network-isolated host-native CMake/Ninja/CTest on nine pinned upstream sources plus the Mbed TLS framework gitlink ([CI #37806822320](https://github.com/Gh0stDeveloper/Nexora-Git/actions/runs/37806822320)).
+- [ ] Prove offline transitive native/Gradle dependencies with repeatable fdroidserver build.
+- [ ] Enable F-Droid build metadata **only after** successful independent reproducibility validation (currently explicitly disabled).
 
 ### Acceptance gate
 
-- [ ] Store metadata and direct-download metadata describe the same product behavior and signing identity.
+- [ ] Store and direct-download product claims, real UX and signing identity are consistent on **production**.
+- [ ] Real owner-approved art, public privacy policy, release signing identity and actual Data safety approval are published.
+- [ ] Final F-Droid artifact is certified or its independent optional distribution remains clearly blocked.
+
+**Evidence:** [S.17 progress report](PHASE_S_S17_DISTRIBUTION_REPORT.md), [store assets](store/ASSET_DELIVERY.md), [signer identity](store/SIGNING_TRANSPARENCY.md) and [Data safety worksheet](store/DATA_SAFETY_REVIEW.md).
 
 ---
 

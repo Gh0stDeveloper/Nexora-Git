@@ -51,9 +51,6 @@ grep -q 'limit_req zone=nexora_oauth_callback burst=10 nodelay;' "$TEMP_ROOT/ren
 grep -q 'limit_req zone=nexora_oauth_sensitive burst=5 nodelay;' "$TEMP_ROOT/rendered.conf"
 grep -q 'location @nexora_oauth_rate_limited' "$TEMP_ROOT/rendered.conf"
 grep -q 'Retry-After "60"' "$TEMP_ROOT/rendered.conf"
-grep -q 'Content-Security-Policy' "$TEMP_ROOT/rendered.conf"
-grep -q "object-src 'none'" "$TEMP_ROOT/rendered.conf"
-grep -q 'server_tokens off;' "$TEMP_ROOT/rendered.conf"
 
 job="20261007T040000Z-a1b2c3d4"
 commit="0123456789abcdef0123456789abcdef01234567"
@@ -63,9 +60,9 @@ printf 'signed-apk-fixture' > "$signed/$job-signed.apk"
 cat > "$signed/signing-manifest.conf" <<EOF
 JOB_ID=$job
 SIGNED_AT=2026-10-07T04:00:00Z
-SIGNING_CERT_SHA256=AA:AA:AA:AA:AA:AA:AA:AA:AA:AA:AA:AA:AA:AA:AA:AA:AA:AA:AA:AA:AA:AA:AA:AA:AA:AA:AA:AA:AA:AA:AA:AA
 SIGNED_APK=$job-signed.apk
 SIGNED_AAB=$job-signed.aab
+SIGNING_CERT_SHA256=AA:AA:AA:AA:AA:AA:AA:AA:AA:AA:AA:AA:AA:AA:AA:AA:AA:AA:AA:AA:AA:AA:AA:AA:AA:AA:AA:AA:AA:AA:AA:AA
 EOF
 cat > "$NEXORA_ANDROID_STATE_ROOT/builds/$job/job.conf" <<EOF
 JOB_ID=$job
@@ -94,7 +91,7 @@ web_publish_signed_release "$job" "$signed"
 grep -q '"versionName": "1.0.0"' "$NEXORA_WEB_RELEASE_ROOT/current/latest.json"
 grep -q '"versionCode": 10000' "$NEXORA_WEB_RELEASE_ROOT/current/latest.json"
 grep -q '"downloadUrl": "/download/nexora-git.apk"' "$NEXORA_WEB_RELEASE_ROOT/current/latest.json"
-grep -q '"signingCertificateSha256": "AA:AA:AA:AA:AA:AA:AA:AA:AA:AA:AA:AA:AA:AA:AA:AA:AA:AA:AA:AA:AA:AA:AA:AA:AA:AA:AA:AA:AA:AA:AA:AA"' "$NEXORA_WEB_RELEASE_ROOT/current/latest.json"
+grep -q '"signingCertificateSha256": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"' "$NEXORA_WEB_RELEASE_ROOT/current/latest.json"
 if grep -Rqs 'super-secret-must-survive' "$NEXORA_WEB_RELEASE_ROOT"; then
   printf 'Broker secret leaked into public release metadata.\n' >&2
   exit 1

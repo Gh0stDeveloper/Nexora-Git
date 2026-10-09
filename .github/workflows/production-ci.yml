@@ -6,6 +6,16 @@ on:
       - main
       - "phase-r-*"
       - "phase-s/**"
+    paths:
+      - "app/**"
+      - "native/**"
+      - "scripts/ci/**"
+      - "scripts/vps/**"
+      - "gradle/**"
+      - "build.gradle.kts"
+      - "settings.gradle.kts"
+      - "gradle.properties"
+      - ".github/workflows/**"
   pull_request:
     branches:
       - main

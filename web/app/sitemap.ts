@@ -1,12 +1,10 @@
 import type { MetadataRoute } from "next";
-import { getSiteUrl } from "../lib/site";
 
 export default function sitemap(): MetadataRoute.Sitemap {
-  const site = getSiteUrl();
+  const site = process.env.NEXT_PUBLIC_SITE_URL ?? "https://nexora-git.invalid";
   return [
     { url: site, changeFrequency: "daily", priority: 1 },
-    { url: `${site}/privacy`, changeFrequency: "monthly", priority: 0.6 },
-    { url: `${site}/verify`, changeFrequency: "daily", priority: 0.7 },
+    { url: `${site}/privacy`, changeFrequency: "monthly", priority: 0.7 },
     { url: `${site}/terms`, changeFrequency: "monthly", priority: 0.4 },
   ];
 }

@@ -1,4 +1,5 @@
 import com.nexora.build.NexoraBuildSecrets
+import java.io.File
 
 plugins {
     alias(libs.plugins.android.application)
@@ -10,10 +11,17 @@ plugins {
 
 val releaseSigning = NexoraBuildSecrets.releaseSigning(project)
 val authBrokerHost = NexoraBuildSecrets.authBrokerHost(project)
-val requireVendoredNativeSources = providers
-    .gradleProperty("nexora.native.requireVendoredSources")
-    .map { it.equals("true", ignoreCase = true) }
-    .getOrElse(false)
+
+// Source-only F-Droid/build-farm opt-in: never a signing credential.
+// The default developer/CI build remains unchanged.
+val offlineNativeSourceRoot = providers.gradleProperty("nexora.nativeSourceRoot")
+    .orElse(providers.environmentVariable("NEXORA_NATIVE_SOURCE_ROOT"))
+    .orNull
+if (!offlineNativeSourceRoot.isNullOrBlank()) {
+    require(File(offlineNativeSourceRoot).isAbsolute) {
+        "NEXORA_NATIVE_SOURCE_ROOT must be an absolute directory of pinned Git checkouts."
+    }
+}
 
 android {
     namespace = "com.nexora.git"
@@ -50,11 +58,8 @@ android {
                     "-DNEXORA_LIBGIT2_REF=49e408b3208bc3093757a1c2db938d3590f3f412",
                     "-DNEXORA_MBEDTLS_REF=068ff080b369adfac81509f9b57b2afabaf82dc5",
                 )
-                if (requireVendoredNativeSources) {
-                    arguments += listOf(
-                        "-DNEXORA_REQUIRE_VENDORED_NATIVE_SOURCES=ON",
-                        "-DFETCHCONTENT_FULLY_DISCONNECTED=ON",
-                    )
+                if (!offlineNativeSourceRoot.isNullOrBlank()) {
+                    arguments += "-DNEXORA_NATIVE_SOURCE_ROOT=$offlineNativeSourceRoot"
                 }
                 cppFlags += listOf(
                     "-std=c++17",

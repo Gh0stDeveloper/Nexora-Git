@@ -1,0 +1,78 @@
+name: Render Play Store artwork
+
+# Store graphics are versioned and already exist in the source tree.
+# Re-render and verify on PRs; never push commits from pull_request contexts.
+on:
+  push:
+    branches: [main]
+    paths:
+      - "docs/store/artwork/**"
+      - "fastlane/metadata/android/**/images/*.png"
+      - "scripts/ci/validate-s17-store-artwork.py"
+      - ".github/workflows/render-store-artwork.yml"
+  pull_request:
+    branches: [main]
+    paths:
+      - "docs/store/artwork/**"
+      - "fastlane/metadata/android/**/images/*.png"
+      - "scripts/ci/validate-s17-store-artwork.py"
+      - ".github/workflows/render-store-artwork.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: store-artwork-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  render:
+    name: Verify committed Play Store icon and bilingual banners
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - name: Checkout exact source commit
+        uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
+        with:
+          persist-credentials: false
+
+      - name: Install SVG renderer
+        shell: bash
+        run: |
+          set -euo pipefail
+          sudo apt-get update -qq
+          sudo apt-get install -y --no-install-recommends librsvg2-bin fonts-dejavu-core
+
+      - name: Validate committed store artwork
+        shell: bash
+        run: python3 scripts/ci/validate-s17-store-artwork.py
+
+      - name: Re-render SVG sources and compare against committed PNGs
+        shell: bash
+        run: |
+          set -euo pipefail
+          for locale in en-US es-MX; do
+            output="$RUNNER_TEMP/store-artwork/$locale"
+            source="fastlane/metadata/android/$locale/images"
+            mkdir -p "$output"
+            rsvg-convert --format=png --width=512 --height=512 \
+              --output "$output/icon.png" docs/store/artwork/icon.svg
+            rsvg-convert --format=png --width=1024 --height=500 \
+              --output "$output/featureGraphic.png" "docs/store/artwork/featureGraphic.$locale.svg"
+            cmp "$source/icon.png" "$output/icon.png" || {
+              echo "::error::Store icon differs from committed PNG ($locale)"
+              exit 1
+            }
+            cmp "$source/featureGraphic.png" "$output/featureGraphic.png" || {
+              echo "::error::Feature graphic differs from committed PNG ($locale)"
+              exit 1
+            }
+          done
+
+      - name: Assert workflow did not modify the repository
+        shell: bash
+        run: |
+          set -euo pipefail
+          git diff --exit-code
+          test -z "$(git ls-files --others --exclude-standard)"
