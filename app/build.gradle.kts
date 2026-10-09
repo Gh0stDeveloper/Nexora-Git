@@ -12,6 +12,16 @@ plugins {
 val releaseSigning = NexoraBuildSecrets.releaseSigning(project)
 val authBrokerHost = NexoraBuildSecrets.authBrokerHost(project)
 
+// The temporary CI signer is deliberately not the eventual production identity.
+// Use a separate installable application ID to prevent Android update/signature collisions.
+val ephemeralCiSigning = providers.environmentVariable("NEXORA_CI_EPHEMERAL_SIGNING")
+    .orNull == "true"
+if (ephemeralCiSigning) {
+    require(releaseSigning != null) {
+        "Ephemeral CI signing requires a full temporary keystore configuration."
+    }
+}
+
 // Source-only F-Droid/build-farm opt-in: never a signing credential.
 // The default developer/CI build remains unchanged.
 val offlineNativeSourceRoot = providers.gradleProperty("nexora.nativeSourceRoot")
@@ -94,6 +104,10 @@ android {
             isDebuggable = false
             isMinifyEnabled = true
             isShrinkResources = true
+            if (ephemeralCiSigning) {
+                applicationIdSuffix = ".ci"
+                versionNameSuffix = "-ci"
+            }
             if (releaseSigning != null) {
                 signingConfig = signingConfigs.getByName("release")
             }

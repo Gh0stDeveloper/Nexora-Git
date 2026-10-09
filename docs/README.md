@@ -23,6 +23,7 @@ This directory contains the technical, operational, security and historical docu
 | Download website | [WEB.md](WEB.md) | Next.js download site, signed APK publication, Nginx routing and VPS lifecycle |
 | VPS Android builds | [VPS_ANDROID_BUILDER.md](VPS_ANDROID_BUILDER.md) | Persistent Android SDK/build-host architecture, security boundaries and rollout |
 | Releases | [RELEASE_PROCESS.md](RELEASE_PROCESS.md) | Signing, validation and GitHub Release procedure |
+| Temporary CI signing | [CI_EPHEMERAL_SIGNING.md](CI_EPHEMERAL_SIGNING.md) | GitHub-generated throwaway signing versus permanent VPS identity |
 | Roadmap | [ROADMAP.md](ROADMAP.md) | Full implementation roadmap, including active Phase S hardening |
 | GitHub launch settings | [GITHUB_REPOSITORY_SETTINGS.md](GITHUB_REPOSITORY_SETTINGS.md) | Repository metadata, topics, Discussions and launch presentation controls |
 | Phase S hardening | [PHASE_S_PRODUCTION_HARDENING_ROADMAP.md](PHASE_S_PRODUCTION_HARDENING_ROADMAP.md) | Strict security, UX, performance, SEO and release-readiness pass |

@@ -237,7 +237,7 @@ The installer creates:
 | `nexora-git github status` | Show public GitHub App/broker configuration without Client Secret |
 | `nexora-git github configure` | Update Client ID/Client Secret while deriving URLs from the VPS domain |
 | `nexora-git github secrets export [PATH]` | Create a protected seven-secret production bundle |
-| `nexora-git github secrets apply` | Use authenticated GitHub CLI to synchronize the seven production environment secrets |
+| `nexora-git github secrets apply` | Synchronize seven protected production secrets **and** the public `NEXORA_SIGNING_CERT_SHA256` environment variable, pinning the CI release certificate to the VPS Signing Vault |
 | `nexora-git github secrets status` | Show local sync parity record and GitHub secret names when available |
 | `nexora-git android autobuild status` | Show update-triggered Android autobuild/debounce state |
 | `nexora-git android autobuild enable [release\|debug] [SECONDS]` | Enable debounced build dispatch after successful VPS updates |
