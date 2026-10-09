@@ -258,6 +258,8 @@ android_release_record_sync() {
     printf 'REPOSITORY=%q\n' "$repo_slug"
     printf 'ENVIRONMENT=%q\n' "$NEXORA_GITHUB_ENVIRONMENT"
     printf 'SYNCED_AT=%q\n' "$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+    android_signing_load_metadata_from "$NEXORA_SIGNING_METADATA" || die "Signing metadata is invalid."
+    printf 'SIGNING_CERT_SHA256=%q\n' "$NEXORA_SIGNING_CERT_SHA256"
     local name
     while IFS= read -r name; do
       printf '%s_SHA256=%q\n' "$name" "$(android_release_secret_digest "$name")"
@@ -295,6 +297,14 @@ android_release_apply_secrets() {
       --repo "$repo_slug" < "$temp_dir/$name"
   done < <(android_release_secret_names)
 
+  # Certificate fingerprints are public metadata, not secret material.
+  # Pin CI's release signer to the exact certificate from the VPS Signing Vault.
+  android_signing_load_metadata_from "$NEXORA_SIGNING_METADATA" || die "Signing metadata is invalid."
+  gh variable set NEXORA_SIGNING_CERT_SHA256 \
+    --env "$NEXORA_GITHUB_ENVIRONMENT" \
+    --repo "$repo_slug" \
+    --body "$NEXORA_SIGNING_CERT_SHA256"
+
   android_release_record_sync "$repo_slug"
   rm -rf "$temp_dir"
   trap - RETURN
@@ -310,6 +320,8 @@ android_release_check_sync() {
   local repo_slug
   repo_slug="$(android_release_repo_slug)" || return 1
   [[ "${REPOSITORY:-}" == "$repo_slug" && "${ENVIRONMENT:-}" == "$NEXORA_GITHUB_ENVIRONMENT" ]] || return 1
+  android_signing_load_metadata_from "$NEXORA_SIGNING_METADATA" || return 1
+  [[ "${SIGNING_CERT_SHA256:-}" == "$NEXORA_SIGNING_CERT_SHA256" ]] || return 1
 
   local name expected_var expected actual
   while IFS= read -r name; do
@@ -564,6 +576,8 @@ android_release_workflow_parity() {
 
   grep -q 'NEXORA_AUTH_BROKER_BASE_URL' "$workflow" || return 1
   grep -q 'NEXORA_GITHUB_CALLBACK_URL' "$workflow" || return 1
+  grep -q 'vars.NEXORA_SIGNING_CERT_SHA256' "$workflow" || return 1
+  grep -q 'verify-production-signing-pin.sh' "$workflow" || return 1
 }
 
 android_release_parity() {
