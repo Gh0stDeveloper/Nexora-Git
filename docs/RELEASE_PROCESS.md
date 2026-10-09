@@ -21,6 +21,8 @@ Required production secrets:
 - `NEXORA_SIGNING_KEY_ALIAS`
 - `NEXORA_SIGNING_KEY_PASSWORD`
 
+Required **non-secret** `production` environment variable: `NEXORA_SIGNING_CERT_SHA256`. The VPS command `sudo nexora-git github secrets apply` also writes this public signing-certificate fingerprint into GitHub Environment Variables. Official tags must match that pinned identity before release publication.
+
 Never commit these values. On a managed VPS, use `sudo nexora-git github secrets export` for a protected manual bundle or authenticate GitHub CLI and run `sudo nexora-git github secrets apply` to synchronize the exact Signing Vault identity and domain-derived public URLs into the `production` environment. The GitHub App Client Secret is intentionally excluded because it belongs only to the Auth Broker.
 
 ## 1.1 Signing before VPS deployment
