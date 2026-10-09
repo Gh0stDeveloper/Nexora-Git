@@ -36,6 +36,8 @@ class SettingsAccessibilityTest {
                     onConfirmForcePush = {},
                     onWifiOnly = {},
                     onReplayOnboarding = {},
+                    onOpenPrivacy = {},
+                    onOpenSource = {},
                     onReset = {},
                 )
             }
