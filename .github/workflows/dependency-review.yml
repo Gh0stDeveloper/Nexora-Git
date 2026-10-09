@@ -33,7 +33,7 @@ jobs:
 
       - name: OSV scan target branch
         id: osv-old
-        uses: google/osv-scanner-action/osv-scanner-action@7f58dd6750d78fc29a900ba64b1a0f946f62fba4 # v2.6.0
+        uses: google/osv-scanner-action/osv-scanner-action@8ac9e5ce44cc7178e0e04229a91bdcc003166e57 # v2.6.0
         continue-on-error: true
         with:
           scan-args: |-
@@ -48,7 +48,7 @@ jobs:
 
       - name: OSV scan pull request
         id: osv-new
-        uses: google/osv-scanner-action/osv-scanner-action@7f58dd6750d78fc29a900ba64b1a0f946f62fba4 # v2.6.0
+        uses: google/osv-scanner-action/osv-scanner-action@8ac9e5ce44cc7178e0e04229a91bdcc003166e57 # v2.6.0
         continue-on-error: true
         with:
           scan-args: |-
@@ -77,7 +77,7 @@ jobs:
           exit "$status"
 
       - name: Reject newly introduced vulnerabilities
-        uses: google/osv-scanner-action/osv-reporter-action@7f58dd6750d78fc29a900ba64b1a0f946f62fba4 # v2.6.0
+        uses: google/osv-scanner-action/osv-reporter-action@8ac9e5ce44cc7178e0e04229a91bdcc003166e57 # v2.6.0
         with:
           scan-args: |-
             --old=old-results.json
