@@ -46,20 +46,63 @@ jobs:
           distribution: temurin
           java-version: "17"
 
-      - name: Install Android SDK 37.0
+      - name: Install Android SDK 37.0 (verified, retry transient downloads)
         shell: bash
         run: |
           set -euo pipefail
           SDK_ROOT="${ANDROID_SDK_ROOT:-${ANDROID_HOME:-/usr/local/lib/android/sdk}}"
           SDKMANAGER="$SDK_ROOT/cmdline-tools/latest/bin/sdkmanager"
           test -x "$SDKMANAGER"
+
+          # Check the actual required files, not just sdkmanager's exit code.
+          # Google SDK mirrors occasionally return truncated CMake zip files.
+          sdk_ready() {
+            test -f "$SDK_ROOT/platform-tools/source.properties" &&
+            test -f "$SDK_ROOT/platforms/android-37.0/source.properties" &&
+            test -f "$SDK_ROOT/build-tools/37.0.0/source.properties" &&
+            test -x "$SDK_ROOT/build-tools/37.0.0/aapt2" &&
+            test -f "$SDK_ROOT/ndk/27.2.12479018/source.properties" &&
+            test -f "$SDK_ROOT/cmake/3.22.1/source.properties" &&
+            test -x "$SDK_ROOT/cmake/3.22.1/bin/cmake"
+          }
+
           yes | "$SDKMANAGER" --licenses >/dev/null || true
-          "$SDKMANAGER" --channel=3 \
-            "platform-tools" \
-            "platforms;android-37.0" \
-            "build-tools;37.0.0" \
-            "ndk;27.2.12479018" \
-            "cmake;3.22.1"
+          if sdk_ready; then
+            echo "Required Android SDK components already installed."
+            exit 0
+          fi
+
+          for attempt in 1 2 3; do
+            echo "::group::Android SDK download attempt $attempt/3"
+            if timeout --signal=TERM --kill-after=30s 600s "$SDKMANAGER" --channel=3 \
+              "platform-tools" \
+              "platforms;android-37.0" \
+              "build-tools;37.0.0" \
+              "ndk;27.2.12479018" \
+              "cmake;3.22.1"; then
+              if sdk_ready; then
+                echo "::endgroup::"
+                break
+              fi
+              echo "::warning::SDK manager returned success but required components are incomplete."
+            else
+              echo "::warning::SDK download failed or timed out (attempt $attempt)."
+            fi
+            echo "::endgroup::"
+            if [ "$attempt" -eq 3 ]; then
+              echo "::error::Android SDK installation failed after 3 bounded attempts."
+              exit 1
+            fi
+            # Remove only incomplete installation staging, never a complete SDK.
+            if [ ! -f "$SDK_ROOT/cmake/3.22.1/source.properties" ]; then
+              rm -rf -- "$SDK_ROOT/cmake/3.22.1"
+            fi
+            rm -rf -- "$SDK_ROOT/.temp"
+            sleep $((attempt * 10))
+          done
+
+          sdk_ready || { echo "::error::Android SDK files incomplete."; exit 1; }
+          "$SDK_ROOT/cmake/3.22.1/bin/cmake" --version
 
       - name: Set up Gradle
         uses: gradle/actions/setup-gradle@3f5f9adaf7d9fecd50b5935e54106014257a94e6 # v6.4.0
