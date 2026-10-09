@@ -26,8 +26,6 @@ jobs:
     timeout-minutes: 95
 
     env:
-      GRADLE_USER_HOME: ${{ runner.temp }}/nexora-fdroid-gradle
-      NEXORA_NATIVE_SOURCE_ROOT: ${{ runner.temp }}/nexora-fdroid-native-sources
       # Offline test configuration is deliberately not a usable GitHub OAuth
       # registration or real VPS domain, and no signing secrets are supplied.
       NEXORA_GITHUB_CLIENT_ID: Iv1.FdroidOfflineAndroidTest
@@ -37,6 +35,13 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
+
+      - name: Initialize isolated caches from runner environment
+        shell: bash
+        run: |
+          set -euo pipefail
+          echo "GRADLE_USER_HOME=$RUNNER_TEMP/nexora-fdroid-gradle" >> "$GITHUB_ENV"
+          echo "NEXORA_NATIVE_SOURCE_ROOT=$RUNNER_TEMP/nexora-fdroid-native-sources" >> "$GITHUB_ENV"
 
       - name: Static qualification script tests
         shell: bash
