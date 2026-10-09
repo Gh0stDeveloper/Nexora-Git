@@ -28,6 +28,8 @@ jobs:
       NEXORA_SIGNING_STORE_PASSWORD: ${{ secrets.NEXORA_SIGNING_STORE_PASSWORD }}
       NEXORA_SIGNING_KEY_ALIAS: ${{ secrets.NEXORA_SIGNING_KEY_ALIAS }}
       NEXORA_SIGNING_KEY_PASSWORD: ${{ secrets.NEXORA_SIGNING_KEY_PASSWORD }}
+      # Public certificate fingerprint exported from the persistent VPS vault.
+      NEXORA_EXPECTED_SIGNER_SHA256: ${{ vars.NEXORA_SIGNING_CERT_SHA256 }}
 
     steps:
       - name: Checkout release tag
@@ -170,6 +172,10 @@ jobs:
       - name: Verify release signing and configuration parity
         shell: bash
         run: bash scripts/ci/verify-release-signing.sh
+
+      - name: Verify GitHub production signer matches trusted VPS identity
+        shell: bash
+        run: bash scripts/ci/verify-production-signing-pin.sh
 
       - name: Enforce artifact budgets
         shell: bash
