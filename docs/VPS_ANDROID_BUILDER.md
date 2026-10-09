@@ -424,7 +424,7 @@ sudo nexora-git github secrets apply
 sudo nexora-git github secrets status
 ```
 
-Values are piped through stdin to `gh secret set`; signing passwords/base64 are not placed in command-line arguments. On success the VPS records only SHA-256 hashes of the seven synchronized values. GitHub itself does not expose secret values for later reading, so parity checks compare current local material to this successful synchronization record while GitHub exposes only secret names.
+Values are piped through stdin to `gh secret set`; signing passwords/base64 are not placed in command-line arguments. The public signing-certificate fingerprint is also written to the protected environment's **non-secret** `NEXORA_SIGNING_CERT_SHA256` variable using `gh variable set`. On success the VPS records hashes of the seven secrets and the public certificate fingerprint in its local parity record. Official GitHub tag releases fail if that public fingerprint does not match their actual signing keystore. GitHub itself does not expose secret values for later reading, so parity checks compare current local material to this successful synchronization record while GitHub exposes only secret names.
 
 ### E3 — isolated production signing
 
