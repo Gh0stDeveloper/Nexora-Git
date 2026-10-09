@@ -26,6 +26,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
@@ -44,6 +45,7 @@ fun SettingsScreen(
     viewModel: SettingsViewModel = hiltViewModel(),
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
+    val uriHandler = LocalUriHandler.current
 
     SettingsContent(
         state = state,
@@ -56,6 +58,12 @@ fun SettingsScreen(
         onConfirmForcePush = viewModel::setConfirmForcePush,
         onWifiOnly = viewModel::setWifiOnlyLargeTransfers,
         onReplayOnboarding = viewModel::replayOnboarding,
+        onOpenPrivacy = {
+            state.privacyUrl?.let(uriHandler::openUri)
+        },
+        onOpenSource = {
+            uriHandler.openUri(SOURCE_URL)
+        },
         onReset = viewModel::reset,
     )
 }
@@ -72,6 +80,8 @@ internal fun SettingsContent(
     onConfirmForcePush: (Boolean) -> Unit,
     onWifiOnly: (Boolean) -> Unit,
     onReplayOnboarding: () -> Unit,
+    onOpenPrivacy: () -> Unit,
+    onOpenSource: () -> Unit,
     onReset: () -> Unit,
 ) {
     LazyColumn(
@@ -211,9 +221,43 @@ internal fun SettingsContent(
         item { InfoCard(R.string.settings_accounts, R.string.settings_accounts_summary) }
         item { InfoCard(R.string.settings_security, R.string.settings_security_summary) }
         item { InfoCard(R.string.settings_updates, R.string.settings_updates_summary) }
-        item { InfoCard(R.string.settings_privacy, R.string.settings_privacy_summary) }
+        item {
+            SettingsCard(title = stringResource(R.string.settings_privacy)) {
+                Text(
+                    text = stringResource(R.string.settings_privacy_summary),
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+                if (state.privacyUrl != null) {
+                    OutlinedButton(
+                        modifier = Modifier.fillMaxWidth(),
+                        onClick = onOpenPrivacy,
+                    ) {
+                        Text(stringResource(R.string.settings_privacy_open))
+                    }
+                } else {
+                    Text(
+                        text = stringResource(R.string.settings_privacy_unavailable),
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        style = MaterialTheme.typography.bodySmall,
+                    )
+                }
+            }
+        }
         item { InfoCard(R.string.settings_diagnostics, R.string.settings_diagnostics_summary) }
-        item { InfoCard(R.string.settings_about, R.string.settings_about_summary) }
+        item {
+            SettingsCard(title = stringResource(R.string.settings_about)) {
+                Text(
+                    text = stringResource(R.string.settings_about_summary),
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+                OutlinedButton(
+                    modifier = Modifier.fillMaxWidth(),
+                    onClick = onOpenSource,
+                ) {
+                    Text(stringResource(R.string.settings_source_open))
+                }
+            }
+        }
 
         item {
             OutlinedButton(
@@ -312,3 +356,7 @@ private fun InfoCard(
         )
     }
 }
+
+
+private const val SOURCE_URL =
+    "https://github.com/Gh0stDeveloper/Nexora-Git"

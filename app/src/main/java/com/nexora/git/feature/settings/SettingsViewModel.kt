@@ -2,6 +2,7 @@ package com.nexora.git.feature.settings
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.nexora.git.core.auth.AuthConfig
 import com.nexora.git.core.editor.EditorIndentStyle
 import com.nexora.git.core.settings.AppLanguage
 import com.nexora.git.core.settings.AppThemeMode
@@ -18,11 +19,13 @@ import kotlinx.coroutines.launch
 data class SettingsUiState(
     val product: ProductPreferences = ProductPreferences(),
     val editorIndentStyle: EditorIndentStyle = EditorIndentStyle.SPACES_4,
+    val privacyUrl: String? = null,
 )
 
 @HiltViewModel
 class SettingsViewModel @Inject constructor(
     private val repository: SettingsRepository,
+    private val authConfig: AuthConfig,
 ) : ViewModel() {
 
     val state: StateFlow<SettingsUiState> = combine(
@@ -32,6 +35,9 @@ class SettingsViewModel @Inject constructor(
         SettingsUiState(
             product = product,
             editorIndentStyle = indent,
+            privacyUrl = authConfig.brokerBaseUrl
+                .takeIf { authConfig.isConfigured }
+                ?.plus("/privacy"),
         )
     }.stateIn(
         scope = viewModelScope,
