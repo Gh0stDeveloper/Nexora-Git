@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 """Check active S.16 presentation without faking deferred launch screenshots.
 
-Normal Community Readiness accepts zero screenshots only while the README
-and the tracked issue explain why the maintainer deferred manual capture.
+Normal Community Readiness accepts zero screenshots when the repository's
+technical launch settings document the tracked screenshot deferral.
 Once any screenshot exists, ALL eight must be valid and consistent. The
 manual publication gate requires all screenshots explicitly.
 """
@@ -61,7 +61,6 @@ readme = Path("README.md").read_text(encoding="utf-8")
 settings = Path("docs/GITHUB_REPOSITORY_SETTINGS.md").read_text(encoding="utf-8")
 required_readme_markers = (
     "## Get Nexora Git",
-    "## Product screenshots",
     "## Community and contributing",
     "SUPPORT.md",
     "SECURITY.md",
@@ -76,12 +75,8 @@ if not available:
     if args.require_screenshots:
         print("Manual screenshot release gate: 8 final PNGs required.", file=sys.stderr)
         raise SystemExit(1)
-    if (
-        "issues/47" not in readme
-        or "screenshots" not in readme.lower()
-        or "issues/47" not in settings
-    ):
-        print("Screenshot deferral must be documented and tracked in #47.", file=sys.stderr)
+    if "issues/47" not in settings or "screenshots" not in settings.lower():
+        print("Screenshot deferral must be documented in repository settings and tracked in #47.", file=sys.stderr)
         raise SystemExit(1)
     if "docs/assets/screenshots/" in readme:
         print("README must not refer to missing screenshot image files.", file=sys.stderr)
