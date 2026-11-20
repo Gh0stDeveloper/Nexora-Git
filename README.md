@@ -37,14 +37,6 @@ Before installing a direct APK, verify both:
 
 Stable `v1.0.0` is intentionally blocked until the public beta/RC qualification matrix passes. See [Release process](docs/RELEASE_PROCESS.md) and [Security](SECURITY.md) for the trust model.
 
-## Product screenshots
-
-**Pending — official captures will be added after the Android application and self-hosted VPS/Auth Broker are tested end-to-end.** The project maintainer will take the final screenshots personally from the working Android app, including Light, Dark and AMOLED themes.
-
-There are **no published product screenshots yet**. We deliberately do not display broken image links, fictional mockups or temporary emulator fixtures as product evidence. The plan and acceptance checklist are tracked in [screenshot follow-up #47](https://github.com/Gh0stDeveloper/Nexora-Git/issues/47). Once the real PNGs are approved, the README gallery will be enabled in a separate review.
-
-The production website is also under development; its homepage and deployment readiness are tracked in [website follow-up #46](https://github.com/Gh0stDeveloper/Nexora-Git/issues/46).
-
 ## Overview
 
 Nexora Git is an Android-first development workspace for people who need a serious Git and GitHub workflow away from a desktop. It is **not a WebView wrapper** and it does not depend on Termux or an external Git installation.
